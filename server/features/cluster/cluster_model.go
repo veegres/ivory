@@ -142,6 +142,28 @@ type RouterNameRequest struct {
 	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
 }
 
+type RouterNodeRequest struct {
+	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
+	Node string `json:"node" binding:"required,notblank" jsonschema:"name of the node within that cluster"`
+}
+
+// RouterOverviewRequest narrows the overview to what one keeper endpoint
+// reports when Host and Port are given, the way the http route's query does.
+type RouterOverviewRequest struct {
+	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
+	Host string `json:"host,omitempty" binding:"required_with=Port" jsonschema:"ask only this keeper host instead of every configured node"`
+	Port int    `json:"port,omitempty" binding:"required_with=Host,omitempty,min=1,max=65535" jsonschema:"keeper port of that host"`
+}
+
+// NodeConnections is the input every node-level operation takes, resolved
+// from one node's stored configuration. A half is nil when the node lacks
+// what it needs: a keeper port, a database port, or an ssh port and ssh vault.
+type NodeConnections struct {
+	Keeper   *node.KeeperOneRequest        `json:"keeper"`
+	Platform *node.PlatformVaultConnection `json:"platform"`
+	Database *query.Connection             `json:"database"`
+}
+
 // RouterDeployRequest is DeployRequest with CommonConfig's inline credentials left
 // out: a deploy names vault entries instead, so no password passes through the
 // agent's context. Deploy refuses a vault id beside an inline pair anyway.
@@ -270,6 +292,47 @@ func uniqueNodeName(base string, taken map[string]bool) string {
 	}
 	taken[name] = true
 	return name
+}
+
+// nodeConnections applies the same rule discovery does: certificates travel
+// only on the side whose tls flag is on.
+func (o Options) nodeConnections(cluster string, n NodeConfig) NodeConnections {
+	var connections NodeConnections
+	if n.KeeperPort != nil {
+		var certs *cert.Certs
+		if o.Tls.Keeper {
+			certs = &o.Certs
+		}
+		connections.Keeper = &node.KeeperOneRequest{
+			KeeperConnection: node.KeeperConnection{Host: n.Host, Port: *n.KeeperPort},
+			KeeperOptions: node.KeeperOptions{
+				Cluster: cluster,
+				Plugin:  o.Plugins.Keeper,
+				VaultId: o.Vaults.KeeperId,
+				Certs:   certs,
+			},
+		}
+	}
+	if n.SshPort != nil && o.Vaults.SshKeyId != nil {
+		connections.Platform = &node.PlatformVaultConnection{
+			Host:     n.Host,
+			Port:     *n.SshPort,
+			VaultId:  *o.Vaults.SshKeyId,
+			Platform: node.DefaultPlatform,
+		}
+	}
+	if n.DbPort != nil {
+		var certs *cert.Certs
+		if o.Tls.Database {
+			certs = &o.Certs
+		}
+		connections.Database = &query.Connection{
+			Db:      query.DbConfig{Plugin: o.Plugins.Database, Host: n.Host, Port: *n.DbPort},
+			Certs:   certs,
+			VaultId: o.Vaults.DatabaseId,
+		}
+	}
+	return connections
 }
 
 // mapDeployNodeConfigs keeps only the connection details on the cluster: the

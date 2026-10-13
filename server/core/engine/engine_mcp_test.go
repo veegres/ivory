@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"ivory/clients/console/ssh"
 	"ivory/clients/storage"
+	"ivory/core"
 	coreConfig "ivory/core/config"
 	"ivory/core/service/cert"
 	"ivory/core/service/encryption"
@@ -39,7 +40,14 @@ import (
 // createTestMcpRouter wires each feature's MCP router against a temporary
 // database, the way management_service_test.go wires its services. The plugin
 // registries are empty, so nothing here can reach a host.
-func createTestMcpRouter(t *testing.T) *features.McpRouter {
+// mcpTestRouters is the pair NewMcpServer takes, carried as one value so a
+// test passes it around the way it used to pass the features half alone.
+type mcpTestRouters struct {
+	core     *core.McpRouter
+	features *features.McpRouter
+}
+
+func createTestMcpRouter(t *testing.T) mcpTestRouters {
 	t.Helper()
 
 	tmpDir, errDir := os.MkdirTemp("", "engine-mcp-test-*")
@@ -121,14 +129,18 @@ func createTestMcpRouter(t *testing.T) *features.McpRouter {
 		t.Fatalf("failed to store the test cluster: %v", err)
 	}
 
-	return &features.McpRouter{
+	cr := &core.McpRouter{
+		Vault: vault.NewMcpRouter(vaultService),
+		Cert:  cert.NewMcpRouter(certService),
+	}
+	return mcpTestRouters{core: cr, features: &features.McpRouter{
 		Cluster:    cluster.NewMcpRouter(clusterService),
 		Node:       node.NewMcpRouter(nodeService),
 		Tag:        tag.NewMcpRouter(tagService),
 		Query:      query.NewMcpRouter(queryService),
 		Deployment: deployment.NewMcpRouter(deploymentService),
 		Management: nil,
-	}
+	}}
 }
 
 func mcpContextWith(features ...coreConfig.Feature) context.Context {
@@ -140,10 +152,10 @@ func mcpContextWith(features ...coreConfig.Feature) context.Context {
 }
 
 // session connects a client to the server this caller is given.
-func session(t *testing.T, mr *features.McpRouter, ctx context.Context) *mcpsdk.ClientSession {
+func session(t *testing.T, mr mcpTestRouters, ctx context.Context) *mcpsdk.ClientSession {
 	t.Helper()
 	serverTransport, clientTransport := mcpsdk.NewInMemoryTransports()
-	server := newMcpServer(ctx, mr, "test")
+	server := newMcpServer(ctx, mr.core, mr.features, "test")
 	go func() { _ = server.Run(context.Background(), serverTransport) }()
 
 	clientSession, err := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "v0"}, nil).
@@ -155,7 +167,7 @@ func session(t *testing.T, mr *features.McpRouter, ctx context.Context) *mcpsdk.
 	return clientSession
 }
 
-func offeredTools(t *testing.T, mr *features.McpRouter, ctx context.Context) []*mcpsdk.Tool {
+func offeredTools(t *testing.T, mr mcpTestRouters, ctx context.Context) []*mcpsdk.Tool {
 	t.Helper()
 	result, err := session(t, mr, ctx).ListTools(context.Background(), nil)
 	if err != nil {
@@ -164,7 +176,7 @@ func offeredTools(t *testing.T, mr *features.McpRouter, ctx context.Context) []*
 	return result.Tools
 }
 
-func listTools(t *testing.T, mr *features.McpRouter, ctx context.Context) []string {
+func listTools(t *testing.T, mr mcpTestRouters, ctx context.Context) []string {
 	t.Helper()
 	tools := offeredTools(t, mr, ctx)
 	names := make([]string, 0, len(tools))
@@ -397,6 +409,10 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 		arguments map[string]any
 	}{
 		{"cluster", "ivory_cluster_list", map[string]any{}},
+		{"cluster/overview", "ivory_cluster_overview", map[string]any{"name": "prod", "host": "10.0.0.1", "port": 8008}},
+		{"cluster/node", "ivory_cluster_node_connections", map[string]any{"name": "prod", "node": "pg1"}},
+		{"vault", "ivory_vault_list", map[string]any{"type": 3}},
+		{"cert", "ivory_cert_list", map[string]any{}},
 		{"tag", "ivory_tag_list", map[string]any{}},
 		{"node/keeper", "ivory_keeper_node_list", map[string]any{
 			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni_postgres",
@@ -431,6 +447,44 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 	}
 }
 
+// TestMcpFailureKeepsTheEnvelope pins the tool twin of the http envelope: a
+// failed keeper or platform call is flagged as an error and still answers with
+// {response, error}, so whatever the action produced is not dropped with it.
+func TestMcpFailureKeepsTheEnvelope(t *testing.T) {
+	mr := createTestMcpRouter(t)
+	clientSession := session(t, mr, mcpContextWith(coreConfig.All...))
+
+	calls := map[string]map[string]any{
+		"ivory_keeper_node_list": {"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni_postgres"},
+		"ivory_container_list":   {"host": "10.0.0.1", "port": 22, "vaultId": uuid.New().String(), "platform": "docker"},
+	}
+	for tool, arguments := range calls {
+		t.Run(tool, func(t *testing.T) {
+			result, err := clientSession.CallTool(context.Background(), &mcpsdk.CallToolParams{Name: tool, Arguments: arguments})
+			if err != nil {
+				t.Fatalf("the tool could not be called at all: %v", err)
+			}
+			if !result.IsError {
+				t.Fatalf("expected the failure to be flagged as one, got %+v", result)
+			}
+			raw, errMarshal := json.Marshal(result.StructuredContent)
+			if errMarshal != nil {
+				t.Fatalf("marshal structured content: %v", errMarshal)
+			}
+			var envelope map[string]any
+			if err := json.Unmarshal(raw, &envelope); err != nil {
+				t.Fatalf("structured content is not an object: %s", raw)
+			}
+			if _, ok := envelope["response"]; !ok {
+				t.Errorf("expected a response field beside the error, got %s", raw)
+			}
+			if message, _ := envelope["error"].(string); message == "" {
+				t.Errorf("expected the error to be named, got %s", raw)
+			}
+		})
+	}
+}
+
 // TestMcpCrossOriginProtection covers the one thing the in-memory transport
 // cannot reach: the endpoint is reached over http, and Ivory's session cookie
 // is a valid credential on it, so a browser page must not be able to drive
@@ -438,10 +492,12 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 // and have to keep working.
 func TestMcpCrossOriginProtection(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	mr := createTestMcpRouter(t)
 	engine := gin.New()
 	engine.POST("/mcp", NewMcpServer(
 		&coreConfig.Environment{Version: coreConfig.Version{Label: "test"}},
-		createTestMcpRouter(t),
+		mr.core,
+		mr.features,
 	))
 
 	body := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2026-07-28","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}`

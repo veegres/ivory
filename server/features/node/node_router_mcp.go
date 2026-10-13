@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // McpRouter is this feature's half of the MCP engine, the way Router is its
@@ -21,6 +22,31 @@ type McpRouter struct {
 
 func NewMcpRouter(service *Service) *McpRouter {
 	return &McpRouter{service: service}
+}
+
+// handleKeeperRequest and handlePlatformRequest are the tool twins of the http
+// handlers of the same name: what an action produced is sent beside its error,
+// never instead of it. A failure is still flagged as one, through IsError.
+// They are free functions because Go does not allow a method to introduce type
+// parameters.
+func handleKeeperRequest[T any](in KeeperOneRequest, action func(KeeperOneRequest) (T, int, error)) (*mcp.CallToolResult, RouterKeeperResponse[T], error) {
+	body, status, err := action(in)
+	response := RouterKeeperResponse[T]{Status: status, Response: body}
+	if err != nil {
+		response.Error = err.Error()
+		return &mcp.CallToolResult{IsError: true}, response, nil
+	}
+	return nil, response, nil
+}
+
+func handlePlatformRequest[R any, T any](in R, action func(R) (T, error)) (*mcp.CallToolResult, RouterPlatformResponse[T], error) {
+	body, err := action(in)
+	response := RouterPlatformResponse[T]{Response: body}
+	if err != nil {
+		response.Error = err.Error()
+		return &mcp.CallToolResult{IsError: true}, response, nil
+	}
+	return nil, response, nil
 }
 
 // collectLogs drains a streaming service method into a bounded result, the way

@@ -31,7 +31,7 @@ func main() {
 		cc.Service,
 	)
 
-	mcpEngine := engine.NewMcpServer(appEnv, fc.McpRouter)
+	mcpEngine := engine.NewMcpServer(appEnv, cc.McpRouter, fc.McpRouter)
 
 	engine.NewHttpServer(appEnv, cc.HttpRouter, fc.HttpRouter, mcpEngine, tc.HttpRouter)
 }

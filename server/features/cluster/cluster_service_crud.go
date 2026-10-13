@@ -39,6 +39,20 @@ func (s *Service) Get(cluster string) (Response, error) {
 	return s.clusterRepository.Get(cluster)
 }
 
+func (s *Service) NodeConnections(name string, nodeName string) (*NodeConnections, error) {
+	cluster, err := s.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	for _, n := range cluster.Nodes {
+		if n.Name == nodeName {
+			connections := cluster.Options.nodeConnections(cluster.Name, n)
+			return &connections, nil
+		}
+	}
+	return nil, fmt.Errorf("%w: %q", ErrClusterNodeNotFound, nodeName)
+}
+
 func (s *Service) Create(cluster Request) (*Response, error) {
 	if err := s.validateWritableCluster(cluster); err != nil {
 		return nil, err

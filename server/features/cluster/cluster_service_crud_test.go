@@ -10,6 +10,7 @@ import (
 	"ivory/plugins/keeper"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -285,6 +286,41 @@ func TestServiceGet(t *testing.T) {
 	if _, err := s.Get("unknown"); err == nil {
 		t.Fatalf("expected an error for an unknown cluster")
 	}
+}
+
+func TestServiceNodeConnections(t *testing.T) {
+	s := createTestService(t)
+	port := func(value int) *int { return &value }
+	if _, err := s.clusterRepository.Create(Request{
+		Name:    "c1",
+		Nodes:   []NodeConfig{{Name: "n1", Host: "10.0.0.1", KeeperPort: port(8008)}, {Name: "n2", Host: "10.0.0.2", KeeperPort: port(8009)}},
+		Options: Options{Plugins: Plugins{Keeper: keeper.PATRONI_POSTGRES, Database: database.POSTGRES}},
+	}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+
+	t.Run("a node is found by its name, not its position", func(t *testing.T) {
+		c, err := s.NodeConnections("c1", "n2")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if c.Keeper == nil || c.Keeper.Host != "10.0.0.2" || c.Keeper.Port != 8009 || c.Keeper.Cluster != "c1" {
+			t.Errorf("keeper = %+v, want n2's own endpoint", c.Keeper)
+		}
+	})
+
+	t.Run("an unknown node names itself in the error", func(t *testing.T) {
+		_, err := s.NodeConnections("c1", "n3")
+		if !errors.Is(err, ErrClusterNodeNotFound) || !strings.Contains(err.Error(), "n3") {
+			t.Errorf("expected ErrClusterNodeNotFound naming n3, got %v", err)
+		}
+	})
+
+	t.Run("an unknown cluster", func(t *testing.T) {
+		if _, err := s.NodeConnections("unknown", "n1"); err == nil {
+			t.Errorf("expected an error for an unknown cluster")
+		}
+	})
 }
 
 func TestServiceList(t *testing.T) {

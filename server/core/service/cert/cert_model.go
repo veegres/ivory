@@ -37,6 +37,11 @@ type RouterAddRequest struct {
 	Type CertType `json:"type" binding:"valid"`
 }
 
+// RouterListRequest is the tool's twin of the http route's ?type= query.
+type RouterListRequest struct {
+	Type *CertType `json:"type,omitempty" binding:"omitempty,valid" jsonschema:"only certificates of this type: 0 client CA, 1 client certificate, 2 client key"`
+}
+
 type Certs struct {
 	ClientCAId   *uuid.UUID `json:"clientCAId"`
 	ClientKeyId  *uuid.UUID `json:"clientKeyId"`

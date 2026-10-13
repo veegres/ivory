@@ -17,6 +17,9 @@ func NewHttpRouter(service *Service) *HttpRouter {
 	return &HttpRouter{service: service}
 }
 
+// The handlers below send what an action produced beside its error, never
+// instead of it: a keeper can answer and fail at once (postgres starting up),
+// and a failed command's output is what explains the failure.
 func handleKeeperParamRequest[T any](context *gin.Context, action func(node KeeperOneRequest) (T, int, error)) {
 	query := context.Query("request")
 	var node KeeperOneRequest
@@ -27,7 +30,7 @@ func handleKeeperParamRequest[T any](context *gin.Context, action func(node Keep
 	}
 	body, status, err := action(node)
 	if err != nil {
-		context.JSON(status, gin.H{"error": err.Error()})
+		context.JSON(status, gin.H{"error": err.Error(), "response": body})
 		return
 	}
 	context.JSON(status, gin.H{"response": body})
@@ -42,7 +45,7 @@ func handleKeeperBodyRequest[T any](context *gin.Context, action func(node Keepe
 	}
 	body, status, err := action(request)
 	if err != nil {
-		context.JSON(status, gin.H{"error": err.Error()})
+		context.JSON(status, gin.H{"error": err.Error(), "response": body})
 		return
 	}
 	context.JSON(status, gin.H{"response": body})
@@ -58,7 +61,7 @@ func handlePlatformParamRequest[R any, T any](context *gin.Context, action func(
 	}
 	body, err := action(request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "response": body})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": body})
@@ -73,7 +76,7 @@ func handlePlatformBodyRequest[R any, T any](context *gin.Context, action func(r
 	}
 	body, err := action(request)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "response": body})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": body})
