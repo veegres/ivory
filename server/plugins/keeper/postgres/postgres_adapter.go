@@ -26,9 +26,13 @@ const requestTimeout = 5 * time.Second
 
 const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
 
-// listQuery detects the node role and, for replicas, the replication lag as
-// the difference between received and replayed wal in bytes. NOTE: the lag
-// unit differs from patroni, which reports its own /cluster lag value.
+// listQuery detects the node role and, for replicas, how far behind the
+// primary they are in bytes, as patroni measures it: the primary's WAL end it
+// last reported to this standby minus what the standby has replayed, so a
+// standby behind on the network does not read as caught up. GREATEST with the
+// received position keeps a stale keepalive from hiding the replay backlog,
+// and latest_end_lsn, which only superusers and pg_read_all_stats can see,
+// falls back to that backlog alone.
 //
 // The middle columns are the node's tags (see mapTags), the next says whether
 // a standby is streaming at all, and the last two name the replication slots
@@ -40,7 +44,9 @@ const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
 // connection this query has already opened.
 const listQuery = `SELECT pg_is_in_recovery(),
        CASE WHEN pg_is_in_recovery()
-            THEN GREATEST(COALESCE(pg_wal_lsn_diff(pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn()), 0), 0)::bigint
+            THEN GREATEST(COALESCE(pg_wal_lsn_diff(
+                GREATEST((SELECT latest_end_lsn FROM pg_stat_wal_receiver), pg_last_wal_receive_lsn()),
+                pg_last_wal_replay_lsn()), 0), 0)::bigint
             ELSE 0 END,
        split_part(current_setting('server_version'), ' ', 1),
        (SELECT count(*) FROM pg_stat_activity)::int,
