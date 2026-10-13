@@ -22,6 +22,14 @@ type endpointStatus struct {
 	Err    error
 }
 
+// leaderStatus is the leader as the asked member sees it, with the raft index
+// read off the leader itself.
+type leaderStatus struct {
+	ID        uint64
+	RaftIndex uint64
+	Err       error
+}
+
 type switchoverBody struct {
 	Leader      *string `json:"leader"`
 	Candidate   *string `json:"candidate"`
