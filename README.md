@@ -1,15 +1,16 @@
 <div style="text-align: center;" align="center">
-   <img src="app/shared/assets/ivory.png" alt="Ivory - open source database cluster management UI" height="200" width="200" />
+   <img src="app/shared/assets/ivory.png" alt="Ivory — open-source web UI and AI-ready MCP server for PostgreSQL Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper clusters" height="200" width="200" />
 
 # Ivory
 
 ### Deploy it. Watch it. Fix it. Anywhere.
 
-**Open-source web UI for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.**
+**Open-source web UI and AI-ready MCP server for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.**
 
    <img src="https://img.shields.io/github/deployments/veegres/ivory/production?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fproduction" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
    <img src="https://img.shields.io/docker/v/veegres/ivory?label=latest&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="latest version" />
+   <a href="https://github.com/veegres/ivory/stargazers"><img src="https://img.shields.io/github/stars/veegres/ivory?style=flat-square" alt="GitHub stars" /></a>
    <img src="https://img.shields.io/docker/pulls/veegres/ivory?style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="docker pulls" />
 </div>
 
@@ -18,49 +19,24 @@
 **Ivory is a self-hosted, open-source database cluster management tool that puts control in your pocket.**
 One web UI to **deploy a cluster**, watch its **health and replication lag**, run a **switchover or failover**,
 open a **SQL query console**, control **containers over SSH**, and read **VM metrics and logs** — from your
-browser or your phone, without dropping into the CLI for every task.
+browser or your phone. One Docker container, **no agent on your hosts, no orchestrator, no cloud account.**
+New to Ivory? Start with [About Ivory](.doc/about.md).
 
-It is built around the concept of a **Keeper** — a generic management layer responsible for cluster
-manipulations. A Keeper can be a standalone agent running beside the database, or a management system
-embedded directly in the database engine. [Patroni](https://patroni.readthedocs.io/) is the Keeper
-implementation for PostgreSQL, and the one Ivory was originally built around.
-
-Ivory is designed for **DBAs, SRE and backend developers** who operate high-availability database clusters and
-want a single UI to run, troubleshoot and deploy them — including from a phone, when you are away from your
-laptop. It runs as a local tool on your machine or as a shared service on a VM for team use, ships as a single
-Docker container, and stores everything itself: **no agent on your hosts, no orchestrator, no cloud account.**
-
-**Contents** — [Features](#features) · [Get started](#get-started) · [Supported databases](#supported-databases-and-keepers) · [Documentation](#documentation) · [FAQ](#faq) · [Contributing](#contribution)
+**🤖 AI-ready out of the box.** Plug Claude, Cursor, Codex or any AI agent into Ivory's built-in
+[MCP server](.doc/mcp.md) and just ask: *"why is replica 2 lagging?"*, *"what's blocking my queries?"*,
+*"switch the leader to node 3"*.
 
 ---
 
 <div align="center">
-  <h3>🌟 Support This Project! 🌟</h3>
+
+### ⭐ [Star Ivory on GitHub](https://github.com/veegres/ivory) — it takes one click ⭐
+
+<a href="https://github.com/veegres/ivory/stargazers"><img src="https://img.shields.io/github/stars/veegres/ivory?style=for-the-badge&logo=github&label=Star%20Ivory&color=yellow" alt="Star Ivory on GitHub" /></a>
+
+<sub>Stars keep the author motivated to keep building Ivory. Want to help more? [Support it on Boosty](https://boosty.to/anselvo) ❤️</sub>
+
 </div>
-
-If you found this project helpful, interesting, or inspiring, please consider giving it a **star** ⭐! Your support
-helps:
-
-✅ **Increase visibility** – More people can discover and benefit from this project.  
-✅ **Boost motivation** – It encourages us to keep improving and adding new features.  
-✅ **Show appreciation** – A small gesture that means a lot to open-source creators!
-
-Thank you for being part of this journey! 🚀
-
----
-
-### Vision: Beyond Postgres
-
-Ivory started as a Postgres/Patroni tool. We're working towards a more pluggable architecture, where support for other
-databases and HA tools could be added as a plugin, instead of being baked into the core. v2 is the first step of that
-rework:
-
-| Version |                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **v1**  | Hard-wired to Patroni and Postgres, with Postgres-centric node management and no mobile support.                                                                                                                                                                                                                                                                                                                                                             |
-| **v2**  | Pluggable Keeper and database engines — the goal is to manage different databases by implementing a simple plugin for each, instead of baking their behaviour into the core. Node management is now VM-centric, with nodes modeled as Hardware + Software behind a generic Platform abstraction (on-prem Docker over SSH today, Kubernetes/OpenShift planned). The UI is now mobile friendly, so you can check on and operate your clusters from your phone. |
-
----
 
 ## Features
 
@@ -99,8 +75,6 @@ rework:
 - [Configuration](.doc/configuration.md) — data persistence, upgrades, TLS, reverse-proxy sub-path
 - [MCP server](.doc/mcp.md) — expose Ivory to an AI agent, gated by the same per-user permissions
 
----
-
 ## Get started
 
 Ivory ships as one Docker image with no external dependencies.
@@ -116,86 +90,66 @@ Ivory ships as one Docker image with no external dependencies.
 
 ![Ivory web UI showing a PostgreSQL Patroni cluster overview with node roles and replication lag](.doc/images/demo.png)
 
----
+## Documentation
+
+| Page                                     | What's in it                                                        |
+|------------------------------------------|---------------------------------------------------------------------|
+| [About](.doc/about.md)                   | What Ivory is, the Keeper concept, vision, why these databases      |
+| [Clusters](.doc/clusters.md)             | Adding clusters manually, auto-detection, tags and filtering        |
+| [Overview](.doc/overview.md)             | What a Keeper is, cluster health, HA operations                     |
+| [Node](.doc/node.md)                     | System, Container, Keeper, Database and Tools tabs                  |
+| [Deployment](.doc/deployment.md)         | Deploy a cluster or one node, deployment templates, variables       |
+| [Authentication](.doc/authentication.md) | Basic / LDAP / OIDC, users, superusers, permissions                 |
+| [Configuration](.doc/configuration.md)   | Data persistence, upgrades, environment variables, TLS, sub-path    |
+| [MCP server](.doc/mcp.md)                | Connecting an AI agent, the tool list, permissions and blast radius |
+| [FAQ](.doc/faq.md)                       | Upgrades, data location, agents, credentials, proxies, phones       |
+
 
 ## Supported databases and keepers
 
-| Keeper                                     | Database   | Stage  | Why                                                                                                                                                                  |
-|--------------------------------------------|------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE | The Keeper Ivory was originally built around                                                                                                                         |
-| Postgres                                   | Postgres   | STABLE   | Not everyone needs HA — sometimes you just want to manage a plain Postgres                                                                                           |
-| ETCD                                       | ETCD       | BETA  | Patroni relies on etcd as a DCS, so managing it directly made sense too                                                                                              |
-| Redis                                      | Redis      | BETA  | A widely used cache/store that often sits right next to the databases Ivory already manages                                                                          |
-| ClickHouse                                 | ClickHouse | BETA  | A popular analytics database and a natural next step for Ivory's plugin set                                                                                          |
-| ZooKeeper                                  | ZooKeeper  | BETA  | ClickHouse needs real ZooKeeper protocol, not etcd, to coordinate replication — deployable as its own ensemble and usable as the external DCS other keepers point at |
-| MongoDB                                    | MongoDB    | BETA  | A widely used document store with its own native replica-set HA, a natural fit next to Ivory's other native (non-orchestrated) keepers                               |
+| Keeper                                     | Database   | Stage  |
+|--------------------------------------------|------------|--------|
+| [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE |
+| Postgres                                   | Postgres   | STABLE |
+| ETCD                                       | ETCD       | BETA   |
+| Redis                                      | Redis      | BETA   |
+| ClickHouse                                 | ClickHouse | BETA   |
+| ZooKeeper                                  | ZooKeeper  | BETA   |
+| MongoDB                                    | MongoDB    | BETA   |
 
-P.S. these particular databases weren't picked from a grand roadmap — they're mainly what the maintainer runs day to
-day, and Ivory exists to simplify that routine first. Broader support grows from there.
+Why these ones — and where Ivory is heading — is in [About Ivory](.doc/about.md#why-these-databases).
 
----
+**Missing your database? You can add it.** Every engine is a self-contained plugin, so supporting a new one
+needs no change to Ivory's core. The repository ships an AI agent for exactly this,
+[`keeper-database-plugin`](.claude/agents/keeper-database-plugin.md): ask Claude Code to use it for your engine
+and it writes the keeper and database plugins, their tests and the UI wiring by the project's checklist —
+then open a PR (see [Contribution](#contribution)).
 
-## Documentation
-
-| Page                                         | What's in it                                                       |
-|----------------------------------------------|--------------------------------------------------------------------|
-| [Clusters](.doc/clusters.md)                 | Adding clusters manually, auto-detection, tags and filtering        |
-| [Overview](.doc/overview.md)                 | What a Keeper is, cluster health, HA operations                     |
-| [Node](.doc/node.md)                         | System, Container, Keeper, Database and Tools tabs                  |
-| [Deployment](.doc/deployment.md)             | Deploy a cluster or one node, deployment templates, variables       |
-| [Authentication](.doc/authentication.md)     | Basic / LDAP / OIDC, users, superusers, permissions                 |
-| [Configuration](.doc/configuration.md)       | Data persistence, upgrades, environment variables, TLS, sub-path    |
-| [pgcompacttable](.doc/pg_compacttable.md)    | Reducing Postgres table and index bloat from the UI                 |
-| [MCP server](.doc/mcp.md)                    | Connecting an AI agent, the tool list, permissions and blast radius |
-
----
-
-## FAQ
-
-**How do I upgrade to a new version?**
-Back up your configuration from the Settings page and restore it in the new version — the format is
-backward compatible. Mounting the data directory between containers works too, but reliably only for patch
-releases. See [Configuration → Upgrading](.doc/configuration.md#upgrading-to-a-new-version).
-
-**Where does Ivory store its data?**
-In `/opt/ivory/data`, backed by a Docker volume. Bind-mount it, or use `--volumes-from`, to keep data across
-different containers. See [Configuration → Data and Persistence](.doc/configuration.md#data-and-persistence).
-
-**Does Ivory need an agent on my database hosts?**
-No. It talks to the Keeper's API, to the database directly, and to the host over SSH.
-
-**How does authentication work?**
-Ivory runs with or without it. With it, everybody who signs in is an Ivory user first — you register a username
-and choose whether they sign in with a password, LDAP or SSO, and a password is always set by the person
-themselves through a one-time link. See [Authentication](.doc/authentication.md).
-
-**Are my credentials safe?**
-Every secret — SSH keys, database passwords, LDAP and OIDC client secrets — is encrypted with the secret word
-you choose during setup.
-
-**Can I run Ivory behind a reverse proxy or under HTTPS?**
-Yes — `IVORY_URL_PATH` for a sub-path, `IVORY_CERT_FILE_PATH` and `IVORY_CERT_KEY_FILE_PATH` for TLS. See
-[Configuration → Environment Variables](.doc/configuration.md#environment-variables).
-
-**Does it work on a phone?**
-Yes. The v2 UI is mobile friendly, so you can check cluster health and run HA operations from your phone.
-
----
 
 ## Contribution
 
-If you're interested in contributing to the Ivory project, consider these options:
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, conventions and how
+to send a change, [open issues](https://github.com/veegres/ivory/issues) (or the
+[good first issues](https://github.com/veegres/ivory/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22))
+for something to pick up, and [SECURITY.md](SECURITY.md) for supported versions and reporting a vulnerability.
 
-- [Enhancements](https://github.com/veegres/ivory/issues)
-- [Good for newcomers](https://github.com/veegres/ivory/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-- [Supported versions](SECURITY.md)
-- [Setup Local Environment](.docker/ivory-dev/README.md)
-- [Build Frontend](app/README.md)
-- [Build Backend](server/README.md)
 
----
+## What Ivory is used for
 
-<sub>Ivory is an open-source, self-hosted GUI and web dashboard for database cluster management and monitoring:
-PostgreSQL high availability with Patroni, plain PostgreSQL, etcd, Redis, ClickHouse, MongoDB and ZooKeeper —
-covering cluster deployment over SSH, failover and switchover, replication lag monitoring, SQL query console,
-Docker container management and VM metrics, in a single Docker container.</sub>
+Ivory is a self-hosted, open-source GUI, web dashboard and MCP server for database cluster management,
+monitoring and troubleshooting. One tool, the same workflow for every engine:
+
+- **PostgreSQL + Patroni GUI** — Patroni web UI for cluster health, replication lag, switchover, failover,
+  reinitialise and restart, plus a PostgreSQL query console, bloat and activity diagnostics and pgcompacttable.
+- **PostgreSQL management UI** — plain Postgres primary/standby monitoring, without needing Patroni.
+- **etcd GUI** — etcd cluster web UI for members, leader, raft lag and alarms, plus a key-value console.
+- **Redis GUI** — Redis replication monitoring and a command console for master/replica setups.
+- **ClickHouse GUI** — ClickHouse cluster monitoring, replication delay and queue, and a SQL console.
+- **MongoDB GUI** — MongoDB replica set monitoring — primary, secondaries and replication lag.
+- **ZooKeeper GUI** — ZooKeeper ensemble web UI for leader, followers and a znode console.
+- **Cluster deployment over SSH** — deploy a highly available Postgres, etcd, Redis, ClickHouse, MongoDB or
+  ZooKeeper cluster to your own VMs with Docker, from ready-made templates — no Kubernetes, Ansible or agent.
+- **AI DBA assistant** — an MCP server for PostgreSQL, Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper,
+  so Claude, Cursor, Codex or any MCP client can diagnose and fix database clusters in plain language.
+- **On-call from your phone** — a mobile-friendly database dashboard for checking and fixing a cluster away
+  from your laptop.
