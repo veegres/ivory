@@ -8,6 +8,7 @@ import (
 const DefaultAllKeys = `get "" --prefix --keys-only --limit 500`
 const DefaultMembers = `member list`
 const DefaultEndpointStatus = `endpoint status`
+const DefaultEndpointHealth = `endpoint health`
 const DefaultAlarms = `alarm list`
 const DefaultPatroniKeys = `get /service/ --prefix --keys-only`
 const DefaultPatroniState = `get /service/ --prefix`
@@ -41,8 +42,13 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 		},
 		{
 			Name: "Endpoint status", Type: database.STATISTIC,
-			Description: "Shows per-member status: version, database size, leader flag and raft progress.",
+			Description: "Shows per-member status: version, database size and how much of it is in use, leader and learner flags, raft progress, and the errors the member reports about itself, such as an alarm. A raftAppliedIndex far behind raftIndex is a member that commits faster than its disk can apply.",
 			Query:       DefaultEndpointStatus,
+		},
+		{
+			Name: "Endpoint health", Type: database.STATISTIC,
+			Description: "Shows whether each member answers, knows a leader and reports no alarm, with how long it took to answer. A slow answer is usually the first sign of a slow disk or network.",
+			Query:       DefaultEndpointHealth,
 		},
 		{
 			Name: "Alarms", Type: database.ACTIVITY,

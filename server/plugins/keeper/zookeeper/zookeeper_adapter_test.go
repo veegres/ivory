@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"testing"
 )
 
@@ -50,12 +51,13 @@ func TestMapNode(t *testing.T) {
 		name         string
 		state        string
 		expectedRole keeper.Role
+		expectedLag  int64
 	}{
-		{"leader", "leader", keeper.Leader},
-		{"standalone counts as leader", "standalone", keeper.Leader},
-		{"follower", "follower", keeper.Replica},
-		{"observer counts as replica", "observer", keeper.Replica},
-		{"unknown state", "electing", keeper.Unknown},
+		{"leader", "leader", keeper.Leader, 0},
+		{"standalone counts as leader", "standalone", keeper.Leader, 0},
+		{"follower", "follower", keeper.Replica, -1},
+		{"observer counts as replica", "observer", keeper.Replica, -1},
+		{"unknown state", "electing", keeper.Unknown, -1},
 	}
 
 	for _, tt := range tests {
@@ -64,8 +66,8 @@ func TestMapNode(t *testing.T) {
 			if response.Role != tt.expectedRole {
 				t.Errorf("expected role %v, got %v", tt.expectedRole, response.Role)
 			}
-			if response.Lag != 0 {
-				t.Errorf("expected lag 0, got %d", response.Lag)
+			if response.Lag != tt.expectedLag {
+				t.Errorf("expected lag %d, got %d", tt.expectedLag, response.Lag)
 			}
 			if response.Key == nil || *response.Key != "zk1:2181" {
 				t.Errorf("expected key zk1:2181, got %v", response.Key)
@@ -97,13 +99,13 @@ func TestMapTags(t *testing.T) {
 		expected map[string]any
 	}{
 		{
-			name:  "leader reports how much of its ensemble is synced",
+			name:  "leader reports no follower count, a fault is a warning",
 			state: "leader",
 			fields: map[string]string{
 				"zk_version": "3.9.1-abc123, built on 2023-10-01", "zk_znode_count": "1204",
 				"zk_num_alive_connections": "6", "zk_synced_followers": "2", "zk_followers": "2",
 			},
-			expected: map[string]any{"version": "3.9.1", "znodes": "1204", "connections": "6", "syncedFollowers": "2/2"},
+			expected: map[string]any{"version": "3.9.1", "znodes": "1204", "connections": "6"},
 		},
 		{
 			name:     "follower states no server state of its own",
@@ -404,5 +406,49 @@ func TestMapEnsembleMembers(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestFollowerWarnings(t *testing.T) {
+	ensemble := map[string]string{
+		"server.1": "zk1:2888:3888:participant;0.0.0.0:2181",
+		"server.2": "zk2:2888:3888:participant;0.0.0.0:2181",
+		"server.3": "zk3:2888:3888:participant;0.0.0.0:2181",
+		"server.4": "zk4:2888:3888:observer;0.0.0.0:2181",
+	}
+	tests := []struct {
+		name     string
+		state    string
+		fields   map[string]string
+		ensemble map[string]string
+		expected []string
+	}{
+		{name: "all synced", state: "leader", fields: map[string]string{"zk_synced_followers": "2"}, ensemble: ensemble, expected: nil},
+		{name: "a follower that is down is counted from conf", state: "leader", fields: map[string]string{"zk_synced_followers": "1", "zk_followers": "1"}, ensemble: ensemble, expected: []string{"1 of 2 followers are not synced with the leader"}},
+		{name: "without conf the leader's own count is used", state: "leader", fields: map[string]string{"zk_synced_followers": "1", "zk_followers": "2"}, expected: []string{"1 of 2 followers are not synced with the leader"}},
+		{name: "newer zookeeper names learners", state: "leader", fields: map[string]string{"zk_synced_followers": "0", "zk_learners": "2"}, expected: []string{"2 of 2 followers are not synced with the leader"}},
+		{name: "a follower says nothing", state: "follower", fields: map[string]string{"zk_synced_followers": "0"}, ensemble: ensemble, expected: nil},
+		{name: "no synced count", state: "leader", fields: map[string]string{}, ensemble: ensemble, expected: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := followerWarnings(tt.state, tt.fields, tt.ensemble)
+			if !slices.Equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
+func TestMapNotServing(t *testing.T) {
+	response := mapNotServing("zk1", 2181)
+	if response.State != keeper.StateRunning || response.Role != keeper.Unknown || response.Lag != -1 {
+		t.Errorf("expected running node with unknown role and lag, got %v %v %d", response.State, response.Role, response.Lag)
+	}
+}
+
+func TestFirstLine(t *testing.T) {
+	if got := firstLine("\nThis ZooKeeper instance is not currently serving requests\nmore\n"); got != "This ZooKeeper instance is not currently serving requests" {
+		t.Errorf("unexpected first line %q", got)
 	}
 }

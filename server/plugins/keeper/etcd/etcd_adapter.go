@@ -18,6 +18,10 @@ var ErrScheduleNotSupported = errors.New("scheduled switchover is not supported 
 var ErrCandidateRequired = errors.New("candidate is required, etcd cannot choose a leader randomly")
 var ErrCandidateNotFound = errors.New("candidate was not found among cluster members")
 
+// maxApplyGap is etcd's own maxGapBetweenApplyAndCommitIndex: past it the
+// member refuses new requests with "too many requests".
+const maxApplyGap = 5000
+
 // NOTE: validate that is matches interface in compile-time
 var _ keeper.Adapter = (*Plugin)(nil)
 
@@ -91,10 +95,12 @@ func (p *Plugin) probeMembers(client *connection, members []member) map[uint64]e
 			result := endpointStatus{Err: err}
 			if err == nil {
 				result = endpointStatus{
-					Leader:    status.Leader,
-					RaftIndex: status.RaftIndex,
-					RaftTerm:  status.RaftTerm,
-					Version:   status.Version,
+					Leader:           status.Leader,
+					RaftIndex:        status.RaftIndex,
+					RaftAppliedIndex: status.RaftAppliedIndex,
+					RaftTerm:         status.RaftTerm,
+					Version:          status.Version,
+					Errors:           status.Errors,
 				}
 			}
 			mu.Lock()
@@ -191,7 +197,7 @@ func (c *connection) Close() {
 	c.cancel()
 	err := c.Client.Close()
 	if err != nil {
-		slog.Error("failed to close ssh client", "error", err)
+		slog.Error("failed to close etcd client", "error", err)
 	}
 }
 
@@ -323,6 +329,28 @@ func mapTags(m member, status endpointStatus) *map[string]any {
 	return &tags
 }
 
+// mapWarnings reports what the member says about itself and why Ivory could not
+// ask it. The url is named because it is the one the member advertised, so an
+// address Ivory cannot route to reads differently from a member that is down.
+func mapWarnings(m member, status endpointStatus) []string {
+	if status.Err != nil {
+		if len(m.ClientURLs) > 0 {
+			return []string{"member is unreachable at " + m.ClientURLs[0] + ": " + status.Err.Error()}
+		}
+		return []string{"member is unreachable: " + status.Err.Error()}
+	}
+	var warnings []string
+	for _, e := range status.Errors {
+		warnings = append(warnings, "member reports: "+e)
+	}
+	if status.RaftIndex > status.RaftAppliedIndex && status.RaftIndex-status.RaftAppliedIndex > maxApplyGap {
+		warnings = append(warnings, fmt.Sprintf(
+			"%d committed entries are not applied yet, past %d etcd refuses new requests",
+			status.RaftIndex-status.RaftAppliedIndex, maxApplyGap))
+	}
+	return warnings
+}
+
 func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex uint64) keeper.Response {
 	name := m.Name
 	var keeperStatus keeper.Status = keeper.Active
@@ -355,9 +383,7 @@ func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex
 		Tags:           mapTags(m, status),
 		DiscoveredName: &name,
 	}
-	if status.Err != nil {
-		response.Warnings = []string{"member is unreachable: " + status.Err.Error()}
-	}
+	response.Warnings = mapWarnings(m, status)
 
 	if len(m.ClientURLs) > 0 {
 		if parsed, err := url.Parse(m.ClientURLs[0]); err == nil {

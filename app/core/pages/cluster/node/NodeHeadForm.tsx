@@ -36,8 +36,9 @@ export function NodeHeadForm(props: Props) {
     const stateColor = isPaused ? "warning" : KeeperStateOptions[stateStr].color
 
     const isReplica = node.keeper.role === "replica"
-    const lagValue = isReplica ? SizeFormatter.pretty(node.keeper.lag) : "N/A"
-    const lagColor = !isReplica ? "default" : (node.keeper.lag > 100 * 1024 * 1024 ? "error" : (node.keeper.lag > 0 ? "warning" : "success"))
+    const isLagKnown = node.keeper.lag >= 0
+    const lagValue = !isReplica ? "N/A" : (isLagKnown ? SizeFormatter.pretty(node.keeper.lag) : "unknown")
+    const lagColor = !isReplica || !isLagKnown ? "default" : (node.keeper.lag > 100 * 1024 * 1024 ? "error" : (node.keeper.lag > 0 ? "warning" : "success"))
 
     const syncText = isReplica && node.keeper.sync ? "sync" : "async"
     const syncColor = "secondary"

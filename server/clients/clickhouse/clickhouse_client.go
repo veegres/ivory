@@ -60,6 +60,7 @@ func Connect(ctx context.Context, c Config) (driver.Conn, string, error) {
 		return nil, connUrl, err
 	}
 	if err := conn.Ping(ctx); err != nil {
+		_ = conn.Close()
 		return nil, connUrl, err
 	}
 	return conn, connUrl, nil

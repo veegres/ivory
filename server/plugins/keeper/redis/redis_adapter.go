@@ -237,35 +237,69 @@ func trimCR(s string) string {
 	return s
 }
 
-// mapNode builds the Response for the node whose INFO replication section
-// was just read. lastIOSeconds (master_last_io_seconds_ago) is reported as
-// Lag for a replica - unlike patroni's own lag value or postgres' WAL byte
-// diff, it measures time since the replica last heard from its master, since
-// a replica has no cheap way to learn how many bytes it is behind without
-// also querying the master.
+// mapNode builds the Response for the node whose INFO was just read. A node
+// still loading its dataset is starting: it answers INFO and refuses
+// everything else with LOADING.
 func mapNode(host string, port int, fields map[string]string) keeper.Response {
 	role := keeper.Leader
 	var lag int64
 	if fields["role"] == "slave" {
 		role = keeper.Replica
-		if seconds, err := strconv.ParseInt(fields["master_last_io_seconds_ago"], 10, 64); err == nil && seconds > 0 {
-			lag = seconds
-		}
+		lag = mapLag(fields)
+	}
+	state := keeper.StateRunning
+	if fields["loading"] == "1" {
+		state = keeper.StateStarting
 	}
 	var status keeper.Status = keeper.Active
 	key := host + ":" + strconv.Itoa(port)
 	return keeper.Response{
 		Key:                  &key,
 		Status:               &status,
-		State:                keeper.StateRunning,
+		State:                state,
 		Role:                 role,
 		Lag:                  lag,
-		Warnings:             linkWarnings(fields, role),
+		Warnings:             append(linkWarnings(fields, role), persistenceWarnings(fields)...),
 		Tags:                 mapTags(fields, role),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
 	}
+}
+
+// mapLag reports master_last_io_seconds_ago - unlike patroni's own lag value or
+// postgres' WAL byte diff, it measures time since the replica last heard from
+// its master, since a replica has no cheap way to learn how many bytes it is
+// behind without also querying the master. With the link down that is not how
+// far behind the replica is, and redis itself answers -1 for a link that never
+// came up, so both are unknown rather than the 0 they used to read as.
+func mapLag(fields map[string]string) int64 {
+	if link := fields["master_link_status"]; link != "" && link != "up" {
+		return -1
+	}
+	seconds, err := strconv.ParseInt(fields["master_last_io_seconds_ago"], 10, 64)
+	if err != nil || seconds < 0 {
+		return -1
+	}
+	return seconds
+}
+
+// persistenceWarnings reports what INFO says is stopping the node from writing
+// or serving: a failed background save or AOF write - after either redis
+// refuses writes by default until one succeeds - and a full resync from the
+// master, during which a replica serves no fresh data.
+func persistenceWarnings(fields map[string]string) []string {
+	var warnings []string
+	if fields["rdb_last_bgsave_status"] == "err" {
+		warnings = append(warnings, "last background save failed, by default redis refuses writes until one succeeds")
+	}
+	if fields["aof_last_write_status"] == "err" {
+		warnings = append(warnings, "last AOF write failed, redis refuses writes until one succeeds")
+	}
+	if fields["master_sync_in_progress"] == "1" {
+		warnings = append(warnings, "full resync from the master is in progress")
+	}
+	return warnings
 }
 
 // linkWarnings reports a replica whose replication link to its master is not
@@ -279,6 +313,9 @@ func linkWarnings(fields map[string]string, role keeper.Role) []string {
 	link := fields["master_link_status"]
 	if link == "" || link == "up" {
 		return nil
+	}
+	if since := fields["master_link_down_since_seconds"]; since != "" && since != "-1" {
+		return []string{"replication link to the master is " + link + " for " + since + "s"}
 	}
 	return []string{"replication link to the master is " + link}
 }

@@ -23,6 +23,11 @@ type replSetMember struct {
 	// PingMs is the round trip time of the last heartbeat, reported only for
 	// peers - the member describing itself has nothing to ping.
 	PingMs int64 `bson:"pingMs"`
+	// LastHeartbeatMessage is why the answering node's last heartbeat to this
+	// peer failed, empty while heartbeats succeed.
+	LastHeartbeatMessage string `bson:"lastHeartbeatMessage"`
+	// InfoMessage is what a member says it is stuck on, e.g. finding a sync source.
+	InfoMessage string `bson:"infoMessage"`
 	// Self is true only on the entry describing the connection's own node,
 	// used to find "am I currently the primary" without a separate command.
 	Self bool `bson:"self"`

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,9 +17,11 @@ func TestMapNode(t *testing.T) {
 		port         int
 		inRecovery   bool
 		lag          int64
+		stats        nodeStats
 		expectedRole keeper.Role
 		expectedLag  int64
 		expectedKey  string
+		expectedWarn []string
 	}{
 		{
 			name: "primary is leader with zero lag",
@@ -27,14 +30,23 @@ func TestMapNode(t *testing.T) {
 		},
 		{
 			name: "replica keeps lag",
-			host: "db2", port: 5433, inRecovery: true, lag: 456,
+			host: "db2", port: 5433, inRecovery: true, lag: 456, stats: nodeStats{Receiving: true},
 			expectedRole: keeper.Replica, expectedLag: 456, expectedKey: "db2:5433",
+		},
+		{
+			name: "replica without a wal receiver has unknown lag",
+			host: "db3", port: 5434, inRecovery: true, lag: 0,
+			expectedRole: keeper.Replica, expectedLag: -1, expectedKey: "db3:5434",
+			expectedWarn: []string{"standby is not streaming: no WAL receiver is running"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapNode(tt.host, tt.port, tt.inRecovery, tt.lag, nodeStats{})
+			response := mapNode(tt.host, tt.port, tt.inRecovery, tt.lag, tt.stats)
+			if !slices.Equal(response.Warnings, tt.expectedWarn) {
+				t.Errorf("expected warnings %v, got %v", tt.expectedWarn, response.Warnings)
+			}
 			if response.Role != tt.expectedRole {
 				t.Errorf("expected role %v, got %v", tt.expectedRole, response.Role)
 			}

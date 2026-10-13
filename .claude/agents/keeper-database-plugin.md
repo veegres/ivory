@@ -165,7 +165,7 @@ these. Pick by **what is claimed**, not by what sounds closest.
 | Value | Claims | Reached by, in practice |
 |---|---|---|
 | `running` | answered, and serving | patroni `running`/`streaming`/`in archive recovery`; mongo `PRIMARY`/`SECONDARY`/`ARBITER`; a probe that succeeded |
-| `starting` | coming up, not serving yet | patroni `starting`/`creating replica`/`initializing new cluster`; postgres `57P03` "starting up"; mongo `STARTUP`/`STARTUP2`; an etcd member with no client urls yet |
+| `starting` | coming up, not serving yet | patroni `starting`/`creating replica`/`initializing new cluster`; postgres `57P03` "starting up"; mongo `STARTUP`/`STARTUP2`; redis `loading:1`; an etcd member with no client urls yet |
 | `restarting` | deliberately cycling | patroni `restarting`; mongo `RECOVERING`/`ROLLBACK` |
 | `stopping` | shutting down | patroni `stopping`; postgres `57P03` whose message says "shutting down" |
 | `stopped` | down, and the keeper still knows it | patroni `stopped`; mongo `REMOVED` |
@@ -174,7 +174,9 @@ these. Pick by **what is claimed**, not by what sounds closest.
 | `unknown` | nobody looked, or the engine said something we do not recognize | a member read out of a peer's config (with `Lag: -1`); an adapter's `default:` branch for an unmapped engine state |
 
 Only patroni reaches most of these, and that is fine — a plugin uses what its engine can actually distinguish
-(redis and zookeeper only ever emit `running` and `unknown`). What is not fine is reaching for a value whose
+(redis emits `running`, `starting` and `unknown`; zookeeper only `running` — a server that lost its quorum
+still answered, so it is `running` with an `Unknown` role and mntr's "not currently serving requests" as its
+warning). What is not fine is reaching for a value whose
 claim the engine did not make: `failed` because a query errored, `stopping` because a replica went read-only,
 `running` because a TCP connect succeeded.
 
@@ -203,9 +205,36 @@ than one per member.
   "failed to get Keeper response" naming somebody else's outage. Etcd did exactly that until a member's reason
   moved onto its own row.
 - **A best-effort read must not become a health verdict.** If a query that only feeds tags or warnings fails,
-  degrade it to a warning; do not fail the node. Clickhouse is the reference: its two health queries
-  (`system.replicas`, `system.replication_queue`) hard-fail the call, while a failed `queryClusterPeers` is
-  reported through `membershipWarnings` and leaves the node's own state intact. Copy that shape.
+  degrade it to a warning; do not fail the node. Clickhouse is the reference: its one health query
+  (`system.replicas`, with the replication queue as a scalar subquery) hard-fails the call, while a failed
+  `queryClusterPeers` is reported through `membershipWarnings` and leaves the node's own state intact. Copy
+  that shape.
+- **Degrade to a warning, never to silence.** A secondary read that fails and returns `nil` hides that anything
+  was asked: postgres' `listPrimary`/`listSyncStandbys` did exactly that until their errors became
+  `"cannot read replication members: …"` on the node.
+- **One member Ivory cannot address costs that member only.** Patroni's `List` used to fail outright on one
+  member's unparsable `api_url`; that member is now reported by name (which is how discovery finds a configured
+  node with no address, see `mergeKeeperNode`) with the reason as its own warning, and every other member
+  survives.
+- **Pass the engine's own words through.** If the engine says why, quote it; do not paraphrase it into a guessed
+  cause. Mongo's `lastHeartbeatMessage` and `infoMessage`, etcd's `StatusResponse.Errors` (where its alarms
+  live — they ride the `Status` reply already fetched, so no `AlarmList` call), redis' `rdb_last_bgsave_status`/
+  `aof_last_write_status`/`master_sync_in_progress`. A reply the adapter does not recognize is quoted, never
+  explained: zookeeper used to blame its 4lw whitelist for every unexpected `mntr` answer, including the
+  quorum loss it was actually reporting.
+- **Say who saw it, and what was tried.** A failure reported from one node about another names the observer
+  (mongo: `heartbeat from h1:27017 failed: …`) — the same peer may look fine from elsewhere. A failed probe names
+  the address it tried (etcd: `member is unreachable at http://…:2379: …`), so an advertised url Ivory cannot
+  route to reads differently from a member that is down.
+- **A threshold warns only where the engine itself acts on it.** Never pick a number: lag is bytes, seconds or
+  raft entries depending on the plugin, and "big" depends on the workload. Warn where crossing the line changes
+  what the engine does, and read the line from the engine where it is configurable: clickhouse's
+  `absolute_delay` past `getSetting('max_replica_delay_for_distributed_queries')` (distributed queries prefer
+  other replicas); etcd's committed-minus-applied index past 5000 (`maxGapBetweenApplyAndCommitIndex`, after
+  which it refuses requests); redis' failed save (writes refused by default). A per-node count compared
+  against configuration is fine too — zookeeper's leader warns when `zk_synced_followers` is below the voting
+  members `conf` lists, which catches a follower that is down entirely and so missing from the leader's own
+  count.
 
 ### 3. Informativeness — say what you can, skip what you can't
 
@@ -238,7 +267,14 @@ picture — which is worse than a sparse one.
 
 - **`-1` means unknown, and `0` is a claim of being caught up.** Never default to `0`; that is the one value
   that reads as healthy.
-- **A leader reports `0`.** Lag is only meaningful for a replica.
+- **A leader reports `0`**, including where the engine omits the field for it (patroni's leader has no `lag`).
+  Lag is only meaningful for a replica.
+- **A dead link is not `0`.** The usual way to fake caught-up is to measure a replica that is not replicating:
+  a redis replica whose `master_link_status` is not `up`, or whose `master_last_io_seconds_ago` is `-1`; a
+  postgres standby with no WAL receiver, where received equals replayed so the diff reads `0` (`listQuery`
+  checks `EXISTS (SELECT 1 FROM pg_stat_wal_receiver)`, visible to every role); a mongo secondary with no
+  primary in view, or an arbiter that holds no data. All are `-1`. So is a zookeeper follower, always — mntr has
+  no per-follower offset.
 - **The unit is the adapter's own** — patroni's `/cluster` value, postgres' `pg_wal_lsn_diff` in bytes, redis'
   seconds since the last byte from its master, clickhouse's `absolute_delay`, mongo's optime difference in
   seconds. Compare within one plugin, never across. Say which unit in the report.
@@ -263,7 +299,7 @@ picture — which is worse than a sparse one.
 | `Key` | the keeper | The keeper's own identifier for the member, opaque to everyone else. It is what an action refers back to (a switchover names the current leader's key). Never parse or derive anything from it. |
 | `Status` | the keeper | `ACTIVE`/`PAUSED` for the whole keeper's failover management, not for one member. `nil` where the engine has no such notion — do not default it to `ACTIVE` to fill the column. |
 | `PendingRestart` | the keeper | Only where the engine actually tracks a config change awaiting a restart. `false` otherwise; it is not "unknown". |
-| `ScheduledSwitchover` | the keeper | Set only on the member a pending switchover would move the leader *away from*; `nil` on every other member. |
+| `ScheduledSwitchover` | the keeper | Set only on the member a pending switchover would move the leader *away from*; `nil` on every other member. Match that member the way the engine names it — patroni's `from` is a member name, and comparing it to a host meant no schedule ever showed. |
 | `ScheduledRestart` | the keeper | That member's own pending restart schedule; `nil` otherwise. |
 | `Discovered*` | discovery only | Ground truth from the engine, and the witness every drift check depends on. **Never** populated by copying back what arrived on `keeper.Request` — see goal 1. `DiscoveredName` only where the engine has a real member name of its own; an engine that identifies members by `host:port` leaves it nil so the node falls back to its host. |
 
@@ -281,7 +317,11 @@ picture — which is worse than a sparse one.
 - **A fault is a warning, not a tag.** A tag reading `up` on every healthy node carries nothing and buries the
   one case that matters; redis reports a master link that is not `up` through `linkWarnings`. It is not a
   `State` either — see **How `State` is treated in the overview** above.
-- **Weigh what a tag costs.** Count the round trips `List` makes and ask what each one is for. Everything etcd
+- **Weigh what a tag costs.** Count the round trips `List` makes and ask what each one is for. One connection
+  per node per poll — postgres used to open one per query — and reads folded into one query where the engine
+  allows it (clickhouse: the replication queue as a scalar subquery, a setting via `getSetting`). Read a table
+  whole when its rows answer a second question for free: clickhouse reads all of `system.clusters`, so a node
+  missing from the cluster Ivory asked about also names the clusters it *is* in. Everything etcd
   tags rides the `Status` reply `Role`/`State` already need; postgres' ride `listQuery`. Clickhouse's macros
   cost a fourth query every poll to re-read operator config that never changes between polls — dropped. Free
   information clears a low bar; information worth its own request clears a high one, and static config never
@@ -434,6 +474,11 @@ and is not checked by anything**, so a plugin that compiles cleanly can still be
 - **Keep mapping and parsing pure.** `mapNode`, `mapTags`, `parseInfo` and friends take values and return
   values, so they are testable with no live connection. Guard clauses (`ErrNotSupported`, credential and
   host/port validation) are tested directly against the adapter, never mocked.
+- **A shipped system query is a diagnostic first.** Ship the query that answers "why is this broken" from the
+  engine's own view: zookeeper's `mntr`/`srvr`/`stat`/`ruok`/`conf` (answered over `FourLetterCommand`, no znode
+  session), clickhouse's `system.zookeeper_connection`, etcd's `endpoint health`, postgres'
+  `pg_stat_wal_receiver`. Prefer `SELECT *` on a system view whose columns move between versions. Seeding is by
+  name, once: a new template reaches existing installs, an edited one does not.
 - **A shipped system query must be runnable by that plugin's own console parser.** This is not theoretical: a
   `system.profile.find(...)` query shipped for mongo was unrunnable because the command parser split on the
   first dot rather than the last. For any engine with a hand-written parser (`etcd`, `zookeeper`, `mongo`),
@@ -532,11 +577,11 @@ that exists.
 |---|---|---|
 | `State` | | which of the eight it can reach, and **observed or assumed?** |
 | `Role` | | and where it declines to guess one |
-| `Lag` | | **name the unit** — it is not comparable across plugins; and when it is `-1` |
+| `Lag` | | **name the unit** — it is not comparable across plugins; when it is `-1`; can a dead link read `0`? |
 | `Sync` | | or "engine has no concept" |
 | `Status` | | `ACTIVE`/`PAUSED`, or `nil` where the engine has no such notion |
 | `Tags` | | list the keys, and say which reply each rides — a tag that costs its own request must justify it |
-| `Warnings` | | what the engine can see that Ivory cannot |
+| `Warnings` | | what the engine can see that Ivory cannot — quoted or paraphrased, who saw it, which thresholds and whose |
 | `Discovered*` | | which are populated, and confirm none echoes `keeper.Request` |
 | `ReplicationModel` | `SingleLeader` \| `MultiLeader` | and why |
 
