@@ -1,12 +1,16 @@
 package cluster
 
 import (
+	"ivory/core/service/cert"
 	"ivory/core/utils"
 	"ivory/features/node"
+	"ivory/plugins/database"
+	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin/binding"
+	"github.com/google/uuid"
 )
 
 // TestWithNodeNamesDisambiguatesSharedHosts covers a cluster stored before
@@ -247,5 +251,68 @@ func assertBinding(t *testing.T, request any, want string) {
 	}
 	if err == nil || !strings.Contains(err.Error(), want) {
 		t.Fatalf("expected an error containing %q, got %v", want, err)
+	}
+}
+
+// TestOptionsNodeConnections holds the same tls rule discovery applies -
+// certificates only on the side whose flag is on - and that a half the node
+// cannot be reached on is left out rather than filled with a guess.
+func TestOptionsNodeConnections(t *testing.T) {
+	port := func(value int) *int { return &value }
+	keeperVault, dbVault, sshVault, ca := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	options := Options{
+		Plugins: Plugins{Keeper: keeper.PATRONI_POSTGRES, Database: database.POSTGRES},
+		Tls:     Tls{Keeper: true},
+		Certs:   cert.Certs{ClientCAId: &ca},
+		Vaults:  Vaults{KeeperId: &keeperVault, DatabaseId: &dbVault, SshKeyId: &sshVault},
+	}
+	full := NodeConfig{Name: "pg1", Host: "10.0.0.1", SshPort: port(22), KeeperPort: port(8008), DbPort: port(5432)}
+
+	t.Run("every half of a fully configured node", func(t *testing.T) {
+		c := options.nodeConnections("prod", full)
+		if c.Keeper == nil || c.Keeper.Host != "10.0.0.1" || c.Keeper.Port != 8008 || c.Keeper.Cluster != "prod" ||
+			c.Keeper.Plugin != keeper.PATRONI_POSTGRES || c.Keeper.VaultId != &keeperVault {
+			t.Fatalf("keeper = %+v", c.Keeper)
+		}
+		if c.Keeper.Certs == nil || c.Keeper.Certs.ClientCAId != &ca {
+			t.Errorf("keeper tls is on, so its certs should travel: %+v", c.Keeper.Certs)
+		}
+		if c.Platform == nil || c.Platform.Port != 22 || c.Platform.VaultId != sshVault || c.Platform.Platform != node.DefaultPlatform {
+			t.Errorf("platform = %+v", c.Platform)
+		}
+		if c.Database == nil || c.Database.Db.Port != 5432 || c.Database.Db.Plugin != database.POSTGRES || c.Database.VaultId != &dbVault {
+			t.Fatalf("database = %+v", c.Database)
+		}
+		if c.Database.Certs != nil {
+			t.Errorf("database tls is off, so no certs should travel: %+v", c.Database.Certs)
+		}
+	})
+
+	t.Run("a missing port or ssh vault leaves that half out", func(t *testing.T) {
+		bare := options
+		bare.Vaults.SshKeyId = nil
+		c := bare.nodeConnections("prod", NodeConfig{Name: "pg1", Host: "10.0.0.1", SshPort: port(22)})
+		if c.Keeper != nil || c.Platform != nil || c.Database != nil {
+			t.Errorf("expected nothing resolvable, got %+v", c)
+		}
+	})
+}
+
+func TestRouterOverviewRequestBinding(t *testing.T) {
+	tests := []struct {
+		name    string
+		request RouterOverviewRequest
+		want    string
+	}{
+		{name: "a name alone asks every node", request: RouterOverviewRequest{Name: "prod"}},
+		{name: "a host and port ask one endpoint", request: RouterOverviewRequest{Name: "prod", Host: "10.0.0.1", Port: 8008}},
+		{name: "a host without its port", request: RouterOverviewRequest{Name: "prod", Host: "10.0.0.1"}, want: "'RouterOverviewRequest.Port' Error:Field validation for 'Port' failed on the 'required_with' tag"},
+		{name: "a port without its host", request: RouterOverviewRequest{Name: "prod", Port: 8008}, want: "'RouterOverviewRequest.Host' Error:Field validation for 'Host' failed on the 'required_with' tag"},
+		{name: "a port out of range", request: RouterOverviewRequest{Name: "prod", Host: "10.0.0.1", Port: 70000}, want: "'RouterOverviewRequest.Port' Error:Field validation for 'Port' failed on the 'max' tag"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assertBinding(t, &test.request, test.want)
+		})
 	}
 }

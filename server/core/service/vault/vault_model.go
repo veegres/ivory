@@ -26,6 +26,11 @@ func (t VaultType) Valid() bool {
 
 type VaultMap map[string]Vault
 
+// RouterListRequest is the tool's twin of the http route's ?type= query.
+type RouterListRequest struct {
+	Type *VaultType `json:"type,omitempty" binding:"omitempty,valid" jsonschema:"only vaults of this type: 0 database password, 1 keeper password, 2 ssh password, 3 ssh key"`
+}
+
 // SPECIFIC (SERVER)
 
 type RepositoryVault struct {

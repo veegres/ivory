@@ -3,8 +3,8 @@ import {ReactNode} from "react"
 import {Certs} from "../../cert/api/CertType"
 import {DeployCredentials} from "../../deployment/api/DeploymentType"
 import {Feature} from "../../Feature"
-import {KeeperOneResponse, KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
-import {DbPlugin} from "../../query/api/QueryType"
+import {KeeperOneRequest, KeeperOneResponse, KeeperPlugin, PlatformPlugin, PlatformVaultConnection} from "../../node/api/NodeType"
+import {Connection as QueryConnection, DbPlugin} from "../../query/api/QueryType"
 
 // COMMON (WEB AND SERVER)
 
@@ -61,6 +61,13 @@ export interface Overview {
     // NOTE: a feature absent from the map is not a plugin capability at all
     // and should be treated as unrestricted, only `false` means unsupported
     features: Partial<Record<Feature, boolean>>,
+}
+
+// NOTE: a half is missing when the node has no port or vault to reach it with
+export interface NodeConnections {
+    keeper?: KeeperOneRequest,
+    platform?: PlatformVaultConnection,
+    database?: QueryConnection,
 }
 
 export interface DeployCommonConfig {

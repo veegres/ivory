@@ -3,7 +3,10 @@ package engine
 import (
 	"context"
 	"fmt"
+	"ivory/core"
 	coreConfig "ivory/core/config"
+	"ivory/core/service/cert"
+	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features"
 	"ivory/features/permission"
@@ -48,19 +51,25 @@ comparing the keeper's own answer against the stored configuration. Those
 warnings are the fastest route to a diagnosis.
 
 Tools name a cluster and a node by the names in its configuration, never by
-host and port. Keeper member keys are different: switchover and failover
+host and port. The keeper, system, container and query tools take a node's
+connection instead: ivory_cluster_node_connections resolves one node into the
+keeper, platform and database inputs those tools take, ready to pass as they
+are. Keeper member keys are different: switchover and failover
 identify the leader and the candidate by the keeper's own member key, which
-the overview reports as each node's keeper.key.
+the overview reports as each node's keeper.key. Keeper, system and container
+tools answer with {response, error}; keeper tools add the keeper's own status,
+where 200 is done and 202 is accepted or scheduled and still to happen. A
+failure keeps whatever was produced beside its error.
 
 Only the tools this user holds permission for are listed.`
 
 // NewMcpServer builds the MCP engine, the way NewHttpServer builds the http
 // one. It returns the handler engine_http.go mounts, since MCP rides the same
 // listener rather than opening one of its own.
-func NewMcpServer(env *coreConfig.Environment, mr *features.McpRouter) gin.HandlerFunc {
+func NewMcpServer(env *coreConfig.Environment, cr *core.McpRouter, mr *features.McpRouter) gin.HandlerFunc {
 	handler := mcpsdk.NewStreamableHTTPHandler(
 		func(request *http.Request) *mcpsdk.Server {
-			return newMcpServer(request.Context(), mr, env.Version.Label)
+			return newMcpServer(request.Context(), cr, mr, env.Version.Label)
 		},
 		&mcpsdk.StreamableHTTPOptions{
 			// Stateless rebuilds the server per request, which is what keeps
@@ -87,7 +96,7 @@ func NewMcpServer(env *coreConfig.Environment, mr *features.McpRouter) gin.Handl
 
 // newMcpServer is the per-caller equivalent of the route table: it declares
 // every tool group, and each group drops the tools this caller may not call.
-func newMcpServer(ctx context.Context, mr *features.McpRouter, version string) *mcpsdk.Server {
+func newMcpServer(ctx context.Context, cr *core.McpRouter, mr *features.McpRouter, version string) *mcpsdk.Server {
 	utils.RegisterValidators()
 	r := &mcpRegistrar{
 		server: mcpsdk.NewServer(
@@ -103,6 +112,8 @@ func newMcpServer(ctx context.Context, mr *features.McpRouter, version string) *
 	tagTools(r, mr)
 	queryTools(r, mr)
 	deploymentTools(r, mr)
+	vaultTools(r, cr)
+	certTools(r, cr)
 
 	return r.server
 }
@@ -135,9 +146,18 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Description: "Live health of every node in a cluster: role, state, replication lag, sync status, pending restarts, " +
 			"keeper member key, plus the warnings Ivory derives by comparing what the keeper reports against the stored " +
 			"configuration (a missing leader, two leaders, a node the keeper does not know, a node belonging to a different " +
-			"cluster). Read this before diagnosing anything.",
+			"cluster). Read this before diagnosing anything. Pass a keeper host and port to see only what that one endpoint reports.",
 		Annotations: readOnly,
 	}, mr.Cluster.ClusterOverview)
+
+	addTool(r, coreConfig.ViewClusterItem, &mcpsdk.Tool{
+		Name: "ivory_cluster_node_connections",
+		Description: "Resolve one node of a cluster into the inputs the node-level tools take: keeper (for ivory_keeper_*), " +
+			"platform (the connection for ivory_system_* and ivory_container_*) and database (the connection for ivory_query_*), " +
+			"each filled in from the cluster's plugins, vaults and TLS certificates. A half is null when the node has no port " +
+			"or vault for it. Pass them on unchanged instead of copying hosts, ports and vault ids by hand.",
+		Annotations: readOnly,
+	}, mr.Cluster.ClusterNodeConnections)
 
 	addTool(r, coreConfig.ManageClusterCreate, &mcpsdk.Tool{
 		Name:        "ivory_cluster_create",
@@ -184,8 +204,9 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 	// keeper
 	addTool(r, coreConfig.ViewNodeKeeperOverview, &mcpsdk.Tool{
-		Name:        "ivory_keeper_node_list",
-		Description: "Ask one node's keeper what it knows about the cluster's members. ivory_cluster_overview is usually the better read: it unions every node's answer and adds Ivory's own warnings.",
+		Name: "ivory_keeper_node_list",
+		Description: "Ask one node's keeper what it knows about the cluster's members. ivory_cluster_overview is usually the better read: it unions every node's answer and adds Ivory's own warnings. " +
+			"A keeper that answers and fails at once (a database still starting up) reports both: the members and the error.",
 		Annotations: readOnly,
 	}, mr.Node.KeeperNodeList)
 
@@ -280,7 +301,7 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 
 	addTool(r, coreConfig.ViewNodeSystem, &mcpsdk.Tool{
 		Name:        "ivory_system_logs",
-		Description: "Read the tail of a file on the node's host over ssh.",
+		Description: "Read the tail of a file on the node's host over ssh. path is the file's absolute path on that host.",
 		Annotations: readOnly,
 	}, mr.Node.SystemLogs)
 
@@ -299,7 +320,7 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 
 	addTool(r, coreConfig.ViewNodePlatformContainer, &mcpsdk.Tool{
 		Name:        "ivory_container_logs",
-		Description: "The tail of one container's output. This is where a container that failed to start says why.",
+		Description: "The tail of one container's output. This is where a container that failed to start says why. path is the container's name, as ivory_container_list reports it.",
 		Annotations: readOnly,
 	}, mr.Node.ContainerLogs)
 
@@ -349,8 +370,9 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 	}, mr.Node.ContainerExec)
 
 	addTool(r, coreConfig.ManageNodePlatformContainer, &mcpsdk.Tool{
-		Name:        "ivory_container_keeper_deploy",
-		Description: "Deploy one node of a cluster: run its command on its host, then its post-scripts. Use ivory_cluster_deploy for a whole new cluster.",
+		Name: "ivory_container_keeper_deploy",
+		Description: "Deploy one node of a cluster: run its command on its host, then its post-scripts. Use ivory_cluster_deploy for a whole new cluster. " +
+			"Returns the logs and whether the post-scripts ran too: complete false means the node is up but not initialized.",
 		Annotations: destructive,
 	}, mr.Node.KeeperDeploy)
 }
@@ -485,6 +507,24 @@ func deploymentTools(r *mcpRegistrar, mr *features.McpRouter) {
 	}, mr.Deployment.TemplateDelete)
 }
 
+func vaultTools(r *mcpRegistrar, cr *core.McpRouter) {
+	addTool(r, coreConfig.ViewVaultList, &mcpsdk.Tool{
+		Name: "ivory_vault_list",
+		Description: "The stored credentials, keyed by the vault id that clusters and the other tools name, with each one's " +
+			"type and username. Secrets are always masked. Use it to check that a vault id a cluster points at exists and " +
+			"holds the kind of credential that side needs.",
+		Annotations: readOnly,
+	}, cr.Vault.VaultList)
+}
+
+func certTools(r *mcpRegistrar, cr *core.McpRouter) {
+	addTool(r, coreConfig.ViewCertList, &mcpsdk.Tool{
+		Name:        "ivory_cert_list",
+		Description: "The registered TLS certificates, keyed by the id clusters name in their certs, with each one's type and file path on Ivory's host.",
+		Annotations: readOnly,
+	}, cr.Cert.CertList)
+}
+
 // SUPPORT
 //
 // Everything below serves the table above: how a caller reaches it, how a tool
@@ -588,6 +628,8 @@ var mcpTypeSchemas = map[reflect.Type]*jsonschema.Schema{
 	reflect.TypeFor[database.SystemChartType]():       mcpEnum("string", database.SystemChartTypes),
 	reflect.TypeFor[database.SystemRequestCategory](): mcpEnum("integer", []database.SystemRequestCategory{database.BLOAT, database.ACTIVITY, database.REPLICATION, database.STATISTIC, database.OTHER}),
 	reflect.TypeFor[database.SystemRequestVariety]():  mcpEnum("integer", []database.SystemRequestVariety{database.DatabaseSensitive, database.MasterOnly, database.ReplicaRecommended}),
+	reflect.TypeFor[vault.VaultType]():                mcpEnum("integer", []vault.VaultType{vault.DATABASE_PASSWORD, vault.KEEPER_PASSWORD, vault.SSH_PASSWORD, vault.SSH_KEY}),
+	reflect.TypeFor[cert.CertType]():                  mcpEnum("integer", []cert.CertType{cert.CLIENT_CA, cert.CLIENT_CERT, cert.CLIENT_KEY}),
 }
 
 func mcpEnum[T any](schemaType string, values []T) *jsonschema.Schema {

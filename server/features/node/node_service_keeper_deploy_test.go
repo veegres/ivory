@@ -2,6 +2,8 @@ package node
 
 import (
 	"errors"
+	"ivory/clients/console"
+	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/clickhouse"
@@ -207,7 +209,7 @@ func TestService_KeeperDeployJudgesTheRequestOnly(t *testing.T) {
 
 	for _, plugin := range []KeeperPlugin{keeper.PATRONI_POSTGRES, keeper.NATIVE_ETCD} {
 		t.Run(string(plugin), func(t *testing.T) {
-			_, err := s.KeeperDeploy(KeeperDeployRequest{
+			_, _, err := s.KeeperDeploy(KeeperDeployRequest{
 				Plugin:     plugin,
 				Name:       "db1",
 				Command:    "docker run -d image",
@@ -220,7 +222,7 @@ func TestService_KeeperDeployJudgesTheRequestOnly(t *testing.T) {
 	}
 
 	t.Run("unknown plugin", func(t *testing.T) {
-		_, err := s.KeeperDeploy(KeeperDeployRequest{Plugin: "unknown", Name: "db1", Command: "docker run -d redis:7"})
+		_, _, err := s.KeeperDeploy(KeeperDeployRequest{Plugin: "unknown", Name: "db1", Command: "docker run -d redis:7"})
 		if err == nil {
 			t.Fatal("expected error for unknown plugin, got nil")
 		}
@@ -252,5 +254,72 @@ func TestService_KeeperPostDeploySkipsEmptyScript(t *testing.T) {
 	}
 	if err != nil {
 		t.Fatalf("expected no error without a post script, got %v", err)
+	}
+}
+
+type failingCommand struct{ recordingCommand }
+
+func (c failingCommand) Execute() ([]string, error) {
+	*c.calls = append(*c.calls, c.name)
+	return []string{c.name}, errors.New(c.name + " failed")
+}
+
+type deployPlatform struct {
+	recordingPlatform
+	postFails bool
+}
+
+func (p *deployPlatform) UpContainer(platform.Connection, []string) console.Command {
+	return recordingCommand{name: "run", calls: &p.calls}
+}
+
+func (p *deployPlatform) ExecContainer(platform.Connection, string, []string) console.Command {
+	if p.postFails {
+		return failingCommand{recordingCommand{name: "exec", calls: &p.calls}}
+	}
+	return recordingCommand{name: "exec", calls: &p.calls}
+}
+
+// TestService_KeeperDeployReportsComplete pins the flag PostNodeKeeperDeploy
+// turns into 200 or 207: a node whose post-script failed is up and not
+// initialized, which is neither an error nor a success.
+func TestService_KeeperDeployReportsComplete(t *testing.T) {
+	tests := []struct {
+		name        string
+		postScripts []string
+		postFails   bool
+		complete    bool
+	}{
+		{name: "no post-script", complete: true},
+		{name: "post-script ran", postScripts: []string{"etcdctl endpoint health"}, complete: true},
+		{name: "post-script failed", postScripts: []string{"etcdctl endpoint health"}, postFails: true, complete: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, vaultService := createTestNodeService(t)
+			key, _, errCreate := vaultService.Create(vault.Vault{Type: vault.SSH_KEY, Username: "root"})
+			if errCreate != nil {
+				t.Fatalf("failed to seed ssh key vault: %v", errCreate)
+			}
+			s.platformRegistry = stubPlatformRegistry{plugin: &deployPlatform{postFails: test.postFails}}
+
+			logs, complete, err := s.KeeperDeploy(KeeperDeployRequest{
+				Plugin:      "fake",
+				Name:        "etcd1",
+				KeeperPort:  2379,
+				DbPort:      2379,
+				Command:     "-d --name {{name}} etcd",
+				PostScripts: test.postScripts,
+				Connection:  PlatformVaultConnection{Host: "host1", Port: 22, VaultId: *key},
+				Vaults:      Vaults{SshKeyId: *key},
+			})
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+			if complete != test.complete {
+				t.Errorf("complete = %v, want %v (logs %v)", complete, test.complete, logs)
+			}
+		})
 	}
 }

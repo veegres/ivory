@@ -216,7 +216,30 @@ type PlatformActionRequest struct {
 	Name       string                  `json:"name" form:"name" binding:"required,notblank"`
 }
 
-type RouterPlatformResponse = []string
+// RouterKeeperResponse is the tool twin of the http envelope a keeper route
+// answers with. Status stands in for the http status: it is the keeper's own,
+// which is what tells an operation done (200) from one accepted or scheduled
+// (202). Response is kept beside Error, since a keeper can answer and fail at
+// once (postgres starting up).
+type RouterKeeperResponse[T any] struct {
+	Status   int    `json:"status"`
+	Response T      `json:"response"`
+	Error    string `json:"error,omitempty"`
+}
+
+// RouterPlatformResponse is the tool twin of the http envelope a platform
+// route answers with; a failed command's output stays beside its error.
+type RouterPlatformResponse[T any] struct {
+	Response T      `json:"response"`
+	Error    string `json:"error,omitempty"`
+}
+
+// RouterKeeperDeployResponse is false on Complete when the node came up but
+// its post-scripts did not all run.
+type RouterKeeperDeployResponse struct {
+	Logs     []string `json:"logs"`
+	Complete bool     `json:"complete"`
+}
 
 type Process struct {
 	Pid         int     `json:"pid"`

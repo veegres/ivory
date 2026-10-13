@@ -36,12 +36,20 @@ func (r *McpRouter) ClusterGet(ctx context.Context, req *mcp.CallToolRequest, in
 	return nil, &c, nil
 }
 
-func (r *McpRouter) ClusterOverview(ctx context.Context, req *mcp.CallToolRequest, in RouterNameRequest) (*mcp.CallToolResult, *Overview, error) {
-	overview, err := r.clusterService.Overview(in.Name, "", 0)
+func (r *McpRouter) ClusterOverview(ctx context.Context, req *mcp.CallToolRequest, in RouterOverviewRequest) (*mcp.CallToolResult, *Overview, error) {
+	overview, err := r.clusterService.Overview(in.Name, in.Host, in.Port)
 	if err != nil {
 		return nil, nil, err
 	}
 	return nil, overview, nil
+}
+
+func (r *McpRouter) ClusterNodeConnections(ctx context.Context, req *mcp.CallToolRequest, in RouterNodeRequest) (*mcp.CallToolResult, *NodeConnections, error) {
+	connections, err := r.clusterService.NodeConnections(in.Name, in.Node)
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, connections, nil
 }
 
 func (r *McpRouter) ClusterCreate(ctx context.Context, req *mcp.CallToolRequest, in Request) (*mcp.CallToolResult, *Response, error) {

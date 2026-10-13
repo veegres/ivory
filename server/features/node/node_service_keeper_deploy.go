@@ -63,21 +63,22 @@ func (s *Service) KeeperPostDeploy(r KeeperDeployRequest) ([]string, error) {
 }
 
 // KeeperDeploy is the self-contained single-node deploy action: run the
-// command, then its own post-script.
-func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
+// command, then its own post-script. It reports complete only when both ran.
+func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, bool, error) {
 	if err := s.ValidateKeeperPlugin(r.Plugin); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	logs, err := s.KeeperDeployUp(r)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	postLogs, postErr := s.KeeperPostDeploy(r)
 	logs = append(logs, postLogs...)
 	if postErr != nil {
 		logs = append(logs, "the node is running, but its post-deploy initialization did not complete")
+		return logs, false, nil
 	}
-	return logs, nil
+	return logs, true, nil
 }
 
 func (s *Service) getValues(r KeeperDeployRequest) keeper.Values {

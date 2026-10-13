@@ -3,7 +3,7 @@ import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
 import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
-import {AutoRequest, Cluster, DeployRequest, Overview} from "./ClusterType"
+import {AutoRequest, Cluster, DeployRequest, NodeConnections, Overview} from "./ClusterType"
 
 export const ClusterApi = {
     list: {
@@ -24,6 +24,13 @@ export const ClusterApi = {
         keyCommon: (name?: string) => name ? ["cluster", "overview", name] : ["cluster", "overview"],
         fn: (name: string, host?: string, port?: string) => api
             .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
+            .then((response) => response.data.response),
+    },
+    nodeConnections: {
+        key: (name: string, node: string) => ["cluster", "node", "connections", name, node],
+        keyCommon: (name: string) => ["cluster", "node", "connections", name],
+        fn: (name: string, node: string) => api
+            .get<R<NodeConnections>>(`/cluster/${name}/node/${node}/connections`)
             .then((response) => response.data.response),
     },
     create: {
