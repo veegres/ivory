@@ -86,7 +86,9 @@ node, and say so in the audit rather than enumerating.
 
 **A member nothing contacted reports `keeper.StateUnknown` and a `-1` lag.** It claims a topology and no
 liveness. `addKeeperResponsesToMap` treats exactly that as hearsay and lets the node's own answer replace it
-whichever order the two arrive in, so a peer's account can never mask what a node said about itself. Never
+whichever order the two arrive in, so a peer's account can never mask what a node said about itself. Only one
+response per member is kept, but every response's warnings are merged into it (de-duplicated), so a fault a peer
+observes about a member — name the observer in it — survives whichever answer wins. Never
 invent `running` for such a peer, and never borrow `StateUnreachable`, which asserts that something tried and
 failed.
 

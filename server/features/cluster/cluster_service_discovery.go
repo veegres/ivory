@@ -6,6 +6,7 @@ import (
 	"ivory/core/service/cert"
 	"ivory/features/node"
 	"ivory/features/query"
+	"slices"
 	"sync"
 )
 
@@ -465,17 +466,42 @@ func (s *Service) getDiscoveredCluster(n Node) (string, bool) {
 	return *n.Keeper.DiscoveredCluster, true
 }
 
+// addKeeperResponsesToMap keeps one response per member, yet every response's
+// warnings: a fault one node sees about a peer (a failed mongo heartbeat, an
+// etcd probe) lives only in that node's answer, whichever answer is kept.
 func (s *Service) addKeeperResponsesToMap(nodeMap map[string]node.KeeperOneResponse, nodes []node.KeeperOneResponse) {
 	for _, n := range nodes {
 		nodeKey, ok := s.getResponseKey(n)
 		if !ok {
 			continue
 		}
-		if existing, exists := nodeMap[nodeKey]; exists && !s.isHearsay(existing) {
+		existing, exists := nodeMap[nodeKey]
+		if !exists {
+			nodeMap[nodeKey] = n
 			continue
 		}
-		nodeMap[nodeKey] = n
+		kept, dropped := existing, n
+		if s.isHearsay(existing) {
+			kept, dropped = n, existing
+		}
+		kept.Warnings = s.mergeWarnings(kept.Warnings, dropped.Warnings)
+		nodeMap[nodeKey] = kept
 	}
+}
+
+// mergeWarnings returns a new slice, so a response shared elsewhere is never
+// changed through its backing array; identical text is kept once.
+func (s *Service) mergeWarnings(kept []string, other []string) []string {
+	if len(other) == 0 {
+		return kept
+	}
+	merged := slices.Clone(kept)
+	for _, w := range other {
+		if !slices.Contains(merged, w) {
+			merged = append(merged, w)
+		}
+	}
+	return merged
 }
 
 // isHearsay reports whether a response is another node's account of a member
