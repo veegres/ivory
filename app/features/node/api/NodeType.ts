@@ -193,6 +193,19 @@ export interface KeeperDeployRequest {
     vaults: DeployVaults,
 }
 
+// NOTE: skipped means not attempted, because something before it failed
+export type DeployResult = "done" | "failed" | "skipped"
+
+export interface DeploySteps {
+    deploy: DeployResult,
+    initialize: DeployResult,
+}
+
+export interface KeeperDeployResponse {
+    logs: string[],
+    steps: DeploySteps,
+}
+
 export interface PlatformLogsRequest {
     connection: PlatformVaultConnection,
     path: string,

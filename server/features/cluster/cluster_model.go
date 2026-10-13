@@ -176,13 +176,12 @@ type RouterDeployRequest struct {
 	Options  Options             `json:"options" binding:"required" jsonschema:"keeper and database plugins, TLS flags, certificates, tags, and the vault ids holding the ssh key and the keeper/database credentials"`
 }
 
-// RouterDeployResponse is its own type because Deploy answers two things at once: what
-// happened, and whether all of it worked. Complete is every node up and every
-// post-script run; a false here with no error is a partial deploy, and the
-// cluster is registered with all of its nodes either way.
-type RouterDeployResponse struct {
-	Logs     []string `json:"logs"`
-	Complete bool     `json:"complete"`
+// DeployResponse reports each node's steps, keyed by node name. Getting one
+// back at all means the cluster was registered with every node, whatever
+// their steps say.
+type DeployResponse struct {
+	Logs  []string                    `json:"logs"`
+	Nodes map[string]node.DeploySteps `json:"nodes"`
 }
 
 func (in RouterDeployRequest) toDeployRequest() DeployRequest {
@@ -196,6 +195,15 @@ func (in RouterDeployRequest) toDeployRequest() DeployRequest {
 }
 
 // SPECIFIC (SERVER)
+
+func (r DeployResponse) done() bool {
+	for _, steps := range r.Nodes {
+		if !steps.Done() {
+			return false
+		}
+	}
+	return true
+}
 
 func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {
 	// NOTE: a keeper that names its members by endpoint rather than by name

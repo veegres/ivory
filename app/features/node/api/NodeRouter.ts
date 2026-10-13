@@ -2,6 +2,7 @@ import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
 import {
     KeeperDeployRequest,
+    KeeperDeployResponse,
     KeeperOneRequest,
     KeeperOneResponse,
     PlatformActionRequest,
@@ -145,7 +146,7 @@ export const NodeApi = {
         keeper: {
             deploy: {
                 key: () => ["node", "platform", "container", "keeper", "deploy"],
-                fn: (request: KeeperDeployRequest) => api.post<R<string[]>>("/node/platform/container/keeper/deploy", request)
+                fn: (request: KeeperDeployRequest) => api.post<R<KeeperDeployResponse>>("/node/platform/container/keeper/deploy", request)
                     .then((response) => response.data.response),
             },
         },

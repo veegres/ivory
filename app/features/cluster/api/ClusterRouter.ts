@@ -3,7 +3,7 @@ import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
 import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
-import {AutoRequest, Cluster, DeployRequest, NodeConnections, Overview} from "./ClusterType"
+import {AutoRequest, Cluster, DeployRequest, DeployResponse, NodeConnections, Overview} from "./ClusterType"
 
 export const ClusterApi = {
     list: {
@@ -50,7 +50,7 @@ export const ClusterApi = {
     },
     deploy: {
         key: () => ["cluster", "deploy"],
-        fn: (req: DeployRequest) => api.post<R<string[]>>("/cluster/deploy", req)
+        fn: (req: DeployRequest) => api.post<R<DeployResponse>>("/cluster/deploy", req)
             .then((response) => response.data.response),
     },
     fix: {

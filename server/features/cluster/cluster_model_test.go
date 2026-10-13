@@ -316,3 +316,23 @@ func TestRouterOverviewRequestBinding(t *testing.T) {
 		})
 	}
 }
+
+func TestDeployResponseDone(t *testing.T) {
+	done := node.DeploySteps{Deploy: node.DeployResultDone, Initialize: node.DeployResultDone}
+	tests := []struct {
+		name  string
+		nodes map[string]node.DeploySteps
+		want  bool
+	}{
+		{name: "every step of every node done", nodes: map[string]node.DeploySteps{"a": done, "b": done}, want: true},
+		{name: "one node not initialized", nodes: map[string]node.DeploySteps{"a": done, "b": {Deploy: node.DeployResultDone, Initialize: node.DeployResultFailed}}, want: false},
+		{name: "one node not deployed", nodes: map[string]node.DeploySteps{"a": done, "b": {Deploy: node.DeployResultFailed, Initialize: node.DeployResultSkipped}}, want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := (DeployResponse{Nodes: test.nodes}).done(); got != test.want {
+				t.Errorf("done = %v, want %v", got, test.want)
+			}
+		})
+	}
+}

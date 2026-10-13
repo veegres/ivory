@@ -159,20 +159,19 @@ func (r *HttpRouter) PostClusterDeploy(context *gin.Context) {
 		return
 	}
 
-	response, complete, errRes := r.clusterService.Deploy(request)
+	response, errRes := r.clusterService.Deploy(request)
 	if errRes != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errRes.Error()})
 		return
 	}
 
-	// NOTE: a deploy that started every node and initialized them is the only
-	// one that answers 200. Where a node or its post-script failed the logs are
-	// still the whole report, so the body is unchanged and the status is what
+	// NOTE: only a deploy whose every step is done answers 200. Anything else
+	// is still the whole report, so the body is the same and the status is what
 	// says not to read it as a success - an error is reserved for what Ivory
-	// itself rejected, and a container the operator's own command killed is not
-	// that.
+	// itself rejected, and a container the operator's own command killed is
+	// not that.
 	status := http.StatusOK
-	if !complete {
+	if !response.done() {
 		status = http.StatusMultiStatus
 	}
 	context.JSON(status, gin.H{"response": response})

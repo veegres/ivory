@@ -15,6 +15,7 @@ import (
 	"ivory/plugins/keeper/zookeeper"
 	"ivory/plugins/platform"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -124,10 +125,10 @@ func TestService_getValues(t *testing.T) {
 	})
 }
 
-func TestService_KeeperDeployUpRejectsUnknownVariables(t *testing.T) {
+func TestService_KeeperDeployRunRejectsUnknownVariables(t *testing.T) {
 	s := newDeployTestService()
 
-	_, err := s.KeeperDeployUp(KeeperDeployRequest{
+	_, _, err := s.KeeperDeployRun(KeeperDeployRequest{
 		Name:       "db1",
 		KeeperPort: 2181,
 		DbPort:     2181,
@@ -142,18 +143,18 @@ func TestService_KeeperDeployUpRejectsUnknownVariables(t *testing.T) {
 	}
 }
 
-func TestService_KeeperDeployUpRequiresHost(t *testing.T) {
+func TestService_KeeperDeployRunRequiresHost(t *testing.T) {
 	s := newDeployTestService()
 
-	_, err := s.KeeperDeployUp(KeeperDeployRequest{Name: "db1", Command: "docker run -d redis:7"})
+	_, _, err := s.KeeperDeployRun(KeeperDeployRequest{Name: "db1", Command: "docker run -d redis:7"})
 	if err == nil || !strings.Contains(err.Error(), "host") {
 		t.Fatalf("expected a missing-host error, got %v", err)
 	}
 }
 
-// TestService_KeeperDeployUpRequiresPorts covers the deploy contract that
+// TestService_KeeperDeployRunRequiresPorts covers the deploy contract that
 // replaced the port magic: nothing falls back to a database port or to ssh 22.
-func TestService_KeeperDeployUpRequiresPorts(t *testing.T) {
+func TestService_KeeperDeployRunRequiresPorts(t *testing.T) {
 	s := newDeployTestService()
 	valid := KeeperDeployRequest{
 		Name:       "db1",
@@ -172,18 +173,22 @@ func TestService_KeeperDeployUpRequiresPorts(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := valid
 			unset(&r)
-			if _, err := s.KeeperDeployUp(r); !errors.Is(err, ErrKeeperDeployPortsRequired) {
+			_, result, err := s.KeeperDeployRun(r)
+			if !errors.Is(err, ErrKeeperDeployPortsRequired) {
 				t.Fatalf("expected ErrKeeperDeployPortsRequired, got %v", err)
+			}
+			if result != DeployResultFailed {
+				t.Fatalf("expected a refused deploy to report its step failed, got %q", result)
 			}
 		})
 	}
 }
 
-// TestService_KeeperDeployUpRequiresACommand covers the other end of the
+// TestService_KeeperDeployRunRequiresACommand covers the other end of the
 // template editor's blank-command check: the verb belongs to Ivory, so a blank
 // command runs a bare "docker run" and the deploy reports docker's usage text
 // instead of what was actually missing.
-func TestService_KeeperDeployUpRequiresACommand(t *testing.T) {
+func TestService_KeeperDeployRunRequiresACommand(t *testing.T) {
 	s := newDeployTestService()
 	r := KeeperDeployRequest{
 		Name:       "db1",
@@ -193,7 +198,7 @@ func TestService_KeeperDeployUpRequiresACommand(t *testing.T) {
 		Connection: PlatformVaultConnection{Host: "db1", Port: 22},
 	}
 
-	if _, err := s.KeeperDeployUp(r); !errors.Is(err, ErrKeeperDeployCommandRequired) {
+	if _, _, err := s.KeeperDeployRun(r); !errors.Is(err, ErrKeeperDeployCommandRequired) {
 		t.Fatalf("expected ErrKeeperDeployCommandRequired, got %v", err)
 	}
 }
@@ -209,7 +214,7 @@ func TestService_KeeperDeployJudgesTheRequestOnly(t *testing.T) {
 
 	for _, plugin := range []KeeperPlugin{keeper.PATRONI_POSTGRES, keeper.NATIVE_ETCD} {
 		t.Run(string(plugin), func(t *testing.T) {
-			_, _, err := s.KeeperDeploy(KeeperDeployRequest{
+			_, err := s.KeeperDeploy(KeeperDeployRequest{
 				Plugin:     plugin,
 				Name:       "db1",
 				Command:    "docker run -d image",
@@ -222,17 +227,17 @@ func TestService_KeeperDeployJudgesTheRequestOnly(t *testing.T) {
 	}
 
 	t.Run("unknown plugin", func(t *testing.T) {
-		_, _, err := s.KeeperDeploy(KeeperDeployRequest{Plugin: "unknown", Name: "db1", Command: "docker run -d redis:7"})
+		_, err := s.KeeperDeploy(KeeperDeployRequest{Plugin: "unknown", Name: "db1", Command: "docker run -d redis:7"})
 		if err == nil {
 			t.Fatal("expected error for unknown plugin, got nil")
 		}
 	})
 }
 
-func TestService_KeeperPostDeployRejectsUnknownVariables(t *testing.T) {
+func TestService_KeeperDeployInitializeRejectsUnknownVariables(t *testing.T) {
 	s := newDeployTestService()
 
-	logs, err := s.KeeperPostDeploy(KeeperDeployRequest{
+	logs, result := s.KeeperDeployInitialize(KeeperDeployRequest{
 		Name:        "db1",
 		PostScripts: []string{`etcdctl user add {{dbUesr}}`},
 		Connection:  PlatformVaultConnection{Host: "db1", Port: 22},
@@ -240,20 +245,20 @@ func TestService_KeeperPostDeployRejectsUnknownVariables(t *testing.T) {
 	if len(logs) != 1 || !strings.Contains(logs[0], "{{dbUesr}}") {
 		t.Fatalf("expected one log line naming the unknown variable, got %v", logs)
 	}
-	if err == nil || !strings.Contains(err.Error(), "{{dbUesr}}") {
-		t.Fatalf("expected the failure to be returned as an error naming the variable, got %v", err)
+	if result != DeployResultFailed {
+		t.Fatalf("expected the step to fail, got %q", result)
 	}
 }
 
-func TestService_KeeperPostDeploySkipsEmptyScript(t *testing.T) {
+func TestService_KeeperDeployInitializeSkipsEmptyScript(t *testing.T) {
 	s := newDeployTestService()
 
-	logs, err := s.KeeperPostDeploy(KeeperDeployRequest{Name: "db1"})
-	if logs != nil {
+	logs, result := s.KeeperDeployInitialize(KeeperDeployRequest{Name: "db1"})
+	if len(logs) != 0 {
 		t.Fatalf("expected no logs without a post script, got %v", logs)
 	}
-	if err != nil {
-		t.Fatalf("expected no error without a post script, got %v", err)
+	if result != DeployResultDone {
+		t.Fatalf("expected a node with nothing to initialize to be done, got %q", result)
 	}
 }
 
@@ -266,10 +271,14 @@ func (c failingCommand) Execute() ([]string, error) {
 
 type deployPlatform struct {
 	recordingPlatform
+	upFails   bool
 	postFails bool
 }
 
 func (p *deployPlatform) UpContainer(platform.Connection, []string) console.Command {
+	if p.upFails {
+		return failingCommand{recordingCommand{name: "run", calls: &p.calls}}
+	}
 	return recordingCommand{name: "run", calls: &p.calls}
 }
 
@@ -280,19 +289,21 @@ func (p *deployPlatform) ExecContainer(platform.Connection, string, []string) co
 	return recordingCommand{name: "exec", calls: &p.calls}
 }
 
-// TestService_KeeperDeployReportsComplete pins the flag PostNodeKeeperDeploy
-// turns into 200 or 207: a node whose post-script failed is up and not
-// initialized, which is neither an error nor a success.
-func TestService_KeeperDeployReportsComplete(t *testing.T) {
+// TestService_KeeperDeployReportsEachStep pins what PostNodeKeeperDeploy
+// turns into 200 or 207: a command that ran and failed is a failed step with
+// its output kept, not an error - only what Ivory refuses up front is one.
+func TestService_KeeperDeployReportsEachStep(t *testing.T) {
 	tests := []struct {
 		name        string
 		postScripts []string
+		upFails     bool
 		postFails   bool
-		complete    bool
+		steps       DeploySteps
 	}{
-		{name: "no post-script", complete: true},
-		{name: "post-script ran", postScripts: []string{"etcdctl endpoint health"}, complete: true},
-		{name: "post-script failed", postScripts: []string{"etcdctl endpoint health"}, postFails: true, complete: false},
+		{name: "no post-script", steps: DeploySteps{Deploy: DeployResultDone, Initialize: DeployResultDone}},
+		{name: "post-script ran", postScripts: []string{"etcdctl endpoint health"}, steps: DeploySteps{Deploy: DeployResultDone, Initialize: DeployResultDone}},
+		{name: "post-script failed", postScripts: []string{"etcdctl endpoint health"}, postFails: true, steps: DeploySteps{Deploy: DeployResultDone, Initialize: DeployResultFailed}},
+		{name: "deploy command failed", postScripts: []string{"etcdctl endpoint health"}, upFails: true, steps: DeploySteps{Deploy: DeployResultFailed, Initialize: DeployResultSkipped}},
 	}
 
 	for _, test := range tests {
@@ -302,9 +313,10 @@ func TestService_KeeperDeployReportsComplete(t *testing.T) {
 			if errCreate != nil {
 				t.Fatalf("failed to seed ssh key vault: %v", errCreate)
 			}
-			s.platformRegistry = stubPlatformRegistry{plugin: &deployPlatform{postFails: test.postFails}}
+			recorder := &deployPlatform{upFails: test.upFails, postFails: test.postFails}
+			s.platformRegistry = stubPlatformRegistry{plugin: recorder}
 
-			logs, complete, err := s.KeeperDeploy(KeeperDeployRequest{
+			response, err := s.KeeperDeploy(KeeperDeployRequest{
 				Plugin:      "fake",
 				Name:        "etcd1",
 				KeeperPort:  2379,
@@ -317,8 +329,14 @@ func TestService_KeeperDeployReportsComplete(t *testing.T) {
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
-			if complete != test.complete {
-				t.Errorf("complete = %v, want %v (logs %v)", complete, test.complete, logs)
+			if response.Steps != test.steps {
+				t.Errorf("steps = %+v, want %+v (logs %v)", response.Steps, test.steps, response.Logs)
+			}
+			if test.upFails && !slices.Contains(response.Logs, "run") {
+				t.Errorf("expected the failed command's own output to be kept, got %v", response.Logs)
+			}
+			if test.upFails && slices.Contains(recorder.calls, "exec") {
+				t.Errorf("expected no post-script after a failed deploy, got %v", recorder.calls)
 			}
 		})
 	}

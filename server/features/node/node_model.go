@@ -234,11 +234,30 @@ type RouterPlatformResponse[T any] struct {
 	Error    string `json:"error,omitempty"`
 }
 
-// RouterKeeperDeployResponse is false on Complete when the node came up but
-// its post-scripts did not all run.
-type RouterKeeperDeployResponse struct {
-	Logs     []string `json:"logs"`
-	Complete bool     `json:"complete"`
+// DeployResult is how one step of a node's deployment ended.
+type DeployResult string
+
+const (
+	DeployResultDone    DeployResult = "done"
+	DeployResultFailed  DeployResult = "failed"
+	DeployResultSkipped DeployResult = "skipped" // not attempted, because something before it failed
+)
+
+// DeploySteps reports each step of one node's deployment on its own. A node
+// with no post-scripts has its Initialize done once it runs, since nothing was
+// asked of it.
+type DeploySteps struct {
+	Deploy     DeployResult `json:"deploy"`
+	Initialize DeployResult `json:"initialize"`
+}
+
+func (s DeploySteps) Done() bool {
+	return s.Deploy == DeployResultDone && s.Initialize == DeployResultDone
+}
+
+type KeeperDeployResponse struct {
+	Logs  []string    `json:"logs"`
+	Steps DeploySteps `json:"steps"`
 }
 
 type Process struct {

@@ -75,7 +75,7 @@ export function useRouterClusterDeploy(onSuccess?: (data: string[]) => void) {
         mutationFn: ClusterApi.deploy.fn,
         mutationKey: ClusterApi.deploy.key(),
         successKeys: [ClusterApi.list.keyCommon(), TagApi.list.key()],
-        onSuccess: (_, data) => onSuccess ? onSuccess(data) : void 0,
+        onSuccess: (_, data) => onSuccess ? onSuccess(data.logs) : void 0,
     })
 }
 

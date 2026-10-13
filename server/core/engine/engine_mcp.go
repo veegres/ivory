@@ -194,7 +194,8 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Description: "Deploy a whole cluster: run each node's command on its host over ssh, then its post-scripts. The cluster " +
 			"record is written before anything starts and is kept whether or not every node came up, so a failed container stays " +
 			"on its host with its logs intact - that is deliberate, it is the only evidence of what went wrong. Credentials are " +
-			"named as vault ids, never typed here. Returns the logs and whether every node and post-script succeeded.",
+			"named as vault ids, never typed here. Returns the logs and, per node, how its deploy and initialize (post-script) steps " +
+			"ended: done, failed, or skipped because something before it failed.",
 		Annotations: destructive,
 	}, mr.Cluster.ClusterDeploy)
 }
@@ -372,7 +373,8 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 	addTool(r, coreConfig.ManageNodePlatformContainer, &mcpsdk.Tool{
 		Name: "ivory_container_keeper_deploy",
 		Description: "Deploy one node of a cluster: run its command on its host, then its post-scripts. Use ivory_cluster_deploy for a whole new cluster. " +
-			"Returns the logs and whether the post-scripts ran too: complete false means the node is up but not initialized.",
+			"Returns the logs and how its deploy and initialize (post-script) steps ended: done, failed, or skipped because something before it failed. " +
+			"A command that ran and failed is reported this way with its output, not as an error.",
 		Annotations: destructive,
 	}, mr.Node.KeeperDeploy)
 }

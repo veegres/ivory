@@ -103,7 +103,7 @@ func (s *Service) validateWritableCluster(cluster Request) error {
 	if cluster.Name == "" {
 		return ErrClusterNameEmpty
 	}
-	if cluster.Nodes == nil || len(cluster.Nodes) == 0 {
+	if len(cluster.Nodes) == 0 {
 		return ErrClusterKeepersEmpty
 	}
 	if err := s.validateNodeNames(cluster.Nodes); err != nil {

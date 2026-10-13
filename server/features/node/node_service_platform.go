@@ -13,6 +13,7 @@ import (
 )
 
 var ErrPlatformRequired = errors.New("platform is required")
+var ErrCommandFailed = errors.New("command failed")
 
 func (s *Service) PlatformSystemCopyId(r PlatformCopyIdRequest) (string, error) {
 	if r.Platform == "" {
@@ -113,7 +114,11 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(plugin.UpContainer(conn, command))
+	logs, err := s.executeCommand(plugin.UpContainer(conn, command))
+	if err != nil {
+		return logs, fmt.Errorf("%w: %w", ErrCommandFailed, err)
+	}
+	return logs, nil
 }
 
 func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error) {
