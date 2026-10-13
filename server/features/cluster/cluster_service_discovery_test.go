@@ -919,3 +919,75 @@ func TestService_markUnansweredNodes_LeavesAnUnmentionedNode(t *testing.T) {
 		t.Errorf("expected no entry to be invented, got %v", nodeMap)
 	}
 }
+
+func TestService_Check(t *testing.T) {
+	adapter := &fakeKeeperAdapter{listErr: errors.New("connection refused")}
+	s := createTestServiceWithNode(t, adapter)
+
+	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "check.db"), 0600, nil)
+	if errOpen != nil {
+		t.Fatalf("failed to open test database: %v", errOpen)
+	}
+	t.Cleanup(func() { db.Close() })
+	databaseRegistry := utils.NewRegistry[database.PluginType, database.Adapter]()
+	var applications []string
+	databaseRegistry.Register("fake-db", fakeDbAdapter{applications: &applications})
+	s.queryService = query.NewService(
+		query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), nil),
+		databaseRegistry, nil, nil, "ivory",
+	)
+
+	keeperPort, dbPort := 8008, 5432
+	seed := func(name string, database query.DbPlugin, nodes ...NodeConfig) {
+		t.Helper()
+		if _, err := s.clusterRepository.Create(Request{Name: name, Nodes: nodes, Options: Options{Plugins: Plugins{Keeper: "fake", Database: database}}}); err != nil {
+			t.Fatalf("failed to seed cluster: %v", err)
+		}
+	}
+	seed("c1", "fake-db",
+		NodeConfig{Name: "n1", Host: "host1", KeeperPort: &keeperPort, DbPort: &dbPort},
+		NodeConfig{Name: "n2", Host: "host2", KeeperPort: &keeperPort},
+	)
+	seed("c2", "unknown-db", NodeConfig{Name: "n1", Host: "host1", DbPort: &dbPort})
+
+	t.Run("every node reports each connection it has, keyed by name", func(t *testing.T) {
+		checks, err := s.Check("c1", "abcdef123456")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(checks) != 2 {
+			t.Fatalf("expected both nodes, got %v", checks)
+		}
+		for name, check := range checks {
+			last := check.Keeper[len(check.Keeper)-1]
+			if last.Stage != utils.CheckStageConnect || last.Result != utils.CheckResultFailed || last.Message != "connection refused" {
+				t.Errorf("%s keeper = %+v, want a failed keeper step naming the refusal", name, check.Keeper)
+			}
+			if check.Platform != nil {
+				t.Errorf("%s has no ssh port or vault, so no platform check, got %+v", name, check.Platform)
+			}
+		}
+		database := checks["n1"].Database
+		if len(database) == 0 || database[len(database)-1].Result != utils.CheckResultDone {
+			t.Errorf("n1 database = %+v, want its database reached", database)
+		}
+		if checks["n2"].Database != nil {
+			t.Errorf("n2 has no database port, so no database check, got %+v", checks["n2"].Database)
+		}
+		if len(applications) != 1 || applications[0] != s.queryService.GetApplicationName("abcdef123456") {
+			t.Errorf("expected the database to be reached as the caller's own session, got %v", applications)
+		}
+	})
+
+	t.Run("a plugin Ivory does not know refuses the whole check", func(t *testing.T) {
+		if _, err := s.Check("c2", "abcdef123456"); err == nil {
+			t.Fatalf("expected an error for an unregistered database plugin")
+		}
+	})
+
+	t.Run("an unknown cluster", func(t *testing.T) {
+		if _, err := s.Check("unknown", "abcdef123456"); err == nil {
+			t.Fatalf("expected an error for an unknown cluster")
+		}
+	})
+}

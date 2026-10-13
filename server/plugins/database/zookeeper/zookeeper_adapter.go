@@ -18,7 +18,7 @@ var _ database.Adapter = (*Adapter)(nil)
 // verb set (ls/get/create/set/delete/exists) hand-parsed against zookeeper's
 // hierarchical znode tree, the closest equivalent to etcd's flat key space.
 // It has no databases/schemas/tables hierarchy beyond that znode tree and no
-// per-query sessions, so SchemaInquirer's methods and SessionManager's
+// per-query sessions, so SchemaInquirer's methods and ConnectionManager's
 // Cancel/Terminate/ActiveQueries are not supported.
 type Adapter struct{}
 

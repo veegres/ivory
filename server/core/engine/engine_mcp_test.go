@@ -410,17 +410,25 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 	}{
 		{"cluster", "ivory_cluster_list", map[string]any{}},
 		{"cluster/overview", "ivory_cluster_overview", map[string]any{"name": "prod", "host": "10.0.0.1", "port": 8008}},
-		{"cluster/node", "ivory_cluster_node_connections", map[string]any{"name": "prod", "node": "pg1"}},
+		{"cluster", "ivory_cluster_connections", map[string]any{"name": "prod"}},
+		{"cluster", "ivory_cluster_check", map[string]any{"name": "prod"}},
 		{"vault", "ivory_vault_list", map[string]any{"type": 3}},
 		{"cert", "ivory_cert_list", map[string]any{}},
 		{"tag", "ivory_tag_list", map[string]any{}},
 		{"node/keeper", "ivory_keeper_node_list", map[string]any{
 			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni_postgres",
 		}},
+		{"node/keeper", "ivory_node_keeper_check", map[string]any{
+			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni_postgres",
+		}},
+		{"node/platform", "ivory_node_platform_check", connection},
 		{"node/system", "ivory_system_info", connection},
 		{"node/container", "ivory_container_list", connection},
 		{"node/container", "ivory_container_inspect", map[string]any{"connection": connection, "name": "pg1"}},
 		{"query/crud", "ivory_query_list", map[string]any{}},
+		{"query/db", "ivory_query_check", map[string]any{
+			"db": map[string]any{"plugin": "postgres", "host": "10.0.0.1", "port": 5432},
+		}},
 		{"query/db", "ivory_query_databases", map[string]any{
 			"name": "",
 			"connection": map[string]any{
@@ -541,5 +549,20 @@ func TestMcpCrossOriginProtection(t *testing.T) {
 				t.Errorf("status = 403, want the request to reach the mcp handler")
 			}
 		})
+	}
+}
+
+// TestMcpSession pins what an MCP caller's session is for: the database keeps
+// seven characters of it as application_name, so two names sharing a prefix
+// must still differ there, and the same name must always land on the same one.
+func TestMcpSession(t *testing.T) {
+	if got := mcpSession(""); got != "mcp" {
+		t.Errorf("a caller with no name: got %q, want mcp", got)
+	}
+	if mcpSession("alice") != mcpSession("alice") {
+		t.Errorf("expected one caller to keep one session")
+	}
+	if mcpSession("alice.smith")[:7] == mcpSession("alice.jones")[:7] {
+		t.Errorf("expected names sharing a prefix to differ within the first seven characters")
 	}
 }

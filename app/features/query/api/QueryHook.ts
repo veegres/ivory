@@ -72,6 +72,14 @@ export function useRouterQueryChart(request: ChartRequest, enabled: boolean = fa
     })
 }
 
+export function useRouterQueryCheck(connection: Connection, enabled: boolean = true) {
+    return useQuery({
+        queryKey: QueryApi.check.key(connection),
+        queryFn: () => QueryApi.check.fn(connection),
+        retry: false, enabled, refetchOnWindowFocus: false,
+    })
+}
+
 export function useRouterQueryDatabase(connection: Connection, params: any, enabled: boolean = true) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({

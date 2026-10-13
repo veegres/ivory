@@ -3,7 +3,7 @@ import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
 import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
-import {AutoRequest, Cluster, DeployRequest, DeployResponse, NodeConnections, Overview} from "./ClusterType"
+import {AutoRequest, Cluster, ClusterCheck, ClusterConnections, DeployRequest, DeployResponse, Overview} from "./ClusterType"
 
 export const ClusterApi = {
     list: {
@@ -23,14 +23,19 @@ export const ClusterApi = {
         // NOTE: omit name to match every active overview query regardless of cluster
         keyCommon: (name?: string) => name ? ["cluster", "overview", name] : ["cluster", "overview"],
         fn: (name: string, host?: string, port?: string) => api
-            .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
+            .get<R<Overview>>(`/cluster/${name}/overview`, {params: {host, port}})
             .then((response) => response.data.response),
     },
-    nodeConnections: {
-        key: (name: string, node: string) => ["cluster", "node", "connections", name, node],
-        keyCommon: (name: string) => ["cluster", "node", "connections", name],
-        fn: (name: string, node: string) => api
-            .get<R<NodeConnections>>(`/cluster/${name}/node/${node}/connections`)
+    connections: {
+        key: (name: string) => ["cluster", "connections", name],
+        fn: (name: string) => api
+            .get<R<ClusterConnections>>(`/cluster/${name}/connections`)
+            .then((response) => response.data.response),
+    },
+    check: {
+        key: (name: string) => ["cluster", "check", name],
+        fn: (name: string) => api
+            .get<R<ClusterCheck>>(`/cluster/${name}/check`)
             .then((response) => response.data.response),
     },
     create: {
@@ -55,7 +60,7 @@ export const ClusterApi = {
     },
     fix: {
         key: () => ["cluster", "fix"],
-        fn: (name: string) => api.post<R<Cluster>>(`/cluster/fix/${name}`)
+        fn: (name: string) => api.post<R<Cluster>>(`/cluster/${name}/fix`)
             .then((response) => response.data.response),
     },
     delete: {

@@ -1,8 +1,8 @@
 package query
 
 import (
+	coreConfig "ivory/core/config"
 	"ivory/features/config"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,13 +23,8 @@ func NewHttpRouter(
 }
 
 func (r *HttpRouter) withQueryContext(ctx *gin.Context, con Connection, handle func(Context)) {
-	session, errSession := ctx.Cookie("session")
-	if errSession != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": errSession.Error()})
-		return
-	}
 	handle(Context{
 		Connection: con,
-		Session:    session,
+		Session:    ctx.GetString(coreConfig.AuthContextKey.Session),
 	})
 }

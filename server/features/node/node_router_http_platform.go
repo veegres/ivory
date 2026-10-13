@@ -57,3 +57,7 @@ func (r *HttpRouter) GetPlatformContainerMetrics(context *gin.Context) {
 func (r *HttpRouter) GetPlatformContainerInspect(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformContainerInspect)
 }
+
+func (r *HttpRouter) GetPlatformCheck(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformCheck)
+}

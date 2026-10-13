@@ -83,7 +83,7 @@ auth is on (step 1), also send `Authorization: Bearer <token>` on every request 
 | list templates | `GET /api/deployment/template` — single-host ids end `…-single-host` |
 | deploy a cluster | `POST /api/cluster/deploy` |
 | deploy one node | `POST /api/node/platform/container/keeper/deploy` |
-| read the UI's view | `GET /api/cluster/overview/:name` |
+| read the UI's view | `GET /api/cluster/:name/overview` |
 | exercise the engine | `POST /api/query/execute/console` |
 | teardown / retry | `POST …/container/stop`, `…/down`, `…/restart`; `DELETE /api/cluster/:name` |
 
@@ -117,7 +117,7 @@ Build the `POST /api/cluster/deploy` body the way the deploy form does:
 
 A cluster is not verified because three containers are `Up`. For each plugin, get all three:
 
-1. **Ivory's own view** — `GET /api/cluster/overview/:name`: every node `ACTIVE`/`running`, a leader elected
+1. **Ivory's own view** — `GET /api/cluster/:name/overview`: every node `ACTIVE`/`running`, a leader elected
    where the engine has leadership, and an empty `warnings` array.
 2. **The engine's native view** — `etcdctl endpoint status`, `rs.status()`, `INFO replication`,
    `pg_stat_replication`, patroni's `/cluster`, a ZooKeeper 4-letter word, a per-replica ClickHouse query.

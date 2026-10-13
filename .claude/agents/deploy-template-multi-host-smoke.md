@@ -112,7 +112,7 @@ auth is on (step 1), also send `Authorization: Bearer <token>` on every request 
 | list templates | `GET /api/deployment/template` — multi-host ids end `…-multi-host` |
 | deploy a cluster | `POST /api/cluster/deploy` |
 | deploy one node | `POST /api/node/platform/container/keeper/deploy` |
-| read the UI's view | `GET /api/cluster/overview/:name` |
+| read the UI's view | `GET /api/cluster/:name/overview` |
 | exercise the engine | `POST /api/query/execute/console` |
 | teardown / retry | `POST …/container/stop`, `…/down`, `…/restart`; `DELETE /api/cluster/:name` |
 
@@ -157,7 +157,7 @@ failed Patroni attempt leaves keys under `/service/<cluster>/` that block a retr
 
 A cluster is not verified because three containers are `Up`. For each plugin, get all three:
 
-1. **Ivory's own view** — `GET /api/cluster/overview/:name`: **exactly three rows**, every node
+1. **Ivory's own view** — `GET /api/cluster/:name/overview`: **exactly three rows**, every node
    `ACTIVE`/`running`, a leader elected where the engine has leadership, and an empty `warnings` array.
    Three hosts is the case where the row count should be honest — each node has its own address, so the
    single-host collision that shows five rows for three postgres nodes cannot happen here. More or fewer than

@@ -3,8 +3,8 @@ import {ReactNode} from "react"
 import {Certs} from "../../cert/api/CertType"
 import {DeployCredentials} from "../../deployment/api/DeploymentType"
 import {Feature} from "../../Feature"
-import {DeploySteps, KeeperOneRequest, KeeperOneResponse, KeeperPlugin, PlatformPlugin, PlatformVaultConnection} from "../../node/api/NodeType"
-import {Connection as QueryConnection, DbPlugin} from "../../query/api/QueryType"
+import {DeploySteps, KeeperOneRequest, KeeperOneResponse, KeeperPlugin, NodeCheckStep, PlatformPlugin, PlatformVaultConnection} from "../../node/api/NodeType"
+import {Connection as QueryConnection, DbPlugin, QueryCheckStep} from "../../query/api/QueryType"
 
 // COMMON (WEB AND SERVER)
 
@@ -68,6 +68,21 @@ export interface NodeConnections {
     keeper?: KeeperOneRequest,
     platform?: PlatformVaultConnection,
     database?: QueryConnection,
+}
+
+export interface ClusterConnections {
+    [node: string]: NodeConnections,
+}
+
+// NOTE: a list is missing where NodeConnections has no connection for it
+export interface ClusterNodeCheck {
+    keeper?: NodeCheckStep[],
+    platform?: NodeCheckStep[],
+    database?: QueryCheckStep[],
+}
+
+export interface ClusterCheck {
+    [node: string]: ClusterNodeCheck,
 }
 
 export interface DeployCommonConfig {

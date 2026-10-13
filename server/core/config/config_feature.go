@@ -15,6 +15,7 @@ const (
 	ViewClusterList     Feature = "view.cluster.list"
 	ViewClusterItem     Feature = "view.cluster.item"
 	ViewClusterOverview Feature = "view.cluster.overview"
+	ViewClusterCheck    Feature = "view.cluster.check"
 	ManageClusterCreate Feature = "manage.cluster.create"
 	ManageClusterUpdate Feature = "manage.cluster.update"
 	ManageClusterDelete Feature = "manage.cluster.delete"
@@ -25,6 +26,7 @@ const (
 	// Node features
 	ViewNodeKeeperOverview       Feature = "view.node.keeper.overview"
 	ViewNodeKeeperConfig         Feature = "view.node.keeper.config"
+	ViewNodeKeeperCheck          Feature = "view.node.keeper.check"
 	ManageNodeKeeperConfigUpdate Feature = "manage.node.keeper.config.update"
 	ManageNodeKeeperSwitchover   Feature = "manage.node.keeper.switchover"
 	ManageNodeKeeperReinitialize Feature = "manage.node.keeper.reinitialize"
@@ -36,6 +38,7 @@ const (
 	ManageNodeKeeperFailover           Feature = "manage.node.keeper.failover"
 	ManageNodeKeeperActivation         Feature = "manage.node.keeper.activation"
 
+	ViewNodePlatformCheck       Feature = "view.node.platform.check"
 	ViewNodeSystem              Feature = "view.node.system"
 	ManageNodeSystem            Feature = "manage.node.system"
 	ViewNodePlatformContainer   Feature = "view.node.platform.container"
@@ -54,6 +57,7 @@ const (
 
 	ViewQueryDbInfo        Feature = "view.query.db.info"
 	ViewQueryDbChart       Feature = "view.query.db.chart"
+	ViewQueryDbCheck       Feature = "view.query.db.check"
 	ManageQueryDbTemplate  Feature = "manage.query.db.template"
 	ManageQueryDbConsole   Feature = "manage.query.db.console"
 	ManageQueryDbCancel    Feature = "manage.query.db.cancel"
@@ -134,12 +138,15 @@ var All = []Feature{
 	ViewClusterList,
 	ViewClusterItem,
 	ViewClusterOverview,
+	ViewClusterCheck,
 	ManageClusterCreate,
 	ManageClusterUpdate,
 	ManageClusterDelete,
 	ViewTagList,
 	ViewNodeKeeperOverview,
 	ViewNodeKeeperConfig,
+	ViewNodeKeeperCheck,
+	ViewNodePlatformCheck,
 	ViewNodeSystem,
 	ManageNodeSystem,
 	ManageNodeKeeperConfigUpdate,
@@ -163,6 +170,7 @@ var All = []Feature{
 	ManageQueryCrudDelete,
 	ViewQueryDbInfo,
 	ViewQueryDbChart,
+	ViewQueryDbCheck,
 	ManageQueryDbTemplate,
 	ManageQueryDbConsole,
 	ManageQueryDbCancel,

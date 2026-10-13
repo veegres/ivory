@@ -1,8 +1,11 @@
 package clickhouse
 
-import "ivory/plugins/database"
+import (
+	"ivory/clients/clickhouse"
+	"ivory/plugins/database"
+)
 
-// SessionManager is not supported: unlike postgres' integer backend pid,
+// Cancel/Terminate/ActiveQueries are not supported: unlike postgres' integer backend pid,
 // clickhouse identifies a running query by its string query_id
 // (system.processes.query_id, matched by KILL QUERY WHERE query_id = ...) -
 // there is no integer identifier to satisfy this interface's pid parameter,
@@ -18,4 +21,13 @@ func (a *Adapter) Terminate(ctx database.Context, pid int) error {
 
 func (a *Adapter) ActiveQueries(ctx database.Context, options *database.QueryOptions) (*database.QueryFields, error) {
 	return nil, ErrNotSupported
+}
+
+func (a *Adapter) Ping(ctx database.Context) error {
+	conn, _, err := a.connect(ctx)
+	if err != nil {
+		return err
+	}
+	clickhouse.Close(conn)
+	return nil
 }

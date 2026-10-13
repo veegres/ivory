@@ -21,7 +21,7 @@ var _ database.Adapter = (*Adapter)(nil)
 // whatever comes back (see redis_adapter_query.go's formatReply). It has no
 // databases/schemas/tables hierarchy beyond numeric DB indices (see
 // ListDatabases) and no per-query sessions, so SchemaInquirer's
-// schema/table methods and SessionManager's Cancel are not supported.
+// schema/table methods and ConnectionManager's Cancel are not supported.
 type Adapter struct{}
 
 func NewAdapter() *Adapter {

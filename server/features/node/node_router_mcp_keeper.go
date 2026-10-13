@@ -2,12 +2,17 @@ package node
 
 import (
 	"context"
+	"ivory/core/utils"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func (r *McpRouter) KeeperNodeList(ctx context.Context, req *mcp.CallToolRequest, in KeeperOneRequest) (*mcp.CallToolResult, RouterKeeperResponse[[]KeeperOneResponse], error) {
 	return handleKeeperRequest(in, r.service.KeeperNodeList)
+}
+
+func (r *McpRouter) KeeperCheck(ctx context.Context, req *mcp.CallToolRequest, in KeeperOneRequest) (*mcp.CallToolResult, RouterPlatformResponse[[]utils.CheckStep], error) {
+	return handlePlatformRequest(in, r.service.KeeperCheck)
 }
 
 func (r *McpRouter) KeeperConfigGet(ctx context.Context, req *mcp.CallToolRequest, in KeeperOneRequest) (*mcp.CallToolResult, RouterKeeperResponse[any], error) {

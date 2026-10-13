@@ -5,6 +5,7 @@ export enum Feature {
     ViewClusterList = "view.cluster.list",
     ViewClusterItem = "view.cluster.item", // NOTE: we do not use this api method in UI
     ViewClusterOverview = "view.cluster.overview",
+    ViewClusterCheck = "view.cluster.check", // NOTE: we do not use this api method in UI
     ManageClusterCreate = "manage.cluster.create",
     ManageClusterUpdate = "manage.cluster.update",
     ManageClusterDelete = "manage.cluster.delete",
@@ -15,6 +16,7 @@ export enum Feature {
     // Node features
     ViewNodeKeeperOverview = "view.node.keeper.overview", // NOTE: we do not use this api method in UI
     ViewNodeKeeperConfig = "view.node.keeper.config",
+    ViewNodeKeeperCheck = "view.node.keeper.check", // NOTE: we do not use this api method in UI
     ManageNodeKeeperConfigUpdate = "manage.node.keeper.config.update",
     ManageNodeKeeperSwitchover = "manage.node.keeper.switchover",
     ManageNodeKeeperSwitchoverSchedule = "manage.node.keeper.switchover.schedule",
@@ -25,6 +27,7 @@ export enum Feature {
     ManageNodeKeeperFailover = "manage.node.keeper.failover",
     ManageNodeKeeperActivation = "manage.node.keeper.activation",
 
+    ViewNodePlatformCheck = "view.node.platform.check", // NOTE: we do not use this api method in UI
     ViewNodeSystem = "view.node.system",
     ManageNodeSystem = "manage.node.system", // NOTE: we do not use this api method in UI
     ManageNodePlatformContainer = "manage.node.platform.container",
@@ -44,6 +47,7 @@ export enum Feature {
 
     ViewQueryDbInfo = "view.query.db.info",
     ViewQueryDbChart = "view.query.db.chart",
+    ViewQueryDbCheck = "view.query.db.check", // NOTE: we do not use this api method in UI
     ManageQueryDbTemplate = "manage.query.db.template",
     ManageQueryDbConsole = "manage.query.db.console",
     ManageQueryDbCancel = "manage.query.db.cancel",

@@ -1,7 +1,10 @@
 package query
 
 import (
+	"errors"
 	"ivory/core/service/cert"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/plugins/database"
 	"testing"
 
@@ -275,6 +278,106 @@ func TestServiceMapContextCerts(t *testing.T) {
 		_, _, err := env.service.getDatabaseAdapter(Context{Connection: Connection{Db: DbConfig{Plugin: database.POSTGRES}, Certs: &cert.Certs{ClientCAId: &badId}}})
 		if err == nil {
 			t.Fatalf("expected an error for an unknown ca cert")
+		}
+	})
+}
+
+func TestServiceCheck(t *testing.T) {
+	var pinged *database.Context
+	adapter := &fakeDatabaseAdapter{}
+	env := createTestQueryService(t, adapter)
+	key, _, errVault := env.vaultService.Create(vault.Vault{Type: vault.DATABASE_PASSWORD, Username: "postgres", Secret: "secret"})
+	if errVault != nil {
+		t.Fatalf("failed to seed vault: %v", errVault)
+	}
+	unknown := uuid.New()
+	db := DbConfig{Plugin: database.POSTGRES, Host: "10.0.0.1", Port: 5432}
+
+	tests := []struct {
+		name       string
+		connection Connection
+		pingErr    error
+		expected   []utils.CheckStep
+	}{
+		{
+			name:       "nothing to resolve still reaches the database",
+			connection: Connection{Db: db},
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultSkipped, Message: "no vault is configured"},
+				{Stage: utils.CheckStageCert, Result: utils.CheckResultSkipped, Message: "tls is off"},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultDone},
+			},
+		},
+		{
+			name:       "a vault that cannot be read stops before the database",
+			connection: Connection{Db: db, VaultId: &unknown},
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultFailed},
+				{Stage: utils.CheckStageCert, Result: utils.CheckResultSkipped, Message: "tls is off"},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultSkipped, Message: "vault failed"},
+			},
+		},
+		{
+			name:       "a certificate that cannot be loaded stops before the database",
+			connection: Connection{Db: db, VaultId: key, Certs: &cert.Certs{ClientCAId: &unknown}},
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultDone},
+				{Stage: utils.CheckStageCert, Result: utils.CheckResultFailed},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultSkipped, Message: "cert failed"},
+			},
+		},
+		{
+			name:       "the database's own refusal is its step's message",
+			connection: Connection{Db: db, VaultId: key},
+			pingErr:    errors.New("password authentication failed"),
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultDone},
+				{Stage: utils.CheckStageCert, Result: utils.CheckResultSkipped, Message: "tls is off"},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultFailed, Message: "password authentication failed"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pinged = nil
+			adapter.pingFn = func(ctx database.Context) error {
+				pinged = &ctx
+				return tt.pingErr
+			}
+			steps, err := env.service.Check(Context{Connection: tt.connection, Session: "check"})
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+			if len(steps) != len(tt.expected) {
+				t.Fatalf("expected %d steps, got %+v", len(tt.expected), steps)
+			}
+			for i, want := range tt.expected {
+				got := steps[i]
+				if got.Stage != want.Stage || got.Result != want.Result {
+					t.Errorf("step %d = %s/%s, want %s/%s", i, got.Stage, got.Result, want.Stage, want.Result)
+				}
+				if want.Message != "" && got.Message != want.Message {
+					t.Errorf("step %d message = %q, want %q", i, got.Message, want.Message)
+				}
+				if want.Result == utils.CheckResultFailed && got.Message == "" {
+					t.Errorf("step %d failed without saying why", i)
+				}
+			}
+			reached := tt.expected[2].Result != utils.CheckResultSkipped
+			if reached != (pinged != nil) {
+				t.Fatalf("expected the database to be pinged: %v, got pinged: %v", reached, pinged != nil)
+			}
+			if pinged != nil && tt.connection.VaultId != nil {
+				if pinged.Connection.Credentials == nil || pinged.Connection.Credentials.Username != "postgres" {
+					t.Errorf("expected the vault's credentials to reach the database, got %+v", pinged.Connection.Credentials)
+				}
+			}
+		})
+	}
+
+	t.Run("an unknown plugin is refused before any step", func(t *testing.T) {
+		if _, err := env.service.Check(Context{Connection: Connection{Db: DbConfig{Plugin: database.MONGO, Host: "h", Port: 1}}}); err == nil {
+			t.Fatalf("expected an error for an unregistered plugin")
 		}
 	})
 }

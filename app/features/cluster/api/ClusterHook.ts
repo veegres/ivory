@@ -27,11 +27,19 @@ export function useRouterClusterOverview(name?: string, enabled: boolean = true)
     })
 }
 
-export function useRouterClusterNodeConnections(name: string, node: string, enabled: boolean = true) {
+export function useRouterClusterConnections(name: string, enabled: boolean = true) {
     return useQuery({
-        queryKey: ClusterApi.nodeConnections.key(name, node),
-        queryFn: () => ClusterApi.nodeConnections.fn(name, node),
+        queryKey: ClusterApi.connections.key(name),
+        queryFn: () => ClusterApi.connections.fn(name),
         enabled: enabled,
+    })
+}
+
+export function useRouterClusterCheck(name: string, enabled: boolean = true) {
+    return useQuery({
+        queryKey: ClusterApi.check.key(name),
+        queryFn: () => ClusterApi.check.fn(name),
+        enabled: enabled, retry: false,
     })
 }
 
@@ -47,7 +55,7 @@ export function useRouterClusterUpdate(name: string, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: ClusterApi.update.fn,
         mutationKey: ClusterApi.update.key(),
-        successKeys: [ClusterApi.list.keyCommon(), TagApi.list.key(), ClusterApi.overview.keyCommon(name), ClusterApi.nodeConnections.keyCommon(name)],
+        successKeys: [ClusterApi.list.keyCommon(), TagApi.list.key(), ClusterApi.overview.keyCommon(name), ClusterApi.connections.key(name)],
         onSuccess: onSuccess,
     })
 }
@@ -83,6 +91,6 @@ export function useRouterClusterFix(name: string) {
     return useMutationAdapter({
         mutationFn: ClusterApi.fix.fn,
         mutationKey: ClusterApi.fix.key(),
-        successKeys: [ClusterApi.list.keyCommon(), ClusterApi.overview.keyCommon(name), ClusterApi.nodeConnections.keyCommon(name)]
+        successKeys: [ClusterApi.list.keyCommon(), ClusterApi.overview.keyCommon(name), ClusterApi.connections.key(name)]
     })
 }

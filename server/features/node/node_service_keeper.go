@@ -1,7 +1,9 @@
 package node
 
 import (
+	"crypto/tls"
 	"fmt"
+	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"net/http"
 	"sync"
@@ -53,6 +55,41 @@ func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, 
 		result[i] = mapKeeperResponse(resp)
 	}
 	return result, status, err
+}
+
+// KeeperCheck reports how far Ivory gets reaching the keeper, one step at a
+// time. The error is only for a plugin Ivory does not know.
+func (s *Service) KeeperCheck(r KeeperOneRequest) ([]utils.CheckStep, error) {
+	adapter, err := s.keeperRegistry.Get(r.Plugin)
+	if err != nil {
+		return nil, err
+	}
+	check := utils.NewCheck()
+	var cred *keeper.Credentials
+	if r.VaultId != nil {
+		check.Run(utils.CheckStageVault, func() error {
+			d, errVault := s.vaultService.GetDecrypted(*r.VaultId)
+			if errVault == nil {
+				cred = &keeper.Credentials{Username: d.Username, Password: d.Secret}
+			}
+			return errVault
+		})
+	} else {
+		check.Skip(utils.CheckStageVault, "no vault is configured")
+	}
+	var tlsConfig *tls.Config
+	if r.Certs != nil {
+		check.Run(utils.CheckStageCert, func() error {
+			return s.certService.EnrichTLSConfig(&tlsConfig, r.Certs)
+		})
+	} else {
+		check.Skip(utils.CheckStageCert, "tls is off")
+	}
+	check.RunAfter(utils.CheckStageConnect, func() error {
+		_, _, errList := adapter.List(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, TlsConfig: tlsConfig, Credentials: cred})
+		return errList
+	})
+	return check.Steps(), nil
 }
 
 func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {

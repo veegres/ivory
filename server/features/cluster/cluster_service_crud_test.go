@@ -10,7 +10,6 @@ import (
 	"ivory/plugins/keeper"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -288,7 +287,7 @@ func TestServiceGet(t *testing.T) {
 	}
 }
 
-func TestServiceNodeConnections(t *testing.T) {
+func TestServiceConnections(t *testing.T) {
 	s := createTestService(t)
 	port := func(value int) *int { return &value }
 	if _, err := s.clusterRepository.Create(Request{
@@ -299,25 +298,32 @@ func TestServiceNodeConnections(t *testing.T) {
 		t.Fatalf("failed to seed: %v", err)
 	}
 
-	t.Run("a node is found by its name, not its position", func(t *testing.T) {
-		c, err := s.NodeConnections("c1", "n2")
+	t.Run("a node is keyed by its name, not its position", func(t *testing.T) {
+		connections, err := s.Connections("c1")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
+		c := connections["n2"]
 		if c.Keeper == nil || c.Keeper.Host != "10.0.0.2" || c.Keeper.Port != 8009 || c.Keeper.Cluster != "c1" {
 			t.Errorf("keeper = %+v, want n2's own endpoint", c.Keeper)
 		}
 	})
 
-	t.Run("an unknown node names itself in the error", func(t *testing.T) {
-		_, err := s.NodeConnections("c1", "n3")
-		if !errors.Is(err, ErrClusterNodeNotFound) || !strings.Contains(err.Error(), "n3") {
-			t.Errorf("expected ErrClusterNodeNotFound naming n3, got %v", err)
+	t.Run("every configured node is answered and nothing else", func(t *testing.T) {
+		connections, err := s.Connections("c1")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if _, ok := connections["n1"]; !ok || len(connections) != 2 {
+			t.Errorf("expected exactly n1 and n2, got %v", connections)
+		}
+		if _, ok := connections["n3"]; ok {
+			t.Errorf("expected no entry for a node the cluster does not have")
 		}
 	})
 
 	t.Run("an unknown cluster", func(t *testing.T) {
-		if _, err := s.NodeConnections("unknown", "n1"); err == nil {
+		if _, err := s.Connections("unknown"); err == nil {
 			t.Errorf("expected an error for an unknown cluster")
 		}
 	})

@@ -9,6 +9,7 @@ import {
     DbPlugin,
     DbResponse,
     KillRequest,
+    QueryCheckStep,
     Request,
     Response,
     SchemasRequest,
@@ -52,6 +53,11 @@ export const QueryApi = {
     activity: {
         key: () => ["query", "execute", "activity"],
         fn: (req: Connection) => api.post<R<DbResponse>>("/query/execute/activity", req)
+            .then((response) => response.data.response),
+    },
+    check: {
+        key: (con: Connection) => ["query", "execute", "check", con],
+        fn: (con: Connection) => api.post<R<QueryCheckStep[]>>("/query/execute/check", con)
             .then((response) => response.data.response),
     },
     databases: {

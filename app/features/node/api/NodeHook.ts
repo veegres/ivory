@@ -142,6 +142,22 @@ export function useRouterNodePlatformContainerMetrics(request: PlatformActionReq
     })
 }
 
+export function useRouterNodeKeeperCheck(request: KeeperOneRequest, enabled: boolean = true) {
+    return useQuery({
+        queryKey: NodeApi.keeper.check.key(request),
+        queryFn: () => NodeApi.keeper.check.fn(request),
+        enabled, retry: false,
+    })
+}
+
+export function useRouterNodePlatformCheck(request: PlatformVaultConnection, enabled: boolean = true) {
+    return useQuery({
+        queryKey: NodeApi.platform.check.key(request),
+        queryFn: () => NodeApi.platform.check.fn(request),
+        enabled, retry: false,
+    })
+}
+
 export function useRouterNodePlatformContainerInspect(request: PlatformActionRequest) {
     return useQuery({
         queryKey: NodeApi.container.inspect.key(request),

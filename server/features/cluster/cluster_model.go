@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ivory/core/config"
 	"ivory/core/service/cert"
+	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/features/query"
 	"maps"
@@ -142,11 +143,6 @@ type RouterNameRequest struct {
 	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
 }
 
-type RouterNodeRequest struct {
-	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
-	Node string `json:"node" binding:"required,notblank" jsonschema:"name of the node within that cluster"`
-}
-
 // RouterOverviewRequest narrows the overview to what one keeper endpoint
 // reports when Host and Port are given, the way the http route's query does.
 type RouterOverviewRequest struct {
@@ -162,6 +158,14 @@ type NodeConnections struct {
 	Keeper   *node.KeeperOneRequest        `json:"keeper"`
 	Platform *node.PlatformVaultConnection `json:"platform"`
 	Database *query.Connection             `json:"database"`
+}
+
+// NodeCheck is how far Ivory gets reaching one node, through each of its
+// connections. A half is missing where NodeConnections has none.
+type NodeCheck struct {
+	Keeper   []utils.CheckStep `json:"keeper,omitempty"`
+	Platform []utils.CheckStep `json:"platform,omitempty"`
+	Database []utils.CheckStep `json:"database,omitempty"`
 }
 
 // RouterDeployRequest is DeployRequest with CommonConfig's inline credentials left

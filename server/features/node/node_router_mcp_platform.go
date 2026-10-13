@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"ivory/core/service/job"
+	"ivory/core/utils"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -83,4 +84,8 @@ func (r *McpRouter) ContainerUp(ctx context.Context, req *mcp.CallToolRequest, i
 
 func (r *McpRouter) ContainerExec(ctx context.Context, req *mcp.CallToolRequest, in PlatformExecRequest) (*mcp.CallToolResult, RouterPlatformResponse[[]string], error) {
 	return handlePlatformRequest(in, r.service.PlatformContainerExec)
+}
+
+func (r *McpRouter) PlatformCheck(ctx context.Context, req *mcp.CallToolRequest, in PlatformVaultConnection) (*mcp.CallToolResult, RouterPlatformResponse[[]utils.CheckStep], error) {
+	return handlePlatformRequest(in, r.service.PlatformCheck)
 }

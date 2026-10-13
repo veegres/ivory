@@ -5,6 +5,7 @@ import {
     KeeperDeployResponse,
     KeeperOneRequest,
     KeeperOneResponse,
+    NodeCheckStep,
     PlatformActionRequest,
     PlatformInfoResponse,
     PlatformInspectResponse,
@@ -16,7 +17,8 @@ import {
 } from "./NodeType"
 
 // NodeApi mirrors the server's node.Router route groups: keeper (HA
-// management, /node/keeper/...), system (node-level, /node/platform/system/...),
+// management, /node/keeper/...), platform (/node/platform/check), system
+// (node-level, /node/platform/system/...),
 // container (lifecycle, /node/platform/container/...) and, nested inside
 // container like the server's containerKeeperGroup, container.keeper (deploy
 // actions, /node/platform/container/keeper/...).
@@ -25,6 +27,11 @@ export const NodeApi = {
         overview: {
             key: (h: string, p?: number) => ["node", "keeper", "overview", h, p],
             fn: (request: KeeperOneRequest) => api.get<R<KeeperOneResponse>>("/node/keeper/overview", {params: {request: JSON.stringify(request)}})
+                .then((response) => response.data.response),
+        },
+        check: {
+            key: (request: KeeperOneRequest) => ["node", "keeper", "check", request.host, request.port],
+            fn: (request: KeeperOneRequest) => api.get<R<NodeCheckStep[]>>("/node/keeper/check", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         config: {
@@ -80,6 +87,13 @@ export const NodeApi = {
         pause: {
             key: () => ["node", "keeper", "pause"],
             fn: (request: KeeperOneRequest) => api.post<R<string>>("/node/keeper/pause", request)
+                .then((response) => response.data.response),
+        },
+    },
+    platform: {
+        check: {
+            key: (request: PlatformVaultConnection) => ["node", "platform", "check", request.host, request.port],
+            fn: (request: PlatformVaultConnection) => api.get<R<NodeCheckStep[]>>("/node/platform/check", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
     },
