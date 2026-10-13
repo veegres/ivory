@@ -13,6 +13,7 @@ import (
 	"ivory/plugins/platform"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -223,6 +224,9 @@ func TestServiceGetKeeperAdapter(t *testing.T) {
 		_, _, _, err := s.getKeeperAdapter(KeeperOptions{Plugin: "fake", VaultId: &badId})
 		if err == nil {
 			t.Fatalf("expected an error for an unknown vault id")
+		}
+		if !strings.HasPrefix(err.Error(), "keeper vault: ") {
+			t.Fatalf("expected the error to name the vault stage, got %q", err.Error())
 		}
 	})
 }

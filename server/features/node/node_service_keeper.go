@@ -26,8 +26,7 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 			response, statusCode, err := client.List(r)
 			var errorMessage string
 			if err != nil {
-				err = fmt.Errorf("host %q failed with code %d: %w", r.Host, statusCode, err)
-				errorMessage = err.Error()
+				errorMessage = s.getHostError(r.Host, statusCode, err).Error()
 			}
 			mapped := make([]KeeperResponse, len(response))
 			for j, resp := range response {
@@ -38,6 +37,15 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 	}
 	wg.Wait()
 	return keeperAutoResponse, nil
+}
+
+// getHostError names the code only when the keeper chose it: every adapter but
+// patroni answers any failure with 400, which says nothing.
+func (s *Service) getHostError(host string, statusCode int, err error) error {
+	if statusCode == 0 || statusCode == http.StatusBadRequest {
+		return fmt.Errorf("host %q: %w", host, err)
+	}
+	return fmt.Errorf("host %q failed with code %d: %w", host, statusCode, err)
 }
 
 func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, error) {

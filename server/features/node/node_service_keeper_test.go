@@ -180,3 +180,28 @@ func assertCheckSteps(t *testing.T, steps []utils.CheckStep, expected []utils.Ch
 		}
 	}
 }
+
+func TestGetHostError(t *testing.T) {
+	s := &Service{}
+	cause := errors.New("connection refused")
+	tests := []struct {
+		name       string
+		statusCode int
+		expected   string
+	}{
+		{name: "the default 400 is left out", statusCode: http.StatusBadRequest, expected: `host "db1": connection refused`},
+		{name: "no code is left out", statusCode: 0, expected: `host "db1": connection refused`},
+		{name: "a code the keeper chose is kept", statusCode: http.StatusServiceUnavailable, expected: `host "db1" failed with code 503: connection refused`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := s.getHostError("db1", tt.statusCode, cause)
+			if err.Error() != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, err.Error())
+			}
+			if !errors.Is(err, cause) {
+				t.Errorf("expected the cause to stay wrapped")
+			}
+		})
+	}
+}
