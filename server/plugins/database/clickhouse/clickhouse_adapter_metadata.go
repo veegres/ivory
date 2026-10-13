@@ -7,7 +7,9 @@ import (
 
 const GetActiveQueries = `SELECT query_id, user, query, elapsed, read_rows, memory_usage FROM system.processes ORDER BY elapsed DESC`
 const GetTableSizes = `SELECT database, table, formatReadableSize(sum(bytes_on_disk)) AS size, formatReadableSize(sum(data_uncompressed_bytes)) AS uncompressed FROM system.parts WHERE active GROUP BY database, table ORDER BY sum(bytes_on_disk) DESC`
-const GetReplicationStatus = `SELECT database, table, is_readonly, absolute_delay, queue_size FROM system.replicas`
+const GetReplicationStatus = `SELECT database, table, is_readonly, is_session_expired, absolute_delay, queue_size, active_replicas, total_replicas, zookeeper_exception
+FROM system.replicas
+ORDER BY is_readonly DESC, absolute_delay DESC`
 const GetSlowQueries = `SELECT query_start_time, query_duration_ms, query FROM system.query_log WHERE type = 'QueryFinish' ORDER BY query_start_time DESC LIMIT 100`
 const GetMerges = `SELECT database, table, elapsed, progress, is_mutation FROM system.merges`
 const GetClusters = `SELECT cluster, shard_num, replica_num, host_name, host_address, port, is_local, errors_count, slowdowns_count
@@ -42,6 +44,7 @@ const GetDisks = `SELECT name, path, type, formatReadableSize(free_space) AS fre
 const GetChangedSettings = `SELECT name, value, "default" AS default_value, description FROM system.settings WHERE changed ORDER BY name`
 const GetDistributionQueue = `SELECT database, table, is_blocked, error_count, data_files, formatReadableSize(data_compressed_bytes) AS size, last_exception
 FROM system.distribution_queue`
+const GetCoordinationConnection = `SELECT * FROM system.zookeeper_connection`
 const GetCoordinationRoot = `SELECT name, value, ctime, mtime, numChildren FROM system.zookeeper WHERE path = '/'`
 
 func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
@@ -82,7 +85,7 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 		},
 		{
 			Name: "Replication status", Type: database.REPLICATION,
-			Description: "Shows replication queue size and read-only state per replicated table.",
+			Description: "Shows per replicated table whether it is read-only, whether its coordination session expired and the last coordination error, how far behind it is, and how many of its replicas hold an active session. A table read-only with an expired session has lost the coordination store, not its data.",
 			Query:       GetReplicationStatus,
 		},
 		{
@@ -137,7 +140,7 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 		},
 		{
 			Name: "Disks", Type: database.STATISTIC,
-			Description: "Shows free and total space per configured disk. A full disk turns replicated tables read-only, which the cluster overview reports as a stopping node.",
+			Description: "Shows free and total space per configured disk. A full disk turns replicated tables read-only, which the cluster overview reports as a warning naming those tables.",
 			Query:       GetDisks,
 		},
 		{
@@ -149,6 +152,11 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 			Name: "Distribution queue", Type: database.REPLICATION,
 			Description: "Shows the data Distributed tables have not yet delivered to their shards. A blocked queue with an exception means inserts are piling up locally instead of reaching the shard.",
 			Query:       GetDistributionQueue,
+		},
+		{
+			Name: "Coordination connection", Type: database.REPLICATION,
+			Description: "Shows which coordination store host (ClickHouse Keeper or ZooKeeper) this server is connected to, since when, and whether its session expired. No row means no connection at all, which is what turns replicated tables read-only.",
+			Query:       GetCoordinationConnection,
 		},
 		{
 			Name: "Coordination root", Type: database.OTHER,

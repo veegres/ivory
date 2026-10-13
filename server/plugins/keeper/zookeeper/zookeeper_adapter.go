@@ -3,6 +3,7 @@ package zookeeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"ivory/clients/zookeeper"
 	"ivory/plugins/keeper"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 )
 
 var ErrCommandNotAvailable = errors.New("zookeeper did not return the expected admin command output; ensure ZOO_4LW_COMMANDS_WHITELIST includes 'mntr' and 'conf'")
+
+// notServingReply is what mntr answers while the node has no quorum to serve
+// from: the process is up and is electing, or waiting to.
+const notServingReply = "not currently serving requests"
 
 // requestTimeout bounds every keeper operation (connect + command), so an
 // unreachable node or a non-zookeeper port cannot hang the cluster overview.
@@ -47,8 +52,12 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	// best-effort - a whitelist that omits "conf" must cost the membership check
 	// rather than the node.
 	var ensemble map[string]string
-	if conf, errConf := zookeeper.FourLetterCommand(ctx, config, "conf"); errConf == nil {
-		ensemble = parseLines(conf, "=")
+	var warnings []string
+	conf, errConf := zookeeper.FourLetterCommand(ctx, config, "conf")
+	if errConf != nil {
+		warnings = append(warnings, "cannot read conf: "+errConf.Error())
+	} else if ensemble = parseLines(conf, "="); len(ensemble) == 0 {
+		warnings = append(warnings, "conf replied: "+firstLine(conf))
 	}
 
 	output, err := zookeeper.FourLetterCommand(ctx, config, "mntr")
@@ -57,13 +66,89 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 	fields := parseLines(output, "\t")
 	state, ok := fields["zk_server_state"]
-	if !ok {
-		return nil, http.StatusBadRequest, ErrCommandNotAvailable
+	var response keeper.Response
+	switch {
+	case ok:
+		response = mapNode(request.Host, request.Port, state, fields)
+		response.Warnings = append(warnings, followerWarnings(state, fields, ensemble)...)
+	case strings.Contains(output, notServingReply):
+		response = mapNotServing(request.Host, request.Port)
+		response.Warnings = append(warnings, "not serving requests: "+firstLine(output))
+	default:
+		return nil, http.StatusBadRequest, fmt.Errorf("%w, mntr replied: %s", ErrCommandNotAvailable, firstLine(output))
 	}
-
-	response := mapNode(request.Host, request.Port, state, fields)
 	response.DiscoveredCluster = ensembleIdentity(ensemble)
 	return append([]keeper.Response{response}, mapEnsembleMembers(ensemble)...), http.StatusOK, nil
+}
+
+// mapNotServing reports a node that answered but has no quorum to serve from.
+// It is running - it answered - and its role is genuinely unknown until an
+// election settles one.
+func mapNotServing(host string, port int) keeper.Response {
+	var status keeper.Status = keeper.Active
+	key := host + ":" + strconv.Itoa(port)
+	return keeper.Response{
+		Key:                  &key,
+		Status:               &status,
+		State:                keeper.StateRunning,
+		Role:                 keeper.Unknown,
+		Lag:                  -1,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
+	}
+}
+
+// followerWarnings is the leader's account of followers that are not synced
+// with it - the one place a member that dropped out of the quorum shows up,
+// since every other node only describes itself. The expected count comes from
+// conf's voting members, because a follower that is down is missing from the
+// leader's own follower count too; without conf, that count is all there is.
+func followerWarnings(state string, fields map[string]string, ensemble map[string]string) []string {
+	if state != "leader" {
+		return nil
+	}
+	synced, err := strconv.Atoi(fields["zk_synced_followers"])
+	if err != nil {
+		return nil
+	}
+	expected := votingMembers(ensemble) - 1
+	if expected < 0 {
+		for _, key := range []string{"zk_followers", "zk_learners"} {
+			if n, errN := strconv.Atoi(fields[key]); errN == nil {
+				expected = n
+				break
+			}
+		}
+	}
+	if expected <= synced {
+		return nil
+	}
+	return []string{fmt.Sprintf("%d of %d followers are not synced with the leader", expected-synced, expected)}
+}
+
+// votingMembers counts conf's server.N lines that are not observers, or -1
+// when conf names none.
+func votingMembers(ensemble map[string]string) int {
+	keys := sortedServerKeys(ensemble)
+	if len(keys) == 0 {
+		return -1
+	}
+	count := 0
+	for _, key := range keys {
+		if !strings.Contains(ensemble[key], ":observer") {
+			count++
+		}
+	}
+	return count
+}
+
+func firstLine(text string) string {
+	text = strings.TrimSpace(text)
+	if i := strings.IndexByte(text, '\n'); i >= 0 {
+		return text[:i]
+	}
+	return text
 }
 
 // mapEnsembleMembers reports the other servers of this node's ensemble, one per
@@ -259,15 +344,16 @@ func parseLines(output string, sep string) map[string]string {
 }
 
 // mapNode maps zookeeper's own zk_server_state (leader/follower/observer/
-// standalone) onto keeper.Role. Lag is left at 0: unlike etcd's raft index
-// or postgres' WAL position, mntr reports no per-follower offset a member
-// can read about itself - only leader-side aggregates like
-// zk_synced_followers, which isn't a per-member lag figure.
+// standalone) onto keeper.Role. A follower's lag is unknown: unlike etcd's
+// raft index or postgres' WAL position, mntr reports no per-follower offset a
+// member can read about itself, and 0 would claim it is caught up.
 func mapNode(host string, port int, state string, fields map[string]string) keeper.Response {
 	var role keeper.Role = keeper.Unknown
+	lag := int64(-1)
 	switch state {
 	case "leader", "standalone":
 		role = keeper.Leader
+		lag = 0
 	case "follower", "observer":
 		role = keeper.Replica
 	}
@@ -278,6 +364,7 @@ func mapNode(host string, port int, state string, fields map[string]string) keep
 		Status:               &status,
 		State:                keeper.StateRunning,
 		Role:                 role,
+		Lag:                  lag,
 		Tags:                 mapTags(state, fields),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
@@ -290,9 +377,8 @@ func mapNode(host string, port int, state string, fields map[string]string) keep
 // accepts writes, and an observer as a replica because it never accepts them -
 // but a standalone node that was meant to join an ensemble, and an observer
 // that was meant to vote, are both configuration mistakes that read as a
-// healthy cluster without serverState. The leader's follower counts are the one
-// place a member that dropped out of the quorum is visible, since every
-// zookeeper node otherwise only ever describes itself.
+// healthy cluster without serverState. Followers out of sync are a fault, so
+// they are a warning (see followerWarnings) rather than a count on every poll.
 func mapTags(state string, fields map[string]string) *map[string]any {
 	tags := map[string]any{}
 	if state != "leader" && state != "follower" {
@@ -306,13 +392,6 @@ func mapTags(state string, fields map[string]string) *map[string]any {
 	}
 	if connections := fields["zk_num_alive_connections"]; connections != "" {
 		tags["connections"] = connections
-	}
-	if synced := fields["zk_synced_followers"]; synced != "" {
-		if followers := fields["zk_followers"]; followers != "" {
-			tags["syncedFollowers"] = synced + "/" + followers
-		} else {
-			tags["syncedFollowers"] = synced
-		}
 	}
 	if len(tags) == 0 {
 		return nil

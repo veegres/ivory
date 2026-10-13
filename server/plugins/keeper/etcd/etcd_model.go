@@ -11,11 +11,15 @@ type member struct {
 }
 
 type endpointStatus struct {
-	Leader    uint64
-	RaftIndex uint64
-	RaftTerm  uint64
-	Version   string
-	Err       error
+	Leader           uint64
+	RaftIndex        uint64
+	RaftAppliedIndex uint64
+	RaftTerm         uint64
+	Version          string
+	// Errors is what the member reports about itself: its active alarms
+	// (NOSPACE, CORRUPT) and losing its leader.
+	Errors []string
+	Err    error
 }
 
 type switchoverBody struct {

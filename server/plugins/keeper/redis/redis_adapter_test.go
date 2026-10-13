@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"testing"
 )
 
@@ -43,8 +44,23 @@ func TestMapNode(t *testing.T) {
 			expectedRole: keeper.Replica, expectedLag: 7,
 		},
 		{
-			name:         "slave with unparsable lag defaults to zero",
+			name:         "slave with unparsable lag is unknown",
 			fields:       map[string]string{"role": "slave", "master_last_io_seconds_ago": "n/a"},
+			expectedRole: keeper.Replica, expectedLag: -1,
+		},
+		{
+			name:         "slave whose link never came up is unknown",
+			fields:       map[string]string{"role": "slave", "master_last_io_seconds_ago": "-1"},
+			expectedRole: keeper.Replica, expectedLag: -1,
+		},
+		{
+			name:         "slave whose link is down is unknown, not caught up",
+			fields:       map[string]string{"role": "slave", "master_link_status": "down", "master_last_io_seconds_ago": "0"},
+			expectedRole: keeper.Replica, expectedLag: -1,
+		},
+		{
+			name:         "slave that heard from its master just now",
+			fields:       map[string]string{"role": "slave", "master_link_status": "up", "master_last_io_seconds_ago": "0"},
 			expectedRole: keeper.Replica, expectedLag: 0,
 		},
 	}
@@ -133,6 +149,32 @@ func TestMapTags(t *testing.T) {
 		})
 	}
 }
+func TestMapNodeLoadingIsStarting(t *testing.T) {
+	if state := mapNode("db1", 6379, map[string]string{"role": "master", "loading": "1"}).State; state != keeper.StateStarting {
+		t.Errorf("expected starting, got %q", state)
+	}
+}
+
+func TestPersistenceWarnings(t *testing.T) {
+	tests := []struct {
+		name     string
+		fields   map[string]string
+		expected []string
+	}{
+		{name: "healthy", fields: map[string]string{"rdb_last_bgsave_status": "ok", "aof_last_write_status": "ok", "master_sync_in_progress": "0"}},
+		{name: "failed save", fields: map[string]string{"rdb_last_bgsave_status": "err"}, expected: []string{"last background save failed, by default redis refuses writes until one succeeds"}},
+		{name: "failed aof write", fields: map[string]string{"aof_last_write_status": "err"}, expected: []string{"last AOF write failed, redis refuses writes until one succeeds"}},
+		{name: "resync", fields: map[string]string{"master_sync_in_progress": "1"}, expected: []string{"full resync from the master is in progress"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := persistenceWarnings(tt.fields)
+			if !slices.Equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
 
 // TestLinkWarnings pins that a broken replication link is a warning rather than
 // a tag: the node still reports itself running, and Lag only measures how long
@@ -149,6 +191,12 @@ func TestLinkWarnings(t *testing.T) {
 			fields:   map[string]string{"master_link_status": "down"},
 			role:     keeper.Replica,
 			expected: []string{"replication link to the master is down"},
+		},
+		{
+			name:     "a link that went down says for how long",
+			fields:   map[string]string{"master_link_status": "down", "master_link_down_since_seconds": "42"},
+			role:     keeper.Replica,
+			expected: []string{"replication link to the master is down for 42s"},
 		},
 		{
 			name:   "a replica whose link is up says nothing",

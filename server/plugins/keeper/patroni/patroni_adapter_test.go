@@ -377,3 +377,49 @@ func TestPlugin_List(t *testing.T) {
 		t.Errorf("expected discovered db port 5432, got %v", member.DiscoveredDbPort)
 	}
 }
+
+func TestPlugin_ListKeepsMembersWithABadApiUrl(t *testing.T) {
+	server := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		_ = json.NewEncoder(w).Encode(cluster{
+			ScheduledSwitchover: &scheduledSwitchover{At: "2026-01-01T00:00:00Z", From: "postgres-1", To: "postgres-2"},
+			Members: []instance{
+				{Name: "postgres-1", Host: "10.0.0.1", Port: 5432, Role: "leader", State: "running", ApiUrl: "http://10.0.0.1:8008/patroni"},
+				{Name: "postgres-2", Host: "10.0.0.2", Port: 5432, Role: "replica", State: "streaming", ApiUrl: "", Lag: json.RawMessage("16")},
+			},
+		})
+	}))
+	defer server.Close()
+
+	host, portStr, _ := net.SplitHostPort(strings.TrimPrefix(server.URL, "http://"))
+	port, _ := strconv.Atoi(portStr)
+
+	responses, _, err := NewPlugin(http.NewClient()).List(keeper.Request{Host: host, Port: port})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(responses) != 2 {
+		t.Fatalf("expected both members, got %d", len(responses))
+	}
+
+	leader := responses[0]
+	if leader.Lag != 0 {
+		t.Errorf("expected a leader without a lag field to report 0, got %d", leader.Lag)
+	}
+	if leader.ScheduledSwitchover == nil || leader.ScheduledSwitchover.To != "postgres-2" {
+		t.Errorf("expected the switchover on the member it moves away from, got %v", leader.ScheduledSwitchover)
+	}
+
+	broken := responses[1]
+	if broken.DiscoveredHost != nil || broken.DiscoveredKeeperPort != nil {
+		t.Errorf("expected no address for a member without an api_url, got %v %v", broken.DiscoveredHost, broken.DiscoveredKeeperPort)
+	}
+	if broken.DiscoveredName == nil || *broken.DiscoveredName != "postgres-2" {
+		t.Errorf("expected the member to still be named, got %v", broken.DiscoveredName)
+	}
+	if len(broken.Warnings) != 1 || !strings.Contains(broken.Warnings[0], "api_url") {
+		t.Errorf("expected a warning naming the api_url, got %v", broken.Warnings)
+	}
+	if broken.Lag != 16 || broken.ScheduledSwitchover != nil {
+		t.Errorf("expected the rest of the member intact, got lag %d switchover %v", broken.Lag, broken.ScheduledSwitchover)
+	}
+}

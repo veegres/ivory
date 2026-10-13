@@ -7,6 +7,7 @@ import (
 	"ivory/clients/clickhouse"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -63,42 +64,35 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	// active_replicas/total_replicas (via min()/max() across every replicated
 	// table on this node) reports a peer that has lost its session with the
 	// coordination store - a crashed or partitioned node. It is a distinct
-	// signal from the replication queue below: confirmed live (see
-	// clickhouse_adapter's connectivity investigation this session) by
-	// stopping a healthy replica's container - active_replicas dropped inside
-	// 5s - and separately by leaving a replica's own session healthy but its
-	// interserver HTTP port unreachable, where active_replicas stayed
-	// unchanged because the coordination-store session was never affected.
-	var isReadonly uint8
-	var absoluteDelay uint64
-	var activeReplicas, totalReplicas uint32
+	// signal from the replication queue: confirmed live by stopping a healthy
+	// replica's container - active_replicas dropped inside 5s - and separately
+	// by leaving a replica's own session healthy but its interserver HTTP port
+	// unreachable, where active_replicas stayed unchanged because the
+	// coordination-store session was never affected.
+	//
+	// last_exception is set only once a queued fetch/merge has actually failed
+	// and been retried - never while one is merely in flight - so a table still
+	// catching up after a fresh deploy reports nothing there. It is what catches
+	// a replica whose session is fine but whose interserver data path is broken.
+	// Both are read in one round trip, together with the delay past which
+	// clickhouse's own distributed queries stop preferring this replica.
+	var status replicaStatus
 	errReplicas := conn.QueryRow(ctx, `
-		SELECT max(is_readonly), max(absolute_delay), min(active_replicas), max(total_replicas)
+		SELECT max(is_readonly), max(absolute_delay), min(active_replicas), max(total_replicas),
+			countIf(is_readonly),
+			arrayStringConcat(arraySlice(groupArrayIf(database || '.' || table, is_readonly), 1, 3), ', '),
+			toUInt64(getSetting('max_replica_delay_for_distributed_queries')),
+			(SELECT count() FROM system.replication_queue WHERE last_exception != ''),
+			(SELECT any(last_exception) FROM system.replication_queue WHERE last_exception != '')
 		FROM system.replicas`,
-	).Scan(&isReadonly, &absoluteDelay, &activeReplicas, &totalReplicas)
+	).Scan(&status.Readonly, &status.AbsoluteDelay, &status.ActiveReplicas, &status.TotalReplicas,
+		&status.ReadonlyCount, &status.ReadonlyTables, &status.MaxDelay, &status.StuckCount, &status.StuckError)
 	if errReplicas != nil {
 		return nil, http.StatusBadRequest, errReplicas
 	}
 
-	// NOTE: last_exception is set only once a queued fetch/merge has actually
-	// failed and been retried - never while one is merely in flight - so a
-	// table still catching up after a fresh deploy reports nothing here. This
-	// is what catches a replica whose coordination-store session is fine but
-	// whose interserver data path is broken (the exact shape of the
-	// unpublished-9009 bug this template shipped with): active_replicas alone
-	// missed it entirely, because the session it measures was never affected.
-	var stuckCount uint64
-	var sampleError string
-	errQueue := conn.QueryRow(ctx, `
-		SELECT count(), any(last_exception) FROM system.replication_queue
-		WHERE last_exception != ''`,
-	).Scan(&stuckCount, &sampleError)
-	if errQueue != nil {
-		return nil, http.StatusBadRequest, errQueue
-	}
-
-	response := mapNode(request.Host, request.Port, absoluteDelay, isReadonly > 0)
-	response.Warnings = replicaWarnings(isReadonly > 0, activeReplicas, totalReplicas, stuckCount, sampleError)
+	response := mapNode(request.Host, request.Port, status.AbsoluteDelay, status.Readonly > 0)
+	response.Warnings = replicaWarnings(status)
 	response.Warnings = append(response.Warnings, membershipWarnings(request.Cluster, declared, errPeers)...)
 	return append([]keeper.Response{response}, peers...), http.StatusOK, nil
 }
@@ -108,14 +102,17 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 // declaring no <remote_servers> entry under the name Ivory asked about cannot
 // confirm it is in that cluster at all - it may well be in three others - and
 // saying so beats rendering one node as a whole healthy cluster.
-func membershipWarnings(cluster string, declared bool, err error) []string {
+func membershipWarnings(cluster string, declared []string, err error) []string {
 	switch {
 	case cluster == "":
 		return nil
 	case err != nil:
 		return []string{"cannot read system.clusters: " + firstLine(err.Error())}
-	case !declared:
-		return []string{fmt.Sprintf("this node is not in the cluster %q", cluster)}
+	case !slices.Contains(declared, cluster):
+		if len(declared) == 0 {
+			return []string{fmt.Sprintf("this node is not in the cluster %q, it declares no clusters", cluster)}
+		}
+		return []string{fmt.Sprintf("this node is not in the cluster %q, it declares: %s", cluster, strings.Join(declared, ", "))}
 	}
 	return nil
 }
@@ -136,38 +133,41 @@ func membershipWarnings(cluster string, declared bool, err error) []string {
 // already covers it, and with a state this one cannot have - a peer here was
 // read out of a config file, never contacted.
 //
-// The second return distinguishes a cluster the node has never heard of from one
-// whose only member is the node itself; both yield no peers and they are not the
-// same answer.
-func queryClusterPeers(ctx context.Context, conn driver.Conn, cluster string) ([]keeper.Response, bool, error) {
+// The second return is every cluster the node declares: it distinguishes a
+// cluster the node has never heard of from one whose only member is the node
+// itself - both yield no peers and they are not the same answer - and names
+// what the node is in instead. The table is read whole for that; it holds one
+// row per configured replica, so it costs no more than filtering it.
+func queryClusterPeers(ctx context.Context, conn driver.Conn, cluster string) ([]keeper.Response, []string, error) {
 	if cluster == "" {
-		return nil, false, nil
+		return nil, nil, nil
 	}
 	rows, err := conn.Query(ctx, `
-		SELECT host_name, port, is_local FROM system.clusters
-		WHERE cluster = ?
-		ORDER BY shard_num, replica_num`, cluster)
+		SELECT cluster, host_name, port, is_local FROM system.clusters
+		ORDER BY cluster, shard_num, replica_num`)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
 	var peers []keeper.Response
-	declared := false
+	var declared []string
 	for rows.Next() {
-		var host string
+		var name, host string
 		var port uint16
 		var isLocal uint8
-		if errScan := rows.Scan(&host, &port, &isLocal); errScan != nil {
-			return nil, false, errScan
+		if errScan := rows.Scan(&name, &host, &port, &isLocal); errScan != nil {
+			return nil, nil, errScan
 		}
-		declared = true
-		if isLocal == 0 {
+		if len(declared) == 0 || declared[len(declared)-1] != name {
+			declared = append(declared, name)
+		}
+		if name == cluster && isLocal == 0 {
 			peers = append(peers, mapPeer(host, int(port)))
 		}
 	}
 	if rows.Err() != nil {
-		return nil, false, rows.Err()
+		return nil, nil, rows.Err()
 	}
 	return peers, declared, nil
 }
@@ -178,19 +178,31 @@ func queryClusterPeers(ctx context.Context, conn driver.Conn, cluster string) ([
 // coordination-store session, and a peer whose data never crosses despite that
 // session being fine. Either can fire alone, and a healthy cluster reports
 // neither.
-func replicaWarnings(readonly bool, activeReplicas, totalReplicas uint32, stuckCount uint64, sampleError string) []string {
+//
+// The delay warning uses clickhouse's own line, not one Ivory picked: past
+// max_replica_delay_for_distributed_queries a distributed query prefers any
+// other replica over this one. A read-only replica's delay is meaningless (see
+// mapNode), so it is not compared.
+func replicaWarnings(s replicaStatus) []string {
 	var warnings []string
-	if readonly {
-		warnings = append(warnings, "replicated tables are read-only, usually a lost session with the coordination store")
+	if s.Readonly > 0 {
+		warnings = append(warnings, fmt.Sprintf(
+			"%d replicated table(s) are read-only (%s), usually a lost session with the coordination store",
+			s.ReadonlyCount, s.ReadonlyTables))
 	}
-	if totalReplicas > 0 && activeReplicas < totalReplicas {
+	if s.TotalReplicas > 0 && s.ActiveReplicas < s.TotalReplicas {
 		warnings = append(warnings, fmt.Sprintf(
 			"%d of %d cluster replicas have no active session with the coordination store",
-			totalReplicas-activeReplicas, totalReplicas))
+			s.TotalReplicas-s.ActiveReplicas, s.TotalReplicas))
 	}
-	if stuckCount > 0 {
+	if s.StuckCount > 0 {
 		warnings = append(warnings, fmt.Sprintf(
-			"replication queue has %d stuck task(s): %s", stuckCount, firstLine(sampleError)))
+			"replication queue has %d stuck task(s): %s", s.StuckCount, firstLine(s.StuckError)))
+	}
+	if s.Readonly == 0 && s.MaxDelay > 0 && s.AbsoluteDelay > s.MaxDelay {
+		warnings = append(warnings, fmt.Sprintf(
+			"replication is %ds behind, past max_replica_delay_for_distributed_queries (%ds): distributed queries prefer other replicas",
+			s.AbsoluteDelay, s.MaxDelay))
 	}
 	return warnings
 }

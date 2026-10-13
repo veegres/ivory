@@ -29,7 +29,8 @@ const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
 // the difference between received and replayed wal in bytes. NOTE: the lag
 // unit differs from patroni, which reports its own /cluster lag value.
 //
-// The remaining columns are the node's tags (see mapTags). They are read in
+// The middle columns are the node's tags (see mapTags), the last says whether
+// a standby is streaming at all. They are read in
 // this query rather than one of their own because a second round trip per node
 // per poll would buy nothing: both are views any role may read on the
 // connection this query has already opened.
@@ -39,7 +40,8 @@ const listQuery = `SELECT pg_is_in_recovery(),
             ELSE 0 END,
        split_part(current_setting('server_version'), ' ', 1),
        (SELECT count(*) FROM pg_stat_activity)::int,
-       current_setting('max_connections')::int`
+       current_setting('max_connections')::int,
+       EXISTS (SELECT 1 FROM pg_stat_wal_receiver)`
 
 // primaryQuery reads the far end of this standby's replication connection.
 // sender_host/sender_port come from primary_conninfo rather than from the
@@ -90,8 +92,25 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var inRecovery bool
 	var lag int64
 	var stats nodeStats
-	err := p.queryRow(request, listQuery, func(row pgx.Row) error {
-		return row.Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections)
+	var members []keeper.Response
+	var errMembers error
+	// NOTE: one connection for both questions, so a poll costs one handshake.
+	err := p.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
+		errList := conn.QueryRow(ctx, listQuery).Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections, &stats.Receiving)
+		if errList != nil {
+			return errList
+		}
+		// NOTE: the two halves of the membership picture, and which one this node
+		// can answer depends on the role it just reported: a primary names the
+		// standbys connected to it, a standby names the server it streams from.
+		// Between them a node belonging to some other postgres is contradicted -
+		// it names a partner nobody configured.
+		if inRecovery {
+			members, errMembers = p.listPrimary(ctx, conn)
+		} else {
+			members, errMembers = p.listSyncStandbys(ctx, conn)
+		}
+		return nil
 	})
 	if err != nil {
 		if state, ok := mapUnavailableState(err); ok {
@@ -102,19 +121,11 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		}
 		return nil, http.StatusBadRequest, err
 	}
-	// NOTE: the two halves of the membership picture, and which one this node
-	// can answer depends on the role it just reported: a primary names the
-	// standbys connected to it, a standby names the server it streams from.
-	// Between them a node belonging to some other postgres is contradicted -
-	// it names a partner nobody configured.
-	var members []keeper.Response
-	if inRecovery {
-		members = p.listPrimary(request)
-	} else {
-		members = p.listSyncStandbys(request)
-	}
 
 	response := mapNode(request.Host, request.Port, inRecovery, lag, stats)
+	if errMembers != nil {
+		response.Warnings = append(response.Warnings, "cannot read replication members: "+errMembers.Error())
+	}
 	return append([]keeper.Response{response}, members...), http.StatusOK, nil
 }
 
@@ -123,61 +134,59 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 // to rather than a socket address something observed, which is what makes it
 // safe to report as a node at all.
 //
-// It is best-effort: pg_stat_wal_receiver shows its rows only to superusers and
-// pg_read_all_stats, and losing a membership check must not cost the node.
+// pg_stat_wal_receiver shows its details only to superusers and
+// pg_read_all_stats; anyone else gets no rows, which costs the membership check
+// and not the node.
 //
 // It claims no role. A standby usually streams from the primary, but postgres
 // allows cascading, where the sender is another standby - so Leader would be a
 // guess, and a wrong one puts a second leader on the overview. Every configured
 // node reports its own role from its own connection anyway; this response exists
 // to say the node is there at all.
-func (p *Plugin) listPrimary(request keeper.Request) []keeper.Response {
-	var members []keeper.Response
-	err := p.query(request, primaryQuery, func(rows pgx.Rows) error {
-		for rows.Next() {
-			var host string
-			var port int
-			if errScan := rows.Scan(&host, &port); errScan != nil {
-				return errScan
-			}
-			members = append(members, mapSender(host, port))
-		}
-		return rows.Err()
-	})
+func (p *Plugin) listPrimary(ctx context.Context, conn *pgx.Conn) ([]keeper.Response, error) {
+	rows, err := conn.Query(ctx, primaryQuery)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return members
+	defer rows.Close()
+	var members []keeper.Response
+	for rows.Next() {
+		var host string
+		var port int
+		if errScan := rows.Scan(&host, &port); errScan != nil {
+			return nil, errScan
+		}
+		members = append(members, mapSender(host, port))
+	}
+	return members, rows.Err()
 }
 
 // listSyncStandbys reports every standby currently connected to this
 // primary, so replicas queried independently (see List) can be told apart as
 // synchronous vs asynchronous - something they cannot determine about
-// themselves. It is best-effort: pg_stat_replication may be restricted for
-// the configured credentials, or briefly fail during a topology change, in
-// which case the primary's own List response above is still returned as-is.
-func (p *Plugin) listSyncStandbys(request keeper.Request) []keeper.Response {
-	var standbys []keeper.Response
-	err := p.query(request, syncStandbyQuery, func(rows pgx.Rows) error {
-		for rows.Next() {
-			var applicationName, syncState string
-			if errScan := rows.Scan(&applicationName, &syncState); errScan != nil {
-				return errScan
-			}
-			// NOTE: pg_stat_replication only has the standby's ephemeral
-			// replication client_port, not its listening port, so the
-			// standby's real keeper/db port is left undiscovered here rather
-			// than guessed - the discovery layer resolves this response to
-			// the right configured node by name instead (see
-			// cluster.mergeKeeperSync).
-			standbys = append(standbys, mapSyncStandby(applicationName, syncState))
-		}
-		return rows.Err()
-	})
+// themselves. A failure here is a warning on the primary, whose own response
+// is still returned.
+func (p *Plugin) listSyncStandbys(ctx context.Context, conn *pgx.Conn) ([]keeper.Response, error) {
+	rows, err := conn.Query(ctx, syncStandbyQuery)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return standbys
+	defer rows.Close()
+	var standbys []keeper.Response
+	for rows.Next() {
+		var applicationName, syncState string
+		if errScan := rows.Scan(&applicationName, &syncState); errScan != nil {
+			return nil, errScan
+		}
+		// NOTE: pg_stat_replication only has the standby's ephemeral
+		// replication client_port, not its listening port, so the
+		// standby's real keeper/db port is left undiscovered here rather
+		// than guessed - the discovery layer resolves this response to
+		// the right configured node by name instead (see
+		// cluster.mergeKeeperSync).
+		standbys = append(standbys, mapSyncStandby(applicationName, syncState))
+	}
+	return standbys, rows.Err()
 }
 
 // mapUnavailableState reports the keeper.State represented by a "cannot
@@ -397,10 +406,18 @@ func mapSender(host string, port int) keeper.Response {
 	}
 }
 
+// mapNode reports a standby with no WAL receiver as lagging by an unknown
+// amount: received and replayed WAL are then equal, so the diff read 0 and
+// a standby cut off from its primary looked perfectly caught up.
 func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats) keeper.Response {
 	role := keeper.Leader
+	var warnings []string
 	if inRecovery {
 		role = keeper.Replica
+		if !stats.Receiving {
+			lag = -1
+			warnings = append(warnings, "standby is not streaming: no WAL receiver is running")
+		}
 	} else {
 		lag = 0
 	}
@@ -413,6 +430,7 @@ func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats)
 		Role:                 role,
 		Lag:                  lag,
 		Tags:                 mapTags(stats),
+		Warnings:             warnings,
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,

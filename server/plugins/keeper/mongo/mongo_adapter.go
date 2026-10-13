@@ -234,12 +234,33 @@ func primaryMember(status *replSetStatus) (replSetMember, bool) {
 // /cluster and etcd's member list already return.
 func mapStatus(status *replSetStatus) []keeper.Response {
 	primary, havePrimary := primaryMember(status)
+	self, _ := selfMember(status)
 
 	responses := make([]keeper.Response, 0, len(status.Members))
 	for _, m := range status.Members {
-		responses = append(responses, mapMember(m, status.Set, primary, havePrimary))
+		response := mapMember(m, status.Set, primary, havePrimary)
+		response.Warnings = mapWarnings(m, self.Name)
+		responses = append(responses, response)
 	}
 	return responses
+}
+
+// mapWarnings reports what mongo itself says is wrong with a member. A failed
+// heartbeat is the answering node's view of a peer, so it names that node: the
+// same peer may look fine from another one.
+func mapWarnings(m replSetMember, observer string) []string {
+	var warnings []string
+	if m.LastHeartbeatMessage != "" {
+		if observer != "" {
+			warnings = append(warnings, "heartbeat from "+observer+" failed: "+m.LastHeartbeatMessage)
+		} else {
+			warnings = append(warnings, "heartbeat failed: "+m.LastHeartbeatMessage)
+		}
+	}
+	if m.InfoMessage != "" {
+		warnings = append(warnings, m.InfoMessage)
+	}
+	return warnings
 }
 
 // mapTags reports what replSetGetStatus knows about a member that Role/State
@@ -284,12 +305,7 @@ func setName(set string) *string {
 func mapMember(m replSetMember, set string, primary replSetMember, havePrimary bool) keeper.Response {
 	role, state := mapRoleState(m.StateStr, m.Health)
 
-	var lag int64
-	if role == keeper.Replica && havePrimary {
-		if diff := primary.OptimeDate.Sub(m.OptimeDate).Seconds(); diff > 0 {
-			lag = int64(diff)
-		}
-	}
+	lag := mapLag(m, role, primary, havePrimary)
 
 	var status keeper.Status = keeper.Active
 	key := m.Name
@@ -316,6 +332,22 @@ func mapMember(m replSetMember, set string, primary replSetMember, havePrimary b
 		}
 	}
 	return response
+}
+
+// mapLag measures a secondary against the primary's optime. Without a primary
+// in view there is nothing to measure against, and a member that holds no data
+// or cannot be reached has no lag at all, so both are unknown rather than 0.
+func mapLag(m replSetMember, role keeper.Role, primary replSetMember, havePrimary bool) int64 {
+	switch {
+	case role == keeper.Leader:
+		return 0
+	case role != keeper.Replica || !havePrimary:
+		return -1
+	}
+	if diff := primary.OptimeDate.Sub(m.OptimeDate).Seconds(); diff > 0 {
+		return int64(diff)
+	}
+	return 0
 }
 
 // mapRoleState maps mongo's own member stateStr (see the replica set member

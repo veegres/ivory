@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -339,12 +340,37 @@ func TestMapMemberCarriesItsOwnFailure(t *testing.T) {
 	if response.State != keeper.StateUnreachable {
 		t.Errorf("expected unreachable, got %q", response.State)
 	}
-	if len(response.Warnings) != 1 || !strings.Contains(response.Warnings[0], "connection refused") {
+	if len(response.Warnings) != 1 || !strings.Contains(response.Warnings[0], "connection refused") || !strings.Contains(response.Warnings[0], "http://etcd3:2379") {
 		t.Errorf("expected the member to carry its own reason, got %v", response.Warnings)
 	}
 
 	up := member{ID: 1, Name: "etcd1", ClientURLs: []string{"http://etcd1:2379"}}
 	if warnings := mapMember(up, endpointStatus{RaftIndex: 100}, 1, 100).Warnings; warnings != nil {
 		t.Errorf("a member that answered warns about nothing, got %v", warnings)
+	}
+}
+
+func TestMapWarnings(t *testing.T) {
+	m := member{ID: 1, Name: "etcd1", ClientURLs: []string{"http://etcd1:2379"}}
+	tests := []struct {
+		name     string
+		member   member
+		status   endpointStatus
+		warnings []string
+	}{
+		{name: "healthy", member: m, status: endpointStatus{RaftIndex: 100, RaftAppliedIndex: 100}, warnings: nil},
+		{name: "alarm", member: m, status: endpointStatus{RaftIndex: 100, RaftAppliedIndex: 100, Errors: []string{"memberID:1 alarm:NOSPACE "}}, warnings: []string{"member reports: memberID:1 alarm:NOSPACE "}},
+		{name: "apply gap within the limit", member: m, status: endpointStatus{RaftIndex: 5100, RaftAppliedIndex: 100}, warnings: nil},
+		{name: "apply gap past the limit", member: m, status: endpointStatus{RaftIndex: 5101, RaftAppliedIndex: 100}, warnings: []string{"5001 committed entries are not applied yet, past 5000 etcd refuses new requests"}},
+		{name: "unreachable names the url", member: m, status: endpointStatus{Err: errors.New("timeout")}, warnings: []string{"member is unreachable at http://etcd1:2379: timeout"}},
+		{name: "unreachable without url", member: member{ID: 2}, status: endpointStatus{Err: errors.New("timeout")}, warnings: []string{"member is unreachable: timeout"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := mapWarnings(tt.member, tt.status)
+			if !slices.Equal(got, tt.warnings) {
+				t.Errorf("expected %v, got %v", tt.warnings, got)
+			}
+		})
 	}
 }

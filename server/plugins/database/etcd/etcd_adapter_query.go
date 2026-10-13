@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"go.etcd.io/etcd/api/v3/etcdserverpb"
@@ -17,7 +18,7 @@ import (
 )
 
 var ErrEmptyCommand = errors.New("command is empty")
-var ErrUnknownCommand = errors.New("unknown command, supported commands: get, put, del, member list, endpoint status, alarm list")
+var ErrUnknownCommand = errors.New("unknown command, supported commands: get, put, del, member list, endpoint status, endpoint health, alarm list")
 var ErrUnknownFlag = errors.New("unknown flag")
 var ErrMissingArgument = errors.New("missing argument")
 var ErrUnexpectedArgument = errors.New("unexpected argument")
@@ -73,6 +74,7 @@ const (
 	verbDel            verb = "del"
 	verbMemberList     verb = "member list"
 	verbEndpointStatus verb = "endpoint status"
+	verbEndpointHealth verb = "endpoint health"
 	verbAlarmList      verb = "alarm list"
 )
 
@@ -106,6 +108,9 @@ func parseCommand(query string) (*command, error) {
 	case "member":
 		return parseBareCommand(verbMemberList, "list", tokens[1:])
 	case "endpoint":
+		if len(tokens) > 1 && tokens[1] == "health" {
+			return parseBareCommand(verbEndpointHealth, "health", tokens[1:])
+		}
 		return parseBareCommand(verbEndpointStatus, "status", tokens[1:])
 	case "alarm":
 		return parseBareCommand(verbAlarmList, "list", tokens[1:])
@@ -276,7 +281,19 @@ func (a *Adapter) execute(ctx context.Context, client *etcd.Client, cmd *command
 		fields, rows := mapMemberRows(response.Members)
 		return fields, rows, nil
 	case verbEndpointStatus:
-		return a.executeEndpointStatus(ctx, client)
+		probes, err := a.probeEndpoints(ctx, client)
+		if err != nil {
+			return nil, nil, err
+		}
+		fields, rows := mapStatusRows(probes)
+		return fields, rows, nil
+	case verbEndpointHealth:
+		probes, err := a.probeEndpoints(ctx, client)
+		if err != nil {
+			return nil, nil, err
+		}
+		fields, rows := mapHealthRows(probes)
+		return fields, rows, nil
 	case verbAlarmList:
 		response, err := client.AlarmList(ctx)
 		if err != nil {
@@ -293,32 +310,92 @@ func (a *Adapter) execute(ctx context.Context, client *etcd.Client, cmd *command
 	}
 }
 
-func (a *Adapter) executeEndpointStatus(ctx context.Context, client *etcd.Client) ([]database.QueryField, [][]any, error) {
+// endpointProbe is one member's answer to a Status call, or why there is none.
+type endpointProbe struct {
+	Endpoint string
+	ID       uint64
+	Status   *clientv3.StatusResponse
+	Err      error
+	Took     time.Duration
+}
+
+// probeEndpoints asks every member for its status at once, each under its own
+// deadline: sharing the command's one deadline let a dead member spend the
+// budget the members after it needed, and they came back timed out too.
+func (a *Adapter) probeEndpoints(ctx context.Context, client *etcd.Client) ([]endpointProbe, error) {
 	memberList, err := client.MemberList(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	fields := []database.QueryField{
-		field("endpoint", "text"), field("id", "text"), field("version", "text"), field("dbSize", "int8"),
-		field("isLeader", "bool"), field("raftTerm", "int8"), field("raftIndex", "int8"), field("error", "text"),
-	}
-	rows := make([][]any, 0, len(memberList.Members))
-	for _, m := range memberList.Members {
+	probes := make([]endpointProbe, len(memberList.Members))
+	var wg sync.WaitGroup
+	for i, m := range memberList.Members {
+		probes[i] = endpointProbe{Endpoint: "-", ID: m.ID, Err: errMemberNotStarted}
 		if len(m.ClientURLs) == 0 {
-			rows = append(rows, []any{"-", formatID(m.ID), "-", int64(0), false, int64(0), int64(0), "member has not started"})
 			continue
 		}
-		endpoint := m.ClientURLs[0]
-		status, errStatus := client.Status(ctx, endpoint)
-		if errStatus != nil {
-			rows = append(rows, []any{endpoint, formatID(m.ID), "-", int64(0), false, int64(0), int64(0), errStatus.Error()})
-			continue
-		}
-		isLeader := status.Leader == m.ID
-		rows = append(rows, []any{endpoint, formatID(m.ID), status.Version, status.DbSize, isLeader, int64(status.RaftTerm), int64(status.RaftIndex), ""})
+		probes[i].Endpoint = m.ClientURLs[0]
+		wg.Go(func() {
+			probeCtx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+			defer cancel()
+			start := time.Now()
+			status, errStatus := client.Status(probeCtx, probes[i].Endpoint)
+			probes[i].Status, probes[i].Err, probes[i].Took = status, errStatus, time.Since(start)
+		})
 	}
-	return fields, rows, nil
+	wg.Wait()
+	return probes, nil
+}
+
+var errMemberNotStarted = errors.New("member has not started")
+
+// mapStatusRows reports each member's own status. errors is what the member
+// says about itself - its alarms, a lost leader - and appliedIndex trailing
+// raftIndex is a member that commits faster than it can apply.
+func mapStatusRows(probes []endpointProbe) ([]database.QueryField, [][]any) {
+	fields := []database.QueryField{
+		field("endpoint", "text"), field("id", "text"), field("version", "text"),
+		field("dbSize", "int8"), field("dbSizeInUse", "int8"), field("isLeader", "bool"), field("isLearner", "bool"),
+		field("raftTerm", "int8"), field("raftIndex", "int8"), field("raftAppliedIndex", "int8"),
+		field("errors", "text"), field("error", "text"),
+	}
+	rows := make([][]any, 0, len(probes))
+	for _, p := range probes {
+		if p.Err != nil {
+			rows = append(rows, []any{p.Endpoint, formatID(p.ID), "-", int64(0), int64(0), false, false, int64(0), int64(0), int64(0), "", p.Err.Error()})
+			continue
+		}
+		st := p.Status
+		rows = append(rows, []any{
+			p.Endpoint, formatID(p.ID), st.Version, st.DbSize, st.DbSizeInUse, st.Leader == p.ID, st.IsLearner,
+			int64(st.RaftTerm), int64(st.RaftIndex), int64(st.RaftAppliedIndex), strings.Join(st.Errors, "; "), "",
+		})
+	}
+	return fields, rows
+}
+
+// mapHealthRows answers what etcdctl's endpoint health does: a member is
+// healthy when it answers, knows a leader and reports no alarm. took is the
+// round trip, which is what a slow disk or network shows up as first.
+func mapHealthRows(probes []endpointProbe) ([]database.QueryField, [][]any) {
+	fields := []database.QueryField{
+		field("endpoint", "text"), field("id", "text"), field("health", "bool"), field("took", "text"), field("error", "text"),
+	}
+	rows := make([][]any, 0, len(probes))
+	for _, p := range probes {
+		took := p.Took.Round(time.Millisecond).String()
+		switch {
+		case p.Err != nil:
+			rows = append(rows, []any{p.Endpoint, formatID(p.ID), false, took, p.Err.Error()})
+		case p.Status.Leader == 0:
+			rows = append(rows, []any{p.Endpoint, formatID(p.ID), false, took, "member has no leader"})
+		case len(p.Status.Errors) > 0:
+			rows = append(rows, []any{p.Endpoint, formatID(p.ID), false, took, strings.Join(p.Status.Errors, "; ")})
+		default:
+			rows = append(rows, []any{p.Endpoint, formatID(p.ID), true, took, ""})
+		}
+	}
+	return fields, rows
 }
 
 func mapKvRows(kvs []*mvccpb.KeyValue, keysOnly bool) ([]database.QueryField, [][]any) {

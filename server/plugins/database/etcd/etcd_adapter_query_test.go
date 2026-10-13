@@ -3,11 +3,14 @@ package etcd
 import (
 	"errors"
 	"ivory/plugins/database"
+	"reflect"
 	"slices"
 	"testing"
+	"time"
 
 	"go.etcd.io/etcd/api/v3/etcdserverpb"
 	"go.etcd.io/etcd/api/v3/mvccpb"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func TestMapKvRows(t *testing.T) {
@@ -182,6 +185,11 @@ func TestParseCommand(t *testing.T) {
 			expected: command{Verb: verbEndpointStatus},
 		},
 		{
+			name:     "endpoint health",
+			query:    `endpoint health`,
+			expected: command{Verb: verbEndpointHealth},
+		},
+		{
 			name:     "alarm list",
 			query:    `alarm list`,
 			expected: command{Verb: verbAlarmList},
@@ -199,6 +207,8 @@ func TestParseCommand(t *testing.T) {
 		{name: "get extra argument", query: "get /key extra", expectedErr: ErrUnexpectedArgument},
 		{name: "member missing subcommand", query: "member", expectedErr: ErrMissingArgument},
 		{name: "member extra argument", query: "member list extra", expectedErr: ErrUnexpectedArgument},
+		{name: "endpoint unknown subcommand", query: "endpoint hashkv", expectedErr: ErrMissingArgument},
+		{name: "endpoint health extra argument", query: "endpoint health extra", expectedErr: ErrUnexpectedArgument},
 		{name: "limit missing value", query: "get /key --limit", expectedErr: ErrMissingArgument},
 		{name: "limit not a number", query: "get /key --limit abc", expectedErr: ErrInvalidLimit},
 		{name: "limit negative", query: "get /key --limit -5", expectedErr: ErrInvalidLimit},
@@ -222,6 +232,53 @@ func TestParseCommand(t *testing.T) {
 				t.Errorf("expected %+v, got %+v", tt.expected, *parsed)
 			}
 		})
+	}
+}
+
+func TestMapStatusRows(t *testing.T) {
+	probes := []endpointProbe{
+		{Endpoint: "http://etcd1:2379", ID: 1, Status: &clientv3.StatusResponse{Version: "3.6.5", DbSize: 100, DbSizeInUse: 60, Leader: 1, RaftTerm: 2, RaftIndex: 10, RaftAppliedIndex: 9, Errors: []string{"alarm:NOSPACE"}}},
+		{Endpoint: "http://etcd2:2379", ID: 2, Status: &clientv3.StatusResponse{Leader: 1, IsLearner: true}},
+		{Endpoint: "http://etcd3:2379", ID: 3, Err: errors.New("connection refused")},
+	}
+	fields, rows := mapStatusRows(probes)
+	if len(fields) != 12 {
+		t.Fatalf("expected 12 fields, got %d", len(fields))
+	}
+	expected := [][]any{
+		{"http://etcd1:2379", "1", "3.6.5", int64(100), int64(60), true, false, int64(2), int64(10), int64(9), "alarm:NOSPACE", ""},
+		{"http://etcd2:2379", "2", "", int64(0), int64(0), false, true, int64(0), int64(0), int64(0), "", ""},
+		{"http://etcd3:2379", "3", "-", int64(0), int64(0), false, false, int64(0), int64(0), int64(0), "", "connection refused"},
+	}
+	for i := range expected {
+		if !reflect.DeepEqual(rows[i], expected[i]) {
+			t.Errorf("row %d: expected %v, got %v", i, expected[i], rows[i])
+		}
+	}
+}
+
+func TestMapHealthRows(t *testing.T) {
+	probes := []endpointProbe{
+		{Endpoint: "e1", ID: 1, Status: &clientv3.StatusResponse{Leader: 1}, Took: 1500 * time.Microsecond},
+		{Endpoint: "e2", ID: 2, Status: &clientv3.StatusResponse{Leader: 0}},
+		{Endpoint: "e3", ID: 3, Status: &clientv3.StatusResponse{Leader: 1, Errors: []string{"alarm:NOSPACE"}}},
+		{Endpoint: "e4", ID: 4, Err: errors.New("timeout")},
+	}
+	_, rows := mapHealthRows(probes)
+	tests := []struct {
+		health bool
+		took   string
+		err    string
+	}{
+		{health: true, took: "2ms", err: ""},
+		{health: false, took: "0s", err: "member has no leader"},
+		{health: false, took: "0s", err: "alarm:NOSPACE"},
+		{health: false, took: "0s", err: "timeout"},
+	}
+	for i, tt := range tests {
+		if rows[i][2] != tt.health || rows[i][3] != tt.took || rows[i][4] != tt.err {
+			t.Errorf("row %d: expected %v %q %q, got %v", i, tt.health, tt.took, tt.err, rows[i])
+		}
 	}
 }
 

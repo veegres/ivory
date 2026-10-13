@@ -69,32 +69,33 @@ func TestMapNode(t *testing.T) {
 // (total_replicas == 0) reports neither.
 func TestReplicaWarnings(t *testing.T) {
 	tests := []struct {
-		name                          string
-		readonly                      bool
-		activeReplicas, totalReplicas uint32
-		stuckCount                    uint64
-		sampleError                   string
-		expectedCount                 int
+		name          string
+		status        replicaStatus
+		expectedCount int
+		contains      string
 	}{
-		{name: "no replicated tables yet", activeReplicas: 0, totalReplicas: 0, stuckCount: 0, expectedCount: 0},
-		{name: "every replica has a session and nothing is stuck", activeReplicas: 3, totalReplicas: 3, stuckCount: 0, expectedCount: 0},
-		{name: "a replica dropped its coordination-store session", activeReplicas: 2, totalReplicas: 3, stuckCount: 0, expectedCount: 1},
-		{name: "sessions are fine but a fetch is stuck", activeReplicas: 3, totalReplicas: 3, stuckCount: 1, sampleError: "Connection refused", expectedCount: 1},
-		{name: "both at once", activeReplicas: 1, totalReplicas: 3, stuckCount: 2, sampleError: "DNS_ERROR", expectedCount: 2},
+		{name: "no replicated tables yet", status: replicaStatus{}, expectedCount: 0},
+		{name: "every replica has a session and nothing is stuck", status: replicaStatus{ActiveReplicas: 3, TotalReplicas: 3}, expectedCount: 0},
+		{name: "a replica dropped its coordination-store session", status: replicaStatus{ActiveReplicas: 2, TotalReplicas: 3}, expectedCount: 1},
+		{name: "sessions are fine but a fetch is stuck", status: replicaStatus{ActiveReplicas: 3, TotalReplicas: 3, StuckCount: 1, StuckError: "Connection refused"}, expectedCount: 1, contains: "Connection refused"},
+		{name: "both at once", status: replicaStatus{ActiveReplicas: 1, TotalReplicas: 3, StuckCount: 2, StuckError: "DNS_ERROR"}, expectedCount: 2, contains: "DNS_ERROR"},
 		// A read-only node is running and serving reads, so it is a warning
 		// rather than a state - the same call redis makes for a dead link.
-		{name: "read-only tables warn without changing the state", readonly: true, activeReplicas: 3, totalReplicas: 3, stuckCount: 0, expectedCount: 1},
-		{name: "read-only on top of a lost session is two warnings", readonly: true, activeReplicas: 2, totalReplicas: 3, stuckCount: 0, expectedCount: 2},
+		{name: "read-only tables warn without changing the state and are named", status: replicaStatus{Readonly: 1, ReadonlyCount: 4, ReadonlyTables: "db.a, db.b, db.c", ActiveReplicas: 3, TotalReplicas: 3}, expectedCount: 1, contains: "4 replicated table(s) are read-only (db.a, db.b, db.c)"},
+		{name: "read-only on top of a lost session is two warnings", status: replicaStatus{Readonly: 1, ReadonlyCount: 1, ReadonlyTables: "db.a", ActiveReplicas: 2, TotalReplicas: 3}, expectedCount: 2},
+		{name: "delay within the distributed query limit", status: replicaStatus{AbsoluteDelay: 300, MaxDelay: 300}, expectedCount: 0},
+		{name: "delay past the distributed query limit", status: replicaStatus{AbsoluteDelay: 301, MaxDelay: 300}, expectedCount: 1, contains: "replication is 301s behind"},
+		{name: "a read-only replica's delay is not compared", status: replicaStatus{Readonly: 1, ReadonlyCount: 1, ReadonlyTables: "db.a", AbsoluteDelay: 1700000000, MaxDelay: 300}, expectedCount: 1},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			warnings := replicaWarnings(tt.readonly, tt.activeReplicas, tt.totalReplicas, tt.stuckCount, tt.sampleError)
+			warnings := replicaWarnings(tt.status)
 			if len(warnings) != tt.expectedCount {
 				t.Fatalf("expected %d warning(s), got %v", tt.expectedCount, warnings)
 			}
-			if tt.stuckCount > 0 && !containsSubstring(warnings, tt.sampleError) {
-				t.Errorf("expected the stuck-queue warning to surface the real error %q, got %v", tt.sampleError, warnings)
+			if tt.contains != "" && !containsSubstring(warnings, tt.contains) {
+				t.Errorf("expected a warning containing %q, got %v", tt.contains, warnings)
 			}
 		})
 	}
@@ -194,19 +195,25 @@ func TestMembershipWarnings(t *testing.T) {
 	tests := []struct {
 		name     string
 		cluster  string
-		declared bool
+		declared []string
 		err      error
 		expected string
 	}{
 		{
 			name:     "a node that declares the cluster says nothing",
 			cluster:  "prod",
-			declared: true,
+			declared: []string{"default", "prod"},
 		},
 		{
-			name:     "a node that has never heard of the cluster says so",
+			name:     "a node that has never heard of the cluster names the ones it is in",
 			cluster:  "prod",
-			expected: `this node is not in the cluster "prod"`,
+			declared: []string{"default", "test_shard_localhost"},
+			expected: `this node is not in the cluster "prod", it declares: default, test_shard_localhost`,
+		},
+		{
+			name:     "a node that declares nothing says so",
+			cluster:  "prod",
+			expected: `this node is not in the cluster "prod", it declares no clusters`,
 		},
 		{
 			name:     "a cluster that could not be read at all is reported as that, not as absent",

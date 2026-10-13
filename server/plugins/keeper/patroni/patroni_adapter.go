@@ -2,6 +2,7 @@ package patroni
 
 import (
 	"encoding/json"
+	"fmt"
 	"ivory/clients/http"
 	"ivory/plugins/keeper"
 	"maps"
@@ -42,36 +43,39 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 
 	for _, patroniInstance := range response.Members {
-		parsed, errParse := url.Parse(patroniInstance.ApiUrl)
-		if errParse != nil {
-			return nil, nethttp.StatusBadRequest, errParse
+		role := p.mapRole(patroniInstance.Role)
+		lag := p.mapLag(patroniInstance.Lag)
+		if role == keeper.Leader {
+			lag = 0
 		}
-		host := parsed.Hostname()
-		port, errCast := strconv.Atoi(parsed.Port())
-		if errCast != nil {
-			return nil, nethttp.StatusBadRequest, errCast
-		}
-
-		overview = append(overview, keeper.Response{
-			Key:                  &patroniInstance.Name,
-			Status:               &keeperStatus,
-			State:                p.mapState(patroniInstance.State),
-			Role:                 p.mapRole(patroniInstance.Role),
-			Sync:                 p.mapSync(patroniInstance.Role),
-			Lag:                  p.mapLag(patroniInstance.Lag),
-			PendingRestart:       patroniInstance.PendingRestart,
-			ScheduledRestart:     p.mapRestart(patroniInstance.ScheduledRestart),
-			ScheduledSwitchover:  p.mapSwitchover(host, response.ScheduledSwitchover),
-			Tags:                 p.mapTags(patroniInstance),
-			DiscoveredHost:       &patroniInstance.Host,
-			DiscoveredName:       &patroniInstance.Name,
-			DiscoveredDbPort:     &patroniInstance.Port,
-			DiscoveredKeeperPort: &port,
+		member := keeper.Response{
+			Key:                 &patroniInstance.Name,
+			Status:              &keeperStatus,
+			State:               p.mapState(patroniInstance.State),
+			Role:                role,
+			Sync:                p.mapSync(patroniInstance.Role),
+			Lag:                 lag,
+			PendingRestart:      patroniInstance.PendingRestart,
+			ScheduledRestart:    p.mapRestart(patroniInstance.ScheduledRestart),
+			ScheduledSwitchover: p.mapSwitchover(patroniInstance.Name, response.ScheduledSwitchover),
+			Tags:                p.mapTags(patroniInstance),
+			DiscoveredName:      &patroniInstance.Name,
 			// NOTE: /cluster already names every member, so this is only for the
 			// stranger that membership cannot see - a patroni whose own cluster
 			// has one member is absent from nobody's member list.
 			DiscoveredCluster: scope,
-		})
+		}
+		// NOTE: a member with no usable api_url is still reported by name, which
+		// is how a configured node is found without an address, and says why;
+		// it used to fail the whole List and with it every other member.
+		if port, errPort := p.mapApiPort(patroniInstance.ApiUrl); errPort != nil {
+			member.Warnings = []string{errPort.Error()}
+		} else {
+			member.DiscoveredHost = &patroniInstance.Host
+			member.DiscoveredDbPort = &patroniInstance.Port
+			member.DiscoveredKeeperPort = &port
+		}
+		overview = append(overview, member)
 	}
 
 	return overview, status, err
@@ -97,6 +101,17 @@ func (p *Plugin) mapTags(i instance) *map[string]any {
 	return &tags
 }
 
+func (p *Plugin) mapApiPort(apiUrl string) (int, error) {
+	parsed, err := url.Parse(apiUrl)
+	if err == nil {
+		var port int
+		if port, err = strconv.Atoi(parsed.Port()); err == nil {
+			return port, nil
+		}
+	}
+	return 0, fmt.Errorf("member api_url %q has no usable port: %w", apiUrl, err)
+}
+
 func (p *Plugin) mapLag(lag json.RawMessage) int64 {
 	if num, errInt := strconv.ParseInt(string(lag), 10, 64); errInt == nil {
 		return num
@@ -115,9 +130,11 @@ func (p *Plugin) mapRestart(restart *scheduledRestart) *keeper.ScheduledRestart 
 	return scheduledRestart
 }
 
-func (p *Plugin) mapSwitchover(host string, switchover *scheduledSwitchover) *keeper.ScheduledSwitchover {
+// mapSwitchover attaches a scheduled switchover to the member it moves the
+// leader away from. Patroni names that member by its member name, not its host.
+func (p *Plugin) mapSwitchover(name string, switchover *scheduledSwitchover) *keeper.ScheduledSwitchover {
 	var scheduledSwitchover *keeper.ScheduledSwitchover
-	if switchover != nil && switchover.From == host {
+	if switchover != nil && switchover.From == name {
 		to := switchover.To
 		if to == "" {
 			to = "(random selection)"

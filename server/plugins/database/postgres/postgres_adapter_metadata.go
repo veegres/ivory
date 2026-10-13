@@ -222,6 +222,12 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 			Query:       DefaultReplicaStatus,
 		},
 		{
+			Name: "WAL receiver", Type: database.REPLICATION,
+			Description: "Shows this standby's own connection to the server it streams from: its status, which host it follows, the slot it uses, and how long ago the last message arrived. No row means no WAL receiver is running, so the standby is not streaming at all. Its details are visible only to superusers and pg_read_all_stats.",
+			Varieties:   []database.SystemRequestVariety{database.ReplicaRecommended},
+			Query:       DefaultWalReceiver,
+		},
+		{
 			Name: "Queries by total time", Type: database.STATISTIC,
 			Description: "Shows the queries that consumed the most execution time overall, which is usually a cheap query run very often rather than the slow one being hunted. Requires the pg_stat_statements extension to be installed and loaded.",
 			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
@@ -624,6 +630,8 @@ const DefaultReplicaStatus = `SELECT
     pg_last_xact_replay_timestamp() AS last_replayed_at,
     (now() - pg_last_xact_replay_timestamp())::text AS replay_delay,
     pg_is_wal_replay_paused() AS replay_paused;`
+
+const DefaultWalReceiver = `SELECT *, (now() - last_msg_receipt_time)::text AS since_last_message FROM pg_stat_wal_receiver;`
 
 const DefaultStatementsByTime = `SELECT
     calls,

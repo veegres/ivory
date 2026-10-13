@@ -3,6 +3,7 @@ package zookeeper
 import (
 	"errors"
 	"ivory/plugins/database"
+	"reflect"
 	"testing"
 )
 
@@ -62,6 +63,12 @@ func TestParseCommand(t *testing.T) {
 		{name: "ls missing path", query: "ls", expectedErr: ErrMissingArgument},
 		{name: "create missing data", query: "create /a", expectedErr: ErrMissingArgument},
 		{name: "get extra argument", query: "get /a extra", expectedErr: ErrUnexpectedArgument},
+		{name: "mntr", query: "mntr", expected: command{Verb: verbMntr}},
+		{name: "srvr", query: "srvr", expected: command{Verb: verbSrvr}},
+		{name: "stat", query: "stat", expected: command{Verb: verbStat}},
+		{name: "ruok", query: "ruok", expected: command{Verb: verbRuok}},
+		{name: "conf", query: "conf", expected: command{Verb: verbConf}},
+		{name: "admin command takes no argument", query: "mntr /a", expectedErr: ErrUnexpectedArgument},
 	}
 
 	for _, tt := range tests {
@@ -80,6 +87,48 @@ func TestParseCommand(t *testing.T) {
 				t.Errorf("expected %+v, got %+v", tt.expected, *parsed)
 			}
 		})
+	}
+}
+
+func TestParseAdminOutput(t *testing.T) {
+	tests := []struct {
+		name     string
+		output   string
+		expected [][]any
+	}{
+		{name: "mntr", output: "zk_version\t3.9.1\nzk_server_state\tleader\n", expected: [][]any{{"zk_version", "3.9.1"}, {"zk_server_state", "leader"}}},
+		{name: "conf", output: "clientPort=2181\nserver.1=zk1:2888:3888:participant;0.0.0.0:2181\n", expected: [][]any{{"clientPort", "2181"}, {"server.1", "zk1:2888:3888:participant;0.0.0.0:2181"}}},
+		{name: "srvr", output: "Zookeeper version: 3.9.1\nMode: follower\n\n", expected: [][]any{{"Zookeeper version", "3.9.1"}, {"Mode", "follower"}}},
+		{name: "ruok", output: "imok", expected: [][]any{{"imok", ""}}},
+		{name: "refusal is kept whole", output: "mntr is not executed because it is not in the whitelist.\n", expected: [][]any{{"mntr is not executed because it is not in the whitelist.", ""}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseAdminOutput(tt.output)
+			if !reflect.DeepEqual(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
+func TestAdminRequiresAnEndpoint(t *testing.T) {
+	_, _, _, err := NewAdapter().executeAdmin(database.Context{Connection: &database.Connection{}}, verbRuok)
+	if !errors.Is(err, database.ErrDatabaseHostOrPortNotSpecified) {
+		t.Errorf("expected host/port error, got %v", err)
+	}
+}
+
+func TestIsAdmin(t *testing.T) {
+	for _, v := range []verb{verbMntr, verbSrvr, verbStat, verbRuok, verbConf} {
+		if !v.isAdmin() {
+			t.Errorf("expected %s to be an admin command", v)
+		}
+	}
+	for _, v := range []verb{verbLs, verbGet, verbCreate, verbSet, verbDelete, verbExists} {
+		if v.isAdmin() {
+			t.Errorf("expected %s to be a znode command", v)
+		}
 	}
 }
 

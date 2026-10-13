@@ -10,6 +10,11 @@ const DefaultConfig = `get /zookeeper/config`
 const DefaultInternals = `ls /zookeeper`
 const DefaultPatroniNamespace = `ls /service`
 const DefaultClickhouseTree = `ls /clickhouse`
+const DefaultMonitor = `mntr`
+const DefaultServer = `srvr`
+const DefaultStat = `stat`
+const DefaultRuok = `ruok`
+const DefaultServerConfig = `conf`
 
 func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
@@ -52,6 +57,31 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 			Name: "ClickHouse coordination", Type: database.REPLICATION,
 			Description: "Lists the subtree ClickHouse registers its replicated tables under. It is where a replica whose session dropped stops appearing, which is what turns its tables read-only.",
 			Query:       DefaultClickhouseTree,
+		},
+		{
+			Name: "Server health", Type: database.STATISTIC,
+			Description: "The server's own metrics (mntr): its state, outstanding requests, latency, and on the leader how many followers are synced. A server that has lost its quorum answers that it is not currently serving requests.",
+			Query:       DefaultMonitor,
+		},
+		{
+			Name: "Server status", Type: database.REPLICATION,
+			Description: "The server's mode (leader, follower, observer, standalone), its zxid and latency (srvr). It is what this node itself thinks its role is.",
+			Query:       DefaultServer,
+		},
+		{
+			Name: "Server connections", Type: database.ACTIVITY,
+			Description: "Like Server status, plus every client connected to this server (stat), to find who holds the sessions.",
+			Query:       DefaultStat,
+		},
+		{
+			Name: "Server alive", Type: database.OTHER,
+			Description: "Asks the server whether it is running (ruok); it answers imok. It says nothing about the quorum - a server without one still answers.",
+			Query:       DefaultRuok,
+		},
+		{
+			Name: "Server config", Type: database.REPLICATION,
+			Description: "The server's effective configuration (conf): its ports, data directories and the ensemble's server.N lines.",
+			Query:       DefaultServerConfig,
 		},
 	}
 }

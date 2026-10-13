@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"testing"
 	"time"
 )
@@ -81,8 +82,8 @@ func TestMapStatus(t *testing.T) {
 	}
 
 	arbiter := responses[2]
-	if arbiter.Role != keeper.Unknown || arbiter.Lag != 0 {
-		t.Errorf("expected arbiter unknown role with zero lag, got role %v lag %d", arbiter.Role, arbiter.Lag)
+	if arbiter.Role != keeper.Unknown || arbiter.Lag != -1 {
+		t.Errorf("expected arbiter unknown role with unknown lag, got role %v lag %d", arbiter.Role, arbiter.Lag)
 	}
 }
 
@@ -93,8 +94,48 @@ func TestMapStatusNoPrimary(t *testing.T) {
 		},
 	}
 	responses := mapStatus(status)
-	if responses[0].Lag != 0 {
-		t.Errorf("expected zero lag with no primary in view, got %d", responses[0].Lag)
+	if responses[0].Lag != -1 {
+		t.Errorf("expected unknown lag with no primary in view, got %d", responses[0].Lag)
+	}
+}
+
+func TestMapStatusWarnings(t *testing.T) {
+	now := time.Now()
+	status := &replSetStatus{
+		Members: []replSetMember{
+			{Name: "h1:27017", StateStr: "PRIMARY", Health: 1, OptimeDate: now, Self: true},
+			{Name: "h2:27017", StateStr: "SECONDARY", Health: 1, OptimeDate: now, InfoMessage: "could not find member to sync from"},
+			{Name: "h3:27017", StateStr: "(not reachable/healthy)", Health: 0, LastHeartbeatMessage: "Connection refused"},
+		},
+	}
+	responses := mapStatus(status)
+	tests := []struct {
+		name     string
+		index    int
+		warnings []string
+		lag      int64
+	}{
+		{name: "healthy primary", index: 0, warnings: nil, lag: 0},
+		{name: "info message", index: 1, warnings: []string{"could not find member to sync from"}, lag: 0},
+		{name: "failed heartbeat names the observer", index: 2, warnings: []string{"heartbeat from h1:27017 failed: Connection refused"}, lag: -1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := responses[tt.index]
+			if !slices.Equal(got.Warnings, tt.warnings) {
+				t.Errorf("expected warnings %v, got %v", tt.warnings, got.Warnings)
+			}
+			if got.Lag != tt.lag {
+				t.Errorf("expected lag %d, got %d", tt.lag, got.Lag)
+			}
+		})
+	}
+}
+
+func TestMapWarningsWithoutObserver(t *testing.T) {
+	got := mapWarnings(replSetMember{LastHeartbeatMessage: "timeout"}, "")
+	if !slices.Equal(got, []string{"heartbeat failed: timeout"}) {
+		t.Errorf("unexpected warnings %v", got)
 	}
 }
 
