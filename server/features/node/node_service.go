@@ -2,6 +2,7 @@ package node
 
 import (
 	"crypto/tls"
+	"fmt"
 	"ivory/core/config"
 	"ivory/core/service/cert"
 	"ivory/core/service/job"
@@ -99,6 +100,9 @@ func (s *Service) getPlatformPlugin(c PlatformVaultConnection) (platform.Plugin,
 	return plugin, platformConn, err
 }
 
+// getKeeperAdapter labels a vault or cert failure with its stage, since the
+// error is shown wherever a keeper call fails and otherwise reads as the
+// keeper's own answer.
 func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
 	adapter, err := s.keeperRegistry.Get(c.Plugin)
 	if err != nil {
@@ -108,14 +112,14 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config
 	if c.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, c.Certs)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, fmt.Errorf("keeper cert: %w", err)
 		}
 	}
 	var cred *keeper.Credentials
 	if c.VaultId != nil {
 		d, err := s.vaultService.GetDecrypted(*c.VaultId)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, fmt.Errorf("keeper vault: %w", err)
 		}
 		cred = &keeper.Credentials{Username: d.Username, Password: d.Secret}
 	}
