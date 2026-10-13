@@ -176,6 +176,29 @@ func TestPersistenceWarnings(t *testing.T) {
 	}
 }
 
+func TestReplicaQuorumWarnings(t *testing.T) {
+	tests := []struct {
+		name     string
+		fields   map[string]string
+		role     keeper.Role
+		expected []string
+	}{
+		{name: "no quorum configured", fields: map[string]string{"connected_slaves": "2"}, role: keeper.Leader},
+		{name: "every replica within the lag", fields: map[string]string{"connected_slaves": "2", "min_slaves_good_slaves": "2"}, role: keeper.Leader},
+		{name: "a replica past the lag", fields: map[string]string{"connected_slaves": "2", "min_slaves_good_slaves": "1"}, role: keeper.Leader, expected: []string{"1 of 2 replicas are past min-replicas-max-lag and do not count towards min-replicas-to-write"}},
+		{name: "none within the lag refuses writes", fields: map[string]string{"connected_slaves": "2", "min_slaves_good_slaves": "0"}, role: keeper.Leader, expected: []string{"no replica is within min-replicas-max-lag, the master refuses writes (min-replicas-to-write)"}},
+		{name: "a replica's own quorum is not the master's", fields: map[string]string{"connected_slaves": "0", "min_slaves_good_slaves": "0"}, role: keeper.Replica},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := replicaQuorumWarnings(tt.fields, tt.role)
+			if !slices.Equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
 // TestLinkWarnings pins that a broken replication link is a warning rather than
 // a tag: the node still reports itself running, and Lag only measures how long
 // ago the last byte arrived, so nothing else on the row shows it.

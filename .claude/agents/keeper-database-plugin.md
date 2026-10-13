@@ -226,11 +226,16 @@ than one per member.
   (mongo: `heartbeat from h1:27017 failed: …`) — the same peer may look fine from elsewhere. A failed probe names
   the address it tried (etcd: `member is unreachable at http://…:2379: …`), so an advertised url Ivory cannot
   route to reads differently from a member that is down.
-- **A threshold warns only where the engine itself acts on it.** Never pick a number: lag is bytes, seconds or
-  raft entries depending on the plugin, and "big" depends on the workload. Warn where crossing the line changes
-  what the engine does, and read the line from the engine where it is configurable: clickhouse's
-  `absolute_delay` past `getSetting('max_replica_delay_for_distributed_queries')` (distributed queries prefer
-  other replicas); etcd's committed-minus-applied index past 5000 (`maxGapBetweenApplyAndCommitIndex`, after
+- **Engine warnings and Ivory warnings are two channels.** The adapter's `Warnings` are the engine's: what it
+  reports, or a line it acts on itself, read from the engine where configurable. They stay on `keeper.warnings`,
+  apart from the node's own `warnings`, which are Ivory's, and the UI labels each by source. **Lag is never
+  compared against an Ivory number in the adapter**: `Metadata.Lag()` declares the unit and Ivory's own default
+  threshold (patroni and native postgres 50 MiB, mongo/redis/clickhouse 30s, etcd 1000 entries, zookeeper none —
+  it never measures lag), and `cluster.addLagWarnings` warns on any replica beyond it. Engine lines the adapter
+  reports: clickhouse's `absolute_delay` past `getSetting('max_replica_delay_for_distributed_queries')`
+  (distributed queries prefer other replicas); postgres slots postgres marked `unreserved`/`lost`
+  (`listQuery`, via `to_jsonb` so pre-13 servers lose only the warning); redis replicas past
+  `min-replicas-max-lag` (`min_slaves_good_slaves`, present in `INFO` only when the quorum is set); etcd's committed-minus-applied index past 5000 (`maxGapBetweenApplyAndCommitIndex`, after
   which it refuses requests); redis' failed save (writes refused by default). A per-node count compared
   against configuration is fine too — zookeeper's leader warns when `zk_synced_followers` is below the voting
   members `conf` lists, which catches a follower that is down entirely and so missing from the leader's own
@@ -361,6 +366,10 @@ All twelve `keeper.Adapter` methods: `List`, `Config`, `ConfigUpdate`, `Switchov
 - `ReplicationModel()` states which of the two paradigms the engine follows — it cannot be inferred from
   `SupportedFeatures`, and zookeeper proves it: no switchover, no failover, still single-leader. Which
   operations are even *meaningful* follows from it; see the next section.
+- `Lag()` states what `Response.Lag` counts (`LagBytes`/`LagSeconds`/`LagEntries`) and Ivory's own default
+  threshold past which a replica is worth checking, `Threshold: 0` only where lag is never measured. The
+  overview carries it as `lag` so the UI formats and colours by unit, and Ivory's warning is raised once, in
+  `cluster.addLagWarnings`. `plugins_context_test.go` requires a unit.
 - `DefaultTemplates()` ships the engine's deployments. See `CLAUDE.md` for its full contract; the parts most
   often got wrong are that each command is one whole literal `const` (duplication between near-identical
   commands is deliberate — do not factor it out), that every placeholder must be in `keeper.Vars`, that every
@@ -577,7 +586,7 @@ that exists.
 |---|---|---|
 | `State` | | which of the eight it can reach, and **observed or assumed?** |
 | `Role` | | and where it declines to guess one |
-| `Lag` | | **name the unit** — it is not comparable across plugins; when it is `-1`; can a dead link read `0`? |
+| `Lag` | | **name the unit** (`Lag().Unit`) and Ivory's threshold; when it is `-1`; can a dead link read `0`? |
 | `Sync` | | or "engine has no concept" |
 | `Status` | | `ACTIVE`/`PAUSED`, or `nil` where the engine has no such notion |
 | `Tags` | | list the keys, and say which reply each rides — a tag that costs its own request must justify it |

@@ -39,6 +39,16 @@ func TestMapNode(t *testing.T) {
 			expectedRole: keeper.Replica, expectedLag: -1, expectedKey: "db3:5434",
 			expectedWarn: []string{"standby is not streaming: no WAL receiver is running"},
 		},
+		{
+			name: "primary names the slots postgres gave up on",
+			host: "db1", port: 5432, inRecovery: false,
+			stats:        nodeStats{UnreservedSlots: []string{"db2", "db3"}, LostSlots: []string{"db4"}},
+			expectedRole: keeper.Leader, expectedLag: 0, expectedKey: "db1:5432",
+			expectedWarn: []string{
+				"replication slot(s) db2, db3 are past max_slot_wal_keep_size, their WAL is removed at the next checkpoint",
+				"replication slot(s) db4 lost WAL their standby needs, it has to be rebuilt",
+			},
+		},
 	}
 
 	for _, tt := range tests {

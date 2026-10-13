@@ -31,6 +31,7 @@ import {
     DeployVarScope,
     KeeperCandidate,
     KeeperConnection,
+    KeeperLag,
     KeeperOneRequest,
     KeeperPlugin,
     KeeperState,
@@ -442,6 +443,35 @@ export const DateTimeFormatter = {
 export const SizeFormatter = {
     format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
     pretty: (size: number) => SizeFormatter.format.format(size)
+}
+
+const LAG_DURATION: [number, string][] = [[86400, "d"], [3600, "h"], [60, "m"], [1, "s"]]
+
+export const LagFormatter = {
+    entries: Intl.NumberFormat("en", {notation: "compact"}),
+    seconds: (lag: number) => {
+        let rest = lag
+        const parts = LAG_DURATION.flatMap(([size, suffix]) => {
+            const count = Math.floor(rest / size)
+            rest -= count * size
+            return count > 0 ? [`${count}${suffix}`] : []
+        })
+        return parts.length ? parts.slice(0, 2).join(" ") : "0s"
+    },
+    pretty: (lag: number, meta?: KeeperLag) => {
+        if (lag < 0) return "unknown"
+        switch (meta?.unit) {
+            case "bytes": return SizeFormatter.pretty(lag)
+            case "seconds": return LagFormatter.seconds(lag)
+            case "entries": return `${LagFormatter.entries.format(lag)} entries`
+            default: return String(lag)
+        }
+    },
+    color: (lag: number, meta?: KeeperLag): "success" | "error" | "default" => {
+        if (lag === 0) return "success"
+        if (meta?.threshold && lag > meta.threshold) return "error"
+        return "default"
+    },
 }
 
 export const printLogs = (title: string, logs: string[]) => {

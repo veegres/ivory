@@ -1,6 +1,7 @@
 import {Box} from "@mui/material"
 
 import {Cluster, NodeOverview} from "../../../../features/cluster/api/ClusterType"
+import {KeeperLag} from "../../../../features/node/api/NodeType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getInitialNode, getKeeperCandidates, getNodeConfig} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
@@ -14,10 +15,11 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: Cluster,
     nodes?: NodeOverview,
+    lag?: KeeperLag,
 }
 
 export function OverviewNodes(props: Props) {
-    const {cluster} = props
+    const {cluster, lag} = props
     const nodes = props.nodes ?? cluster.nodesOverview
     const activeNode = useStore(s => s.activeNode[cluster.name])
     const candidates = getKeeperCandidates(nodes)
@@ -34,6 +36,7 @@ export function OverviewNodes(props: Props) {
                         node={element}
                         cluster={cluster}
                         candidates={candidates}
+                        lag={lag}
                     />
                 ))}
             </Box>
@@ -50,6 +53,7 @@ export function OverviewNodes(props: Props) {
                 checked={true}
                 cluster={cluster}
                 candidates={candidates}
+                lag={lag}
                 error={true}
             />
         )

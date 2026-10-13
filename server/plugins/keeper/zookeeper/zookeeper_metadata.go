@@ -27,6 +27,12 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+// NOTE: mntr reports no per-follower offset, so a follower's lag is never
+// known and there is nothing to compare a threshold against
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagEntries}
+}
+
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely
 // unique small integer per member, which no host-derived value can provide -
 // which is why all three commands are spelled out rather than shared. The

@@ -13,6 +13,7 @@ import (
 	"ivory/tools"
 	"net/http"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -74,6 +75,7 @@ func (f *fakeKeeperAdapter) SupportedFeatures() map[config.Feature]bool {
 }
 
 func (f *fakeKeeperAdapter) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
+func (f *fakeKeeperAdapter) Lag() keeper.Lag                           { return keeper.Lag{} }
 
 func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error) {
 	return f.listResponse, f.listStatus, f.listErr
@@ -293,6 +295,7 @@ type multiHostFakeKeeperAdapter struct {
 func (f *multiHostFakeKeeperAdapter) ReplicationModel() keeper.ReplicationModel {
 	return keeper.SingleLeader
 }
+func (f *multiHostFakeKeeperAdapter) Lag() keeper.Lag { return keeper.Lag{} }
 
 func (f *multiHostFakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return f.responses[request.Host], http.StatusOK, nil
@@ -990,4 +993,31 @@ func TestService_Check(t *testing.T) {
 			t.Fatalf("expected an error for an unknown cluster")
 		}
 	})
+}
+
+func TestAddLagWarnings(t *testing.T) {
+	lag := node.KeeperLag{Unit: keeper.LagBytes, Threshold: 1024}
+	tests := []struct {
+		name     string
+		lag      node.KeeperLag
+		role     node.KeeperRole
+		value    int64
+		expected []string
+	}{
+		{name: "a replica within the threshold", lag: lag, role: node.KeeperRoleReplica, value: 1024},
+		{name: "a replica past the threshold", lag: lag, role: node.KeeperRoleReplica, value: 2048, expected: []string{"replication lag 2.0 KiB is past Ivory's threshold of 1.0 KiB"}},
+		{name: "an unknown lag is never past it", lag: lag, role: node.KeeperRoleReplica, value: -1},
+		{name: "a leader is not compared", lag: lag, role: node.KeeperRoleLeader, value: 2048},
+		{name: "an engine without a threshold never warns", lag: node.KeeperLag{Unit: keeper.LagBytes}, role: node.KeeperRoleReplica, value: 1 << 40},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{}
+			nodeMap := map[string]Node{"n1": {Keeper: node.KeeperOneResponse{Role: tt.role, Lag: tt.value}}}
+			s.addLagWarnings(nodeMap, tt.lag)
+			if !reflect.DeepEqual(nodeMap["n1"].Warnings, tt.expected) {
+				t.Errorf("warnings = %v, want %v", nodeMap["n1"].Warnings, tt.expected)
+			}
+		})
+	}
 }

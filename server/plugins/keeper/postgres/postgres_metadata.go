@@ -27,6 +27,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagBytes, Threshold: 50 * 1024 * 1024}
+}
+
 // A replica rebases from the leader before postgres ever starts: streaming
 // replication ships changes to an existing copy, it cannot build the initial
 // database, and a fresh initdb has its own system identifier the leader would

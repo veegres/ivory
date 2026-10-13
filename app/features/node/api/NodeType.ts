@@ -79,11 +79,22 @@ export interface KeeperResponse {
     scheduledSwitchover?: ScheduledSwitchover,
     scheduledRestart?: ScheduledRestart,
     tags?: {[key: string]: any},
+    // NOTE: what the engine itself reported, apart from Ivory's own warnings on the node
+    warnings?: string[],
     discoveredHost?: string,
     discoveredName?: string,
     discoveredKeeperPort?: number,
     discoveredDbPort?: number,
     discoveredCluster?: string,
+}
+
+export type KeeperLagUnit = "bytes" | "seconds" | "entries"
+
+// KeeperLag says how to read a keeper's lag: what it counts, and Ivory's own
+// threshold past which a replica is worth checking (0 when lag is never measured)
+export interface KeeperLag {
+    unit: KeeperLagUnit,
+    threshold: number,
 }
 
 export interface ScheduledSwitchover {

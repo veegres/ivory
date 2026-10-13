@@ -27,6 +27,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagSeconds, Threshold: 30}
+}
+
 // Every member starts as a plain mongod that already knows its replica set
 // name; who becomes primary is decided later, by deployInitiate. The official
 // image has no env var for --replSet, so this replaces the image's default

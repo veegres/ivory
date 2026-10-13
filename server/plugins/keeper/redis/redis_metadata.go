@@ -27,6 +27,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagSeconds, Threshold: 30}
+}
+
 // The official image takes its port and password as redis-server flags rather
 // than environment variables, so the command states them after the image - the
 // container runs redis-server directly, with no shell in between to reparse

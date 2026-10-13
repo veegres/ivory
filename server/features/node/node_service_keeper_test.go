@@ -26,6 +26,7 @@ type fakeKeeperAdapter struct {
 }
 
 func (f *fakeKeeperAdapter) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
+func (f *fakeKeeperAdapter) Lag() keeper.Lag                           { return keeper.Lag{} }
 
 func (f *fakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	f.lastRequest = &request

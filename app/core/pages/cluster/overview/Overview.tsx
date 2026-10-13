@@ -66,7 +66,7 @@ export function Overview() {
         return (
             <Box sx={SX.main}>
                 {overview.error && <ErrorSmart error={overview.error}/>}
-                <OverviewNodes cluster={activeCluster} nodes={overview.data?.nodes}/>
+                <OverviewNodes cluster={activeCluster} nodes={overview.data?.nodes} lag={overview.data?.lag}/>
             </Box>
         )
     }

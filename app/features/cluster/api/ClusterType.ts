@@ -3,7 +3,7 @@ import {ReactNode} from "react"
 import {Certs} from "../../cert/api/CertType"
 import {DeployCredentials} from "../../deployment/api/DeploymentType"
 import {Feature} from "../../Feature"
-import {DeploySteps, KeeperOneRequest, KeeperOneResponse, KeeperPlugin, NodeCheckStep, PlatformPlugin, PlatformVaultConnection} from "../../node/api/NodeType"
+import {DeploySteps, KeeperLag, KeeperOneRequest, KeeperOneResponse, KeeperPlugin, NodeCheckStep, PlatformPlugin, PlatformVaultConnection} from "../../node/api/NodeType"
 import {Connection as QueryConnection, DbPlugin, QueryCheckStep} from "../../query/api/QueryType"
 
 // COMMON (WEB AND SERVER)
@@ -61,6 +61,7 @@ export interface Overview {
     // NOTE: a feature absent from the map is not a plugin capability at all
     // and should be treated as unrestricted, only `false` means unsupported
     features: Partial<Record<Feature, boolean>>,
+    lag: KeeperLag,
 }
 
 // NOTE: a half is missing when the node has no port or vault to reach it with
@@ -134,6 +135,7 @@ export interface NodeOverview {
 export interface Node {
     config: NodeConfig,
     keeper: KeeperOneResponse,
+    // NOTE: Ivory's own, the engine's are in keeper.warnings
     warnings: string[],
 }
 

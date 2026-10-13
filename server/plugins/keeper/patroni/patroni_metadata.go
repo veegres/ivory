@@ -27,6 +27,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagBytes, Threshold: 50 * 1024 * 1024}
+}
+
 // The DCS address comes in through {{dcs}}: patroni coordinates through a store
 // the user already runs, so only they know where it is, and it is one address
 // for the whole cluster rather than something a node knows about itself. The

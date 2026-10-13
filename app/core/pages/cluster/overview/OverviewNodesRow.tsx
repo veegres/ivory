@@ -4,7 +4,7 @@ import {Box, Tooltip} from "@mui/material"
 import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
 import {Feature} from "../../../../features/Feature"
 import {useHasAnyAccess} from "../../../../features/management/component/ManageAccess"
-import {KeeperCandidate} from "../../../../features/node/api/NodeType"
+import {KeeperCandidate, KeeperLag} from "../../../../features/node/api/NodeType"
 import {KeeperFailoverButton} from "../../../../features/node/component/keeper/KeeperFailoverButton"
 import {KeeperReinitButton} from "../../../../features/node/component/keeper/KeeperReinitButton"
 import {KeeperReloadButton} from "../../../../features/node/component/keeper/KeeperReloadButton"
@@ -16,7 +16,7 @@ import {InfoLabelBox} from "../../../../shared/component/box/InfoLabelBox"
 import {MenuButton} from "../../../../shared/component/button/MenuButton"
 import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScrolling"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {DateTimeFormatter, getKeeperOneRequest, KeeperStateOptions, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
+import {DateTimeFormatter, getKeeperOneRequest, KeeperStateOptions, LagFormatter, NodeColor, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -55,14 +55,15 @@ type Props = {
     nodeKey: string,
     cluster: Cluster,
     candidates: KeeperCandidate[],
+    lag?: KeeperLag,
     checked: boolean,
     error?: boolean,
 }
 
 export function OverviewNodesRow(props: Props) {
-    const {node, cluster, candidates, error = false, nodeKey, checked} = props
+    const {node, cluster, candidates, error = false, nodeKey, checked, lag: lagMeta} = props
     const {config, warnings, keeper} = node
-    const {role, state, sync, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
+    const {role, state, sync, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, warnings: engineWarnings = []} = keeper
 
     const {setNode} = useStoreAction
     const keeperRequest = getKeeperOneRequest(cluster, config.host, config.keeperPort)
@@ -137,7 +138,7 @@ export function OverviewNodesRow(props: Props) {
         return (
             <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
                 <Box sx={SX.data}>
-                    {role === "replica" && <InfoColorBox label={"LAG"} title={renderSimpleTitle("Replication Lag", lag < 0 ? "unknown" : SizeFormatter.pretty(lag))} color={lag > 100 ? "error" : "default"}/>}
+                    {role === "replica" && <InfoColorBox label={"LAG"} title={renderSimpleTitle("Replication Lag", LagFormatter.pretty(lag, lagMeta))} color={LagFormatter.color(lag, lagMeta)}/>}
                     {role === "replica" && sync && <InfoColorBox label={"SYNC"} color={"secondary"} title={renderSimpleTitle("Replication Type", "SYNC")}/>}
                     {pendingRestart && <InfoColorBox label={"RESTART"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} color={"warning"}/>}
                     {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} color={"secondary"}/>}
@@ -201,11 +202,30 @@ export function OverviewNodesRow(props: Props) {
     }
 
     function renderWarning() {
-        if (warnings.length === 0) return
+        if (warnings.length === 0 && engineWarnings.length === 0) return
         return (
-            <Tooltip title={warnings.map((s, i) => (<Box key={i}>{i+1}. {s}</Box>))} placement={"top"}>
+            <Tooltip title={renderWarningTitle()} placement={"top"}>
                 <WarningAmberRounded color={"warning"}/>
             </Tooltip>
+        )
+    }
+
+    function renderWarningTitle() {
+        return (
+            <Box>
+                {renderWarningGroup("Ivory", warnings)}
+                {renderWarningGroup("Engine", engineWarnings)}
+            </Box>
+        )
+    }
+
+    function renderWarningGroup(source: string, list: string[]) {
+        if (list.length === 0) return
+        return (
+            <Box>
+                <b>{source}</b>
+                {list.map((s, i) => (<Box key={i}>{i+1}. {s}</Box>))}
+            </Box>
         )
     }
 

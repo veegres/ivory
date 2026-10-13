@@ -32,6 +32,7 @@ type KeeperStatus = keeper.Status
 type KeeperRole = keeper.Role
 type KeeperState = keeper.State
 type KeeperReplicationModel = keeper.ReplicationModel
+type KeeperLag = keeper.Lag
 
 const (
 	KeeperSingleLeader = keeper.SingleLeader
@@ -40,6 +41,7 @@ const (
 
 const (
 	KeeperRoleLeader  KeeperRole = "leader"
+	KeeperRoleReplica KeeperRole = "replica"
 	KeeperRoleUnknown KeeperRole = "unknown"
 )
 

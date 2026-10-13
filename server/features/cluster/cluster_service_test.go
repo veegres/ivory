@@ -28,6 +28,7 @@ type fakeKeeperMetadata struct {
 func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool    { return f.features }
 func (f fakeKeeperMetadata) ReplicationModel() keeper.ReplicationModel     { return keeper.SingleLeader }
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
+func (f fakeKeeperMetadata) Lag() keeper.Lag                               { return keeper.Lag{} }
 
 type fakePlatformMetadata struct {
 	platform.Plugin

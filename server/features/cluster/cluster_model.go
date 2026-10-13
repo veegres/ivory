@@ -66,14 +66,16 @@ type Vaults struct {
 }
 
 type Node struct {
-	Config   NodeConfig             `json:"config"`
-	Keeper   node.KeeperOneResponse `json:"keeper"`
-	Warnings []string               `json:"warnings"`
+	Config NodeConfig             `json:"config"`
+	Keeper node.KeeperOneResponse `json:"keeper"`
+	// Warnings are Ivory's own; the engine's are in Keeper.Warnings.
+	Warnings []string `json:"warnings"`
 }
 
 type Overview struct {
 	Nodes    map[string]Node         `json:"nodes"`
 	Features map[config.Feature]bool `json:"features"`
+	Lag      node.KeeperLag          `json:"lag"`
 }
 
 type CreateAutoRequest struct {
