@@ -69,7 +69,7 @@ outranks the second: a node can be perfectly healthy and still not be in the clu
 | Plugin | Who is in the cluster | Cluster name it reports |
 |---|---|---|
 | `patroni` | `GET /cluster` — every member, with real state | `scope` (patroni 3.0.4+) |
-| `etcd` | `MemberList`, then `Status` per member | `MemberList` header cluster id |
+| `etcd` | `MemberList`, then `Status` of itself and the leader it sees | `MemberList` header cluster id |
 | `mongo` | `replSetGetStatus` members | replica-set name |
 | `clickhouse` | `system.clusters` for the name Ivory passed | — (it was asked, so echoing is not discovery) |
 | `postgres` | `pg_stat_replication` from the primary, `pg_stat_wal_receiver` from a standby | — |
@@ -142,7 +142,7 @@ It is a process lifecycle — `running`, `starting`, `restarting`, `stopping`, `
   `addKeeperResponsesToMap` treats exactly that pair as hearsay, so the node's own answer replaces it
   whichever order the two arrive in. Never invent `running` for such a peer.
 - **`unreachable` asserts that something tried and failed**, so only whoever tried may state it. An adapter may,
-  for a member it probed itself (etcd's per-member `Status`). An adapter may **not** borrow it for a member it
+  for a member it probed itself. An adapter may **not** borrow it for a member it
   merely read out of a config — that is `unknown`.
 - **What a node *is* may come from a peer; whether it is *alive* may not.** Role and membership are topology,
   and patroni reporting every member from whichever node answers is exactly right. Liveness is Ivory's own
@@ -172,7 +172,7 @@ these. Pick by **what is claimed**, not by what sounds closest.
 | `stopping` | shutting down | patroni `stopping`; postgres `57P03` whose message says "shutting down" |
 | `stopped` | down, and the keeper still knows it | patroni `stopped`; mongo `REMOVED` |
 | `failed` | the engine says it failed | patroni `crashed`/`start failed`/`initdb failed`/`custom bootstrap failed` |
-| `unreachable` | somebody tried to reach it and could not | etcd, for a member whose own `Status` probe errored; mongo `DOWN` or `health == 0`; Ivory's `markUnansweredNodes` |
+| `unreachable` | somebody tried to reach it and could not | mongo `DOWN` or `health == 0`; Ivory's `markUnansweredNodes` |
 | `unknown` | nobody looked, or the engine said something we do not recognize | a member read out of a peer's config (with `Lag: -1`); an adapter's `default:` branch for an unmapped engine state |
 
 Only patroni reaches most of these, and that is fine — a plugin uses what its engine can actually distinguish
@@ -182,8 +182,7 @@ warning). What is not fine is reaching for a value whose
 claim the engine did not make: `failed` because a query errored, `stopping` because a replica went read-only,
 `running` because a TCP connect succeeded.
 
-**A per-member probe needs its own deadline.** Where `List` fans out to every member (etcd's `Status` per
-member), one shared context makes a dead member spend the budget the members after it need: they come back
+**A per-member probe needs its own deadline.** Where `List` fans out to other members, one shared context makes a dead member spend the budget the members after it need: they come back
 `context deadline exceeded`, which reads as `unreachable`, so stopping one etcd node of three showed two as
 dead. Give each probe its own timeout and run them concurrently — the whole list then costs one timeout rather
 than one per member.
@@ -226,7 +225,7 @@ than one per member.
   quorum loss it was actually reporting.
 - **Say who saw it, and what was tried.** A failure reported from one node about another names the observer
   (mongo: `heartbeat from h1:27017 failed: …`) — the same peer may look fine from elsewhere. A failed probe names
-  the address it tried (etcd: `member is unreachable at http://…:2379: …`), so an advertised url Ivory cannot
+  the address it tried (etcd: `leader is unreachable at http://…:2379: …`), so an advertised url Ivory cannot
   route to reads differently from a member that is down.
 - **Engine warnings and Ivory warnings are two channels.** The adapter's `Warnings` are the engine's: what it
   reports, or a line it acts on itself, read from the engine where configurable. They stay on `keeper.warnings`,

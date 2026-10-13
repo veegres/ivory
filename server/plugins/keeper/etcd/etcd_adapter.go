@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var ErrScheduleNotSupported = errors.New("scheduled switchover is not supported by etcd")
@@ -35,6 +37,9 @@ func NewPlugin() *Plugin {
 	return &Plugin{}
 }
 
+// List asks the node Ivory reached about itself and the leader only. Peers are
+// reported from the member list alone, so each one's own List supplies its
+// state: probing every member from every node fetched the same answers N times.
 func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, client, err := p.connect(request)
 	if err != nil {
@@ -42,9 +47,15 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 	defer client.Close()
 
-	memberList, errMembers := client.MemberList(ctx)
-	if errMembers != nil {
-		return nil, http.StatusBadRequest, errMembers
+	var memberList *clientv3.MemberListResponse
+	var selfStatus *clientv3.StatusResponse
+	var errMembers, errStatus error
+	var wg sync.WaitGroup
+	wg.Go(func() { memberList, errMembers = client.MemberList(ctx) })
+	wg.Go(func() { selfStatus, errStatus = client.StatusSelf(ctx) })
+	wg.Wait()
+	if err := errors.Join(errMembers, errStatus); err != nil {
+		return nil, http.StatusBadRequest, err
 	}
 
 	members := make([]member, 0, len(memberList.Members))
@@ -52,11 +63,14 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		members = append(members, member{ID: m.ID, Name: m.Name, ClientURLs: m.ClientURLs, IsLearner: m.IsLearner})
 	}
 
-	// NOTE: a member that is down is reported as unreachable on its own row,
-	// with the reason in its own warnings - it is not an error of the node that
-	// answered. Returning one made every healthy node Ivory asked carry a
-	// "failed to get Keeper response" naming somebody else's outage.
-	responses := mapMembers(members, p.probeMembers(client, members))
+	selfID := selfStatus.Header.GetMemberId()
+	self := mapStatus(selfStatus)
+	leader, leaderURL := findLeader(members, selfID, self)
+	if leaderURL != "" {
+		leader = p.probeLeader(client, leader, leaderURL)
+	}
+
+	responses := mapMembers(members, selfID, self, leader)
 	// NOTE: the cluster id belongs to the reply as a whole rather than to any
 	// one member, which is why it is applied here instead of inside mapMember.
 	// Enumerating members already catches a node borrowed from another etcd of
@@ -72,44 +86,19 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return responses, http.StatusOK, nil
 }
 
-// probeMembers asks every member for its own status. Each probe gets its own
-// timeout and they run concurrently: they used to share one deadline with
-// MemberList, so a member that was down spent the budget the members probed
-// after it needed, and those came back "context deadline exceeded" - which
-// mapMember reads as unreachable. Stopping one etcd node of three therefore
-// showed two of them as dead.
-func (p *Plugin) probeMembers(client *connection, members []member) map[uint64]endpointStatus {
-	statuses := make(map[uint64]endpointStatus, len(members))
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	for _, m := range members {
-		if len(m.ClientURLs) == 0 {
-			continue
-		}
-		wg.Add(1)
-		go func(m member) {
-			defer wg.Done()
-			ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
-			defer cancel()
-			status, err := client.Status(ctx, m.ClientURLs[0])
-			result := endpointStatus{Err: err}
-			if err == nil {
-				result = endpointStatus{
-					Leader:           status.Leader,
-					RaftIndex:        status.RaftIndex,
-					RaftAppliedIndex: status.RaftAppliedIndex,
-					RaftTerm:         status.RaftTerm,
-					Version:          status.Version,
-					Errors:           status.Errors,
-				}
-			}
-			mu.Lock()
-			statuses[m.ID] = result
-			mu.Unlock()
-		}(m)
+// probeLeader reads the leader's raft index, which a follower's own status
+// lacks and its lag is measured against. It has its own timeout so a slow
+// leader cannot spend the budget the asked node's own reply needed.
+func (p *Plugin) probeLeader(client *connection, leader leaderStatus, url string) leaderStatus {
+	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+	defer cancel()
+	status, err := client.Status(ctx, url)
+	if err != nil {
+		leader.Err = fmt.Errorf("leader is unreachable at %s: %w", url, err)
+		return leader
 	}
-	wg.Wait()
-	return statuses
+	leader.RaftIndex = status.RaftIndex
+	return leader
 }
 
 func (p *Plugin) Switchover(request keeper.Request) (*string, int, error) {
@@ -258,49 +247,72 @@ func resolveCandidate(members []member, candidate string) (uint64, error) {
 	return 0, fmt.Errorf("%w: %s", ErrCandidateNotFound, candidate)
 }
 
-func mapMembers(members []member, statuses map[uint64]endpointStatus) []keeper.Response {
-	leaderID, leaderRaftIndex := findLeader(statuses)
+func mapStatus(status *clientv3.StatusResponse) endpointStatus {
+	return endpointStatus{
+		Leader:           status.Leader,
+		RaftIndex:        status.RaftIndex,
+		RaftAppliedIndex: status.RaftAppliedIndex,
+		RaftTerm:         status.RaftTerm,
+		Version:          status.Version,
+		Errors:           status.Errors,
+	}
+}
 
+// findLeader takes the leader from the asked member's own status. It returns
+// the url to probe for the leader's raft index, or none when the asked member
+// is the leader itself, sees no leader, or cannot address the one it sees.
+func findLeader(members []member, selfID uint64, self endpointStatus) (leaderStatus, string) {
+	leader := leaderStatus{ID: self.Leader}
+	if self.Leader == 0 {
+		return leader, ""
+	}
+	if self.Leader == selfID {
+		leader.RaftIndex = self.RaftIndex
+		return leader, ""
+	}
+	for _, m := range members {
+		if m.ID == self.Leader && len(m.ClientURLs) > 0 {
+			return leader, m.ClientURLs[0]
+		}
+	}
+	return leader, ""
+}
+
+func mapMembers(members []member, selfID uint64, self endpointStatus, leader leaderStatus) []keeper.Response {
 	responses := make([]keeper.Response, 0, len(members))
 	for _, m := range members {
-		responses = append(responses, mapMember(m, statuses[m.ID], leaderID, leaderRaftIndex))
+		if m.ID != selfID {
+			responses = append(responses, mapPeer(m, leader.ID))
+			continue
+		}
+		response := mapMember(m, self, leader.ID, leader.RaftIndex)
+		if leader.Err != nil {
+			response.Warnings = append(response.Warnings, leader.Err.Error())
+		}
+		responses = append(responses, response)
 	}
 	return responses
 }
 
-// findLeader only designates a leader when a strict majority of the
-// responding members agree on the same leader ID. During an election or a
-// network partition, reachable members can briefly disagree (some still
-// reporting a stale leader, others none yet); without this check, whichever
-// member's status happened to be read first (map iteration order is
-// randomized) would arbitrarily decide the reported leader, causing it to
-// flicker between candidates across polls even though nothing in the
-// cluster actually changed. Requiring majority agreement makes the result
-// deterministic: either the members agree and the winner is unambiguous, or
-// they don't and no leader is reported (surfacing the cluster's "no leader
-// found" warning instead of a guess).
-func findLeader(statuses map[uint64]endpointStatus) (uint64, uint64) {
-	votes := make(map[uint64]int)
-	for _, status := range statuses {
-		if status.Err == nil && status.Leader != 0 {
-			votes[status.Leader]++
+// mapPeer reports a member nobody contacted: its role and address are the
+// asked member's topology, while its state and lag are left for its own List.
+func mapPeer(m member, leaderID uint64) keeper.Response {
+	var role keeper.Role = keeper.Unknown
+	if leaderID != 0 {
+		role = keeper.Replica
+		if m.ID == leaderID {
+			role = keeper.Leader
 		}
 	}
-	var leaderID uint64
-	var leaderVotes int
-	for id, count := range votes {
-		if count > leaderVotes {
-			leaderID = id
-			leaderVotes = count
-		}
+	state := keeper.StateUnknown
+	if len(m.ClientURLs) == 0 {
+		state = keeper.StateStarting
 	}
-	if leaderVotes*2 <= len(statuses) {
-		return 0, 0
-	}
-	if leader, ok := statuses[leaderID]; ok && leader.Err == nil {
-		return leaderID, leader.RaftIndex
-	}
-	return leaderID, 0
+	response := mapMember(m, endpointStatus{}, 0, 0)
+	response.State = state
+	response.Role = role
+	response.Lag = -1
+	return response
 }
 
 // mapTags reports the per-member facts etcd's own status carries that

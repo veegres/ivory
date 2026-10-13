@@ -78,61 +78,93 @@ func TestMapMembers(t *testing.T) {
 		{ID: 2, Name: "etcd2", ClientURLs: []string{"http://etcd2:2379"}},
 		{ID: 3, Name: "etcd3", ClientURLs: []string{"http://etcd3:2379"}},
 	}
-	statuses := map[uint64]endpointStatus{
-		1: {Leader: 1, RaftIndex: 100},
-		2: {Leader: 1, RaftIndex: 95},
-		3: {Err: errors.New("connection refused")},
-	}
 
-	responses := mapMembers(members, statuses)
-	if len(responses) != 3 {
-		t.Fatalf("expected 3 responses, got %d", len(responses))
-	}
+	t.Run("asked member is a follower", func(t *testing.T) {
+		responses := mapMembers(members, 2, endpointStatus{Leader: 1, RaftIndex: 95}, leaderStatus{ID: 1, RaftIndex: 100})
+		if len(responses) != 3 {
+			t.Fatalf("expected 3 responses, got %d", len(responses))
+		}
 
-	leader := responses[0]
-	if leader.Role != keeper.Leader || leader.Lag != 0 {
-		t.Errorf("expected leader with lag 0, got role %v lag %d", leader.Role, leader.Lag)
-	}
-	if leader.Key == nil || *leader.Key != "etcd1" {
-		t.Errorf("expected key etcd1, got %v", leader.Key)
-	}
-	if leader.DiscoveredName == nil || *leader.DiscoveredName != "etcd1" {
-		t.Errorf("expected discovered name etcd1, got %v", leader.DiscoveredName)
-	}
-	if leader.DiscoveredHost == nil || *leader.DiscoveredHost != "etcd1" {
-		t.Errorf("expected discovered host etcd1, got %v", leader.DiscoveredHost)
-	}
-	if leader.DiscoveredKeeperPort == nil || *leader.DiscoveredKeeperPort != 2379 {
-		t.Errorf("expected discovered keeper port 2379, got %v", leader.DiscoveredKeeperPort)
-	}
-	if leader.DiscoveredDbPort == nil || *leader.DiscoveredDbPort != 2379 {
-		t.Errorf("expected discovered db port 2379, got %v", leader.DiscoveredDbPort)
-	}
+		self := responses[1]
+		if self.Role != keeper.Replica || self.State != keeper.StateRunning {
+			t.Errorf("expected running replica, got role %v state %q", self.Role, self.State)
+		}
+		if self.Lag != 5 {
+			t.Errorf("expected raft index lag 5, got %d", self.Lag)
+		}
 
-	replica := responses[1]
-	if replica.Role != keeper.Replica {
-		t.Errorf("expected replica role, got %v", replica.Role)
-	}
-	if replica.Lag != 5 {
-		t.Errorf("expected raft index lag 5, got %d", replica.Lag)
-	}
+		leader := responses[0]
+		if leader.Role != keeper.Leader {
+			t.Errorf("expected the leader the asked member sees, got %v", leader.Role)
+		}
+		if leader.Key == nil || *leader.Key != "etcd1" {
+			t.Errorf("expected key etcd1, got %v", leader.Key)
+		}
+		if leader.DiscoveredName == nil || *leader.DiscoveredName != "etcd1" {
+			t.Errorf("expected discovered name etcd1, got %v", leader.DiscoveredName)
+		}
+		if leader.DiscoveredHost == nil || *leader.DiscoveredHost != "etcd1" {
+			t.Errorf("expected discovered host etcd1, got %v", leader.DiscoveredHost)
+		}
+		if leader.DiscoveredKeeperPort == nil || *leader.DiscoveredKeeperPort != 2379 {
+			t.Errorf("expected discovered keeper port 2379, got %v", leader.DiscoveredKeeperPort)
+		}
+		if leader.DiscoveredDbPort == nil || *leader.DiscoveredDbPort != 2379 {
+			t.Errorf("expected discovered db port 2379, got %v", leader.DiscoveredDbPort)
+		}
 
-	unreachable := responses[2]
-	if unreachable.Role != keeper.Unknown {
-		t.Errorf("expected unknown role, got %v", unreachable.Role)
-	}
-	if unreachable.State != keeper.StateUnreachable {
-		t.Errorf("expected unreachable state, got %q", unreachable.State)
-	}
-	if unreachable.Lag != -1 {
-		t.Errorf("expected lag -1, got %d", unreachable.Lag)
-	}
+		// NOTE: a peer nobody contacted claims topology and no liveness, which
+		// is what lets its own answer replace it in the merge.
+		for _, peer := range []keeper.Response{responses[0], responses[2]} {
+			if peer.State != keeper.StateUnknown || peer.Lag != -1 {
+				t.Errorf("expected peer %s as hearsay, got state %q lag %d", *peer.Key, peer.State, peer.Lag)
+			}
+			if peer.Warnings != nil {
+				t.Errorf("expected no warnings on peer %s, got %v", *peer.Key, peer.Warnings)
+			}
+		}
+		if responses[2].Role != keeper.Replica {
+			t.Errorf("expected replica role, got %v", responses[2].Role)
+		}
+	})
+
+	t.Run("asked member is the leader", func(t *testing.T) {
+		responses := mapMembers(members, 1, endpointStatus{Leader: 1, RaftIndex: 100}, leaderStatus{ID: 1, RaftIndex: 100})
+		if responses[0].Role != keeper.Leader || responses[0].Lag != 0 || responses[0].State != keeper.StateRunning {
+			t.Errorf("expected running leader with lag 0, got role %v lag %d state %q", responses[0].Role, responses[0].Lag, responses[0].State)
+		}
+	})
+
+	t.Run("unreachable leader leaves lag unknown and says why", func(t *testing.T) {
+		leader := leaderStatus{ID: 1, Err: errors.New("leader is unreachable at http://etcd1:2379: connection refused")}
+		responses := mapMembers(members, 2, endpointStatus{Leader: 1, RaftIndex: 95}, leader)
+		self := responses[1]
+		if self.State != keeper.StateRunning {
+			t.Errorf("the asked member answered, expected running, got %q", self.State)
+		}
+		if self.Lag != -1 {
+			t.Errorf("expected lag -1, got %d", self.Lag)
+		}
+		if !slices.Equal(self.Warnings, []string{leader.Err.Error()}) {
+			t.Errorf("expected the leader probe failure as a warning, got %v", self.Warnings)
+		}
+	})
+
+	t.Run("no leader leaves every role unknown", func(t *testing.T) {
+		responses := mapMembers(members, 2, endpointStatus{RaftIndex: 95}, leaderStatus{})
+		if responses[0].Role != keeper.Unknown || responses[2].Role != keeper.Unknown {
+			t.Errorf("expected unknown peer roles, got %v and %v", responses[0].Role, responses[2].Role)
+		}
+		if responses[1].Lag != -1 {
+			t.Errorf("expected lag -1 without a leader, got %d", responses[1].Lag)
+		}
+	})
 }
 
 func TestMapMembersEdgeCases(t *testing.T) {
 	t.Run("member without client urls is starting", func(t *testing.T) {
 		members := []member{{ID: 1, Name: "etcd1"}}
-		responses := mapMembers(members, map[uint64]endpointStatus{})
+		responses := mapMembers(members, 2, endpointStatus{}, leaderStatus{})
 		if responses[0].State != keeper.StateStarting {
 			t.Errorf("expected starting state, got %q", responses[0].State)
 		}
@@ -143,8 +175,15 @@ func TestMapMembersEdgeCases(t *testing.T) {
 
 	t.Run("learner gets tag", func(t *testing.T) {
 		members := []member{{ID: 2, Name: "learner1", ClientURLs: []string{"http://l1:2379"}, IsLearner: true}}
-		statuses := map[uint64]endpointStatus{2: {Leader: 1, RaftIndex: 90}}
-		responses := mapMembers(members, statuses)
+		responses := mapMembers(members, 2, endpointStatus{Leader: 1, RaftIndex: 90}, leaderStatus{ID: 1, RaftIndex: 100})
+		if responses[0].Tags == nil || (*responses[0].Tags)["learner"] != true {
+			t.Errorf("expected learner tag, got %v", responses[0].Tags)
+		}
+	})
+
+	t.Run("learner peer gets tag", func(t *testing.T) {
+		members := []member{{ID: 2, Name: "learner1", ClientURLs: []string{"http://l1:2379"}, IsLearner: true}}
+		responses := mapMembers(members, 1, endpointStatus{Leader: 1}, leaderStatus{ID: 1})
 		if responses[0].Tags == nil || (*responses[0].Tags)["learner"] != true {
 			t.Errorf("expected learner tag, got %v", responses[0].Tags)
 		}
@@ -155,58 +194,51 @@ func TestMapMembersEdgeCases(t *testing.T) {
 			{ID: 1, Name: "etcd1", ClientURLs: []string{"http://e1:2379"}},
 			{ID: 2, Name: "etcd2", ClientURLs: []string{"http://e2:2379"}},
 		}
-		statuses := map[uint64]endpointStatus{
-			1: {Leader: 1, RaftIndex: 90},
-			2: {Leader: 1, RaftIndex: 95},
-		}
-		responses := mapMembers(members, statuses)
+		responses := mapMembers(members, 2, endpointStatus{Leader: 1, RaftIndex: 95}, leaderStatus{ID: 1, RaftIndex: 90})
 		if responses[1].Lag != -1 {
 			t.Errorf("expected lag -1 when replica index is ahead, got %d", responses[1].Lag)
+		}
+	})
+
+	t.Run("asked member missing from the list reports only peers", func(t *testing.T) {
+		members := []member{{ID: 1, Name: "etcd1", ClientURLs: []string{"http://e1:2379"}}}
+		responses := mapMembers(members, 9, endpointStatus{Leader: 1}, leaderStatus{ID: 1})
+		if len(responses) != 1 || responses[0].State != keeper.StateUnknown {
+			t.Errorf("expected one hearsay peer, got %v", responses)
 		}
 	})
 }
 
 func TestFindLeader(t *testing.T) {
-	t.Run("majority agreement designates the leader", func(t *testing.T) {
-		statuses := map[uint64]endpointStatus{
-			1: {Leader: 1, RaftIndex: 100},
-			2: {Leader: 1, RaftIndex: 95},
-			3: {Err: errors.New("connection refused")},
-		}
-		leaderID, raftIndex := findLeader(statuses)
-		if leaderID != 1 {
-			t.Errorf("expected leader 1, got %d", leaderID)
-		}
-		if raftIndex != 100 {
-			t.Errorf("expected raft index 100, got %d", raftIndex)
-		}
-	})
-
-	t.Run("split members disagreeing on the leader report no leader", func(t *testing.T) {
-		statuses := map[uint64]endpointStatus{
-			1: {Leader: 1, RaftIndex: 100},
-			2: {Leader: 2, RaftIndex: 95},
-		}
-		leaderID, raftIndex := findLeader(statuses)
-		if leaderID != 0 {
-			t.Errorf("expected no leader (0), got %d", leaderID)
-		}
-		if raftIndex != 0 {
-			t.Errorf("expected raft index 0, got %d", raftIndex)
-		}
-	})
-
-	t.Run("minority report is not enough to designate a leader", func(t *testing.T) {
-		statuses := map[uint64]endpointStatus{
-			1: {Leader: 1, RaftIndex: 100},
-			2: {Err: errors.New("connection refused")},
-			3: {Err: errors.New("connection refused")},
-		}
-		leaderID, _ := findLeader(statuses)
-		if leaderID != 0 {
-			t.Errorf("expected no leader (0), got %d", leaderID)
-		}
-	})
+	members := []member{
+		{ID: 1, Name: "etcd1", ClientURLs: []string{"http://etcd1:2379", "http://10.0.0.1:2379"}},
+		{ID: 2, Name: "etcd2", ClientURLs: []string{"http://etcd2:2379"}},
+		{ID: 3, Name: "etcd3"},
+	}
+	tests := []struct {
+		name   string
+		selfID uint64
+		self   endpointStatus
+		leader leaderStatus
+		url    string
+	}{
+		{name: "asked member is the leader, no probe", selfID: 1, self: endpointStatus{Leader: 1, RaftIndex: 100}, leader: leaderStatus{ID: 1, RaftIndex: 100}},
+		{name: "follower probes the leader it sees", selfID: 2, self: endpointStatus{Leader: 1, RaftIndex: 95}, leader: leaderStatus{ID: 1}, url: "http://etcd1:2379"},
+		{name: "no leader, no probe", selfID: 2, self: endpointStatus{RaftIndex: 95}, leader: leaderStatus{}},
+		{name: "leader without client urls cannot be probed", selfID: 2, self: endpointStatus{Leader: 3}, leader: leaderStatus{ID: 3}},
+		{name: "leader missing from the list cannot be probed", selfID: 2, self: endpointStatus{Leader: 7}, leader: leaderStatus{ID: 7}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			leader, url := findLeader(members, tt.selfID, tt.self)
+			if leader != tt.leader {
+				t.Errorf("expected leader %+v, got %+v", tt.leader, leader)
+			}
+			if url != tt.url {
+				t.Errorf("expected url %q, got %q", tt.url, url)
+			}
+		})
+	}
 }
 
 func TestParseSwitchoverBody(t *testing.T) {
