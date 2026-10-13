@@ -7,6 +7,7 @@ import (
 	"math"
 	"strings"
 	"testing"
+	"time"
 )
 
 // TestUpContainerRunsTheCommandAsWritten covers what the deployment model
@@ -356,4 +357,77 @@ func TestParseContainerMetricsErrorsAndEdgeCases(t *testing.T) {
 			t.Errorf("expected ErrInvalidContainerMetrics, got %v", err)
 		}
 	})
+}
+
+// TestContainerInspectFormatLeavesOutTheEnvironment pins the confidentiality
+// half: a deployed container's env and arguments hold interpolated credentials,
+// so the format must never ask docker for them.
+func TestContainerInspectFormatLeavesOutTheEnvironment(t *testing.T) {
+	for _, field := range []string{".Config.Env", ".Config.Cmd", ".Config.Entrypoint", ".Args", ".Path", "{{json .}}", "{{json .Config}}"} {
+		if strings.Contains(containerInspectFormat, field) {
+			t.Errorf("inspect format must not read %s: %s", field, containerInspectFormat)
+		}
+	}
+}
+
+func TestParseContainerInspect(t *testing.T) {
+	adapter := NewPlugin(ssh.NewClient())
+	started := time.Date(2026, 10, 1, 10, 0, 0, 123456789, time.UTC)
+	finished := time.Date(2026, 10, 1, 10, 5, 0, 0, time.UTC)
+
+	tests := []struct {
+		name     string
+		output   string
+		expected platform.ContainerInspect
+	}{
+		{
+			name:   "exited after an OOM kill with a bounded restart policy",
+			output: `{"state":{"Status":"exited","ExitCode":137,"OOMKilled":true,"Error":"","StartedAt":"2026-10-01T10:00:00.123456789Z","FinishedAt":"2026-10-01T10:05:00Z","Health":{"Log":[{"Output":"ignored"}]}},"restartCount":3,"restartPolicy":{"Name":"on-failure","MaximumRetryCount":5},"networkMode":"host","image":"etcd:3.6"}` + "\n",
+			expected: platform.ContainerInspect{
+				Status: "exited", ExitCode: 137, OomKilled: true, StartedAt: started, FinishedAt: finished,
+				RestartCount: 3, RestartPolicy: "on-failure:5", NetworkMode: "host", Image: "etcd:3.6",
+			},
+		},
+		{
+			name:   "created but never started keeps zero times and the platform's error",
+			output: `{"state":{"Status":"created","ExitCode":127,"OOMKilled":false,"Error":"exec: \"patroni\": executable file not found","StartedAt":"0001-01-01T00:00:00Z","FinishedAt":"0001-01-01T00:00:00Z"},"restartCount":0,"restartPolicy":{"Name":"","MaximumRetryCount":0},"networkMode":"bridge","image":"spilo:3"}`,
+			expected: platform.ContainerInspect{
+				Status: "created", ExitCode: 127, Error: `exec: "patroni": executable file not found`,
+				RestartPolicy: "no", NetworkMode: "bridge", Image: "spilo:3",
+			},
+		},
+		{
+			name:   "running with an unbounded policy",
+			output: `{"state":{"Status":"running","ExitCode":0,"OOMKilled":false,"Error":"","StartedAt":"2026-10-01T10:00:00.123456789Z","FinishedAt":"0001-01-01T00:00:00Z"},"restartCount":0,"restartPolicy":{"Name":"unless-stopped","MaximumRetryCount":0},"networkMode":"host","image":"redis:7"}`,
+			expected: platform.ContainerInspect{
+				Status: "running", StartedAt: started, RestartPolicy: "unless-stopped", NetworkMode: "host", Image: "redis:7",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			inspect, err := adapter.parseContainerInspect(tt.output)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+			if !inspect.StartedAt.Equal(tt.expected.StartedAt) || !inspect.FinishedAt.Equal(tt.expected.FinishedAt) {
+				t.Fatalf("expected times %v/%v, got %v/%v", tt.expected.StartedAt, tt.expected.FinishedAt, inspect.StartedAt, inspect.FinishedAt)
+			}
+			inspect.StartedAt, inspect.FinishedAt = tt.expected.StartedAt, tt.expected.FinishedAt
+			if *inspect != tt.expected {
+				t.Fatalf("expected %+v, got %+v", tt.expected, *inspect)
+			}
+		})
+	}
+}
+
+func TestParseContainerInspectErrors(t *testing.T) {
+	adapter := NewPlugin(ssh.NewClient())
+	for _, output := range []string{"", "   ", "not json", "[]"} {
+		t.Run(output, func(t *testing.T) {
+			if _, err := adapter.parseContainerInspect(output); !errors.Is(err, platform.ErrInvalidContainerInspect) {
+				t.Errorf("expected ErrInvalidContainerInspect, got %v", err)
+			}
+		})
+	}
 }

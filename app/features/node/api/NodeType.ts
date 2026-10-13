@@ -157,6 +157,19 @@ export interface Metrics {
 
 export type PlatformMetricsResponse = Metrics
 
+export interface PlatformInspectResponse {
+    status: string,
+    exitCode: number,
+    oomKilled: boolean,
+    error?: string,
+    startedAt?: string,
+    finishedAt?: string,
+    restartCount: number,
+    restartPolicy: string,
+    networkMode: string,
+    image: string,
+}
+
 export type PlatformMetricsRequest = PlatformVaultConnection
 
 export interface PlatformCopyIdRequest {

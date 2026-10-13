@@ -9,6 +9,7 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 	"testing"
+	"time"
 )
 
 // TestResolveCommand covers what replaced the escaper: the command is split
@@ -110,6 +111,15 @@ func (r *recordingPlatform) DownContainer(platform.Connection, string) console.C
 	return recordingCommand{name: "rm", calls: &r.calls}
 }
 
+func (r *recordingPlatform) InspectContainer(_ platform.Connection, name string) (*platform.ContainerInspect, error) {
+	r.calls = append(r.calls, "inspect "+name)
+	return &platform.ContainerInspect{
+		Status: "exited", ExitCode: 137, OomKilled: true, Error: "oom",
+		StartedAt: time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC), FinishedAt: time.Date(2026, 10, 1, 10, 5, 0, 0, time.UTC),
+		RestartCount: 2, RestartPolicy: "on-failure:5", NetworkMode: "host", Image: "etcd:3.6",
+	}, nil
+}
+
 type stubPlatformRegistry struct{ plugin platform.Plugin }
 
 func (s stubPlatformRegistry) Get(platform.PluginType) (platform.Plugin, error) {
@@ -176,4 +186,35 @@ func TestPlatformSystemCopyIdRequiresPlatform(t *testing.T) {
 			t.Fatalf("expected the key to be installed once, got %v", recorder.calls)
 		}
 	})
+}
+
+func TestPlatformContainerInspectReportsEveryField(t *testing.T) {
+	s, vaultService := createTestNodeService(t)
+
+	key, _, errCreate := vaultService.Create(vault.Vault{Type: vault.SSH_KEY, Username: "root"})
+	if errCreate != nil {
+		t.Fatalf("failed to seed ssh key vault: %v", errCreate)
+	}
+
+	recorder := &recordingPlatform{}
+	s.platformRegistry = stubPlatformRegistry{plugin: recorder}
+
+	inspect, err := s.PlatformContainerInspect(PlatformActionRequest{
+		Name:       "etcd2",
+		Connection: PlatformVaultConnection{Host: "host1", Port: 22, VaultId: *key},
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(recorder.calls) != 1 || recorder.calls[0] != "inspect etcd2" {
+		t.Fatalf("expected one inspect of the named container, got %v", recorder.calls)
+	}
+	expected := PlatformInspectResponse{
+		Status: "exited", ExitCode: 137, OomKilled: true, Error: "oom",
+		StartedAt: time.Date(2026, 10, 1, 10, 0, 0, 0, time.UTC), FinishedAt: time.Date(2026, 10, 1, 10, 5, 0, 0, time.UTC),
+		RestartCount: 2, RestartPolicy: "on-failure:5", NetworkMode: "host", Image: "etcd:3.6",
+	}
+	if *inspect != expected {
+		t.Fatalf("expected %+v, got %+v", expected, *inspect)
+	}
 }

@@ -331,6 +331,12 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Annotations: readOnly,
 	}, mr.Node.ContainerMetrics)
 
+	addTool(r, coreConfig.ViewNodePlatformContainer, &mcpsdk.Tool{
+		Name:        "ivory_container_inspect",
+		Description: "How one container was started and how it last ended: status, exit code, whether it was OOM-killed, the platform's own error, start and finish times, restart count and policy, network mode and image. It works on a stopped container, and is where to look when ivory_container_logs is empty. name is the container's name, as ivory_container_list reports it.",
+		Annotations: readOnly,
+	}, mr.Node.ContainerInspect)
+
 	addTool(r, coreConfig.ManageNodePlatformContainer, &mcpsdk.Tool{
 		Name:        "ivory_container_start",
 		Description: "Start a stopped container.",

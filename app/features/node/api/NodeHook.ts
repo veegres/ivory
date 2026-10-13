@@ -142,6 +142,14 @@ export function useRouterNodePlatformContainerMetrics(request: PlatformActionReq
     })
 }
 
+export function useRouterNodePlatformContainerInspect(request: PlatformActionRequest) {
+    return useQuery({
+        queryKey: NodeApi.container.inspect.key(request),
+        queryFn: () => NodeApi.container.inspect.fn(request),
+        retry: false,
+    })
+}
+
 export function useRouterNodeSystemProcesses(c: PlatformVaultConnection) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({

@@ -419,6 +419,7 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 		}},
 		{"node/system", "ivory_system_info", connection},
 		{"node/container", "ivory_container_list", connection},
+		{"node/container", "ivory_container_inspect", map[string]any{"connection": connection, "name": "pg1"}},
 		{"query/crud", "ivory_query_list", map[string]any{}},
 		{"query/db", "ivory_query_databases", map[string]any{
 			"name": "",

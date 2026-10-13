@@ -53,3 +53,7 @@ func (r *HttpRouter) StreamPlatformContainerLogs(context *gin.Context) {
 func (r *HttpRouter) GetPlatformContainerMetrics(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformContainerMetrics)
 }
+
+func (r *HttpRouter) GetPlatformContainerInspect(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformContainerInspect)
+}

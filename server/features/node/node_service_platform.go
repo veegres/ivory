@@ -211,6 +211,18 @@ func (s *Service) PlatformContainerMetrics(r PlatformActionRequest) (*PlatformMe
 	return mapPlatformMetrics(metrics), nil
 }
 
+func (s *Service) PlatformContainerInspect(r PlatformActionRequest) (*PlatformInspectResponse, error) {
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+	inspect, err := plugin.InspectContainer(conn, r.Name)
+	if err != nil {
+		return nil, err
+	}
+	return mapPlatformInspect(inspect), nil
+}
+
 func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {

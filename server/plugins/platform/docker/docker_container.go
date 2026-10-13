@@ -7,6 +7,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -21,6 +22,29 @@ type dockerStatsEntry struct {
 	CPUPerc  string `json:"CPUPerc"`
 	MemUsage string `json:"MemUsage"`
 	NetIO    string `json:"NetIO"`
+}
+
+// containerInspectFormat asks docker for the fields InspectContainer reports
+// and nothing else, so the container's env - which holds interpolated
+// credentials - never leaves the host.
+const containerInspectFormat = `{"state":{{json .State}},"restartCount":{{json .RestartCount}},"restartPolicy":{{json .HostConfig.RestartPolicy}},"networkMode":{{json .HostConfig.NetworkMode}},"image":{{json .Config.Image}}}`
+
+type dockerInspectEntry struct {
+	State struct {
+		Status     string    `json:"Status"`
+		ExitCode   int       `json:"ExitCode"`
+		OOMKilled  bool      `json:"OOMKilled"`
+		Error      string    `json:"Error"`
+		StartedAt  time.Time `json:"StartedAt"`
+		FinishedAt time.Time `json:"FinishedAt"`
+	} `json:"state"`
+	RestartCount  int `json:"restartCount"`
+	RestartPolicy struct {
+		Name              string `json:"Name"`
+		MaximumRetryCount int    `json:"MaximumRetryCount"`
+	} `json:"restartPolicy"`
+	NetworkMode string `json:"networkMode"`
+	Image       string `json:"image"`
 }
 
 var byteSizeUnits = map[string]float64{
@@ -103,6 +127,15 @@ func (p *Plugin) MetricsContainer(connection platform.Connection, name string) (
 		return nil, err
 	}
 	return p.parseContainerMetrics(strings.Join(result, "\n"))
+}
+
+func (p *Plugin) InspectContainer(connection platform.Connection, name string) (*platform.ContainerInspect, error) {
+	command := "docker container inspect --format " + shellQuote(containerInspectFormat) + " -- " + shellQuote(name)
+	result, err := p.execute(connection, command)
+	if err != nil {
+		return nil, err
+	}
+	return p.parseContainerInspect(strings.Join(result, "\n"))
 }
 
 // quoteFields re-quotes tokens for the shell, leaving plain ones alone so the
@@ -247,4 +280,30 @@ func parseByteSize(raw string) (uint64, error) {
 		return 0, platform.ErrInvalidContainerMetrics
 	}
 	return uint64(math.Round(number * multiplier)), nil
+}
+
+func (p *Plugin) parseContainerInspect(output string) (*platform.ContainerInspect, error) {
+	var entry dockerInspectEntry
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &entry); err != nil {
+		return nil, platform.ErrInvalidContainerInspect
+	}
+	restartPolicy := entry.RestartPolicy.Name
+	if restartPolicy == "" {
+		restartPolicy = "no"
+	}
+	if entry.RestartPolicy.MaximumRetryCount > 0 {
+		restartPolicy += ":" + strconv.Itoa(entry.RestartPolicy.MaximumRetryCount)
+	}
+	return &platform.ContainerInspect{
+		Status:        entry.State.Status,
+		ExitCode:      entry.State.ExitCode,
+		OomKilled:     entry.State.OOMKilled,
+		Error:         entry.State.Error,
+		StartedAt:     entry.State.StartedAt,
+		FinishedAt:    entry.State.FinishedAt,
+		RestartCount:  entry.RestartCount,
+		RestartPolicy: restartPolicy,
+		NetworkMode:   entry.NetworkMode,
+		Image:         entry.Image,
+	}, nil
 }
