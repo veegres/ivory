@@ -228,6 +228,34 @@ func TestServiceInitializeSystemQueries(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("a shipped text change reaches an unedited query and an edited one's default", func(t *testing.T) {
+		adapter.systemRequests = []database.SystemRequest{
+			{Name: "Active queries", Query: "SELECT 10"},
+			{Name: "Replication slots", Query: "SELECT 20"},
+		}
+		if err := env.service.initializeSystemQueries(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		assertSystemQueryNames(t, env, "Active queries", "Replication slots")
+		list, err := env.service.repository.List()
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		for _, query := range list {
+			switch query.Name {
+			case "Active queries":
+				if query.Custom != "SELECT edited" || query.Default != "SELECT 10" {
+					t.Errorf("expected the edit kept and the default updated, got custom %q default %q", query.Custom, query.Default)
+				}
+			case "Replication slots":
+				if query.Custom != "SELECT 20" || query.Default != "SELECT 20" {
+					t.Errorf("expected the unedited query updated, got custom %q default %q", query.Custom, query.Default)
+				}
+			}
+		}
+	})
 }
 
 func assertSystemQueryNames(t *testing.T, env *testQueryEnv, expected ...string) {

@@ -81,24 +81,29 @@ func (s *Service) initializeSystemCharts() {
 	}
 }
 
-// initializeSystemQueries seeds the system queries a plugin ships but does not
-// have stored yet, matched by name. Seeding used to skip a plugin that had any
-// system query at all, which meant a query added to a plugin in a later release
-// only ever reached installations created after it. Comparing per name still
-// never duplicates or overwrites - a stored query keeps whatever edits were
-// made to it, since only the ones absent by name are created.
+// initializeSystemQueries seeds the system queries a plugin ships, matched by
+// name: one not stored yet is created, and one already stored is brought up to
+// the shipped version, keeping the text of a query the user edited.
 func (s *Service) initializeSystemQueries() error {
 	for plugin, adapter := range s.databaseRegistry.All() {
-		existing, errExisting := s.repository.SystemQueryNamesForPlugin(plugin)
+		existing, errExisting := s.repository.SystemQueriesForPlugin(plugin)
 		if errExisting != nil {
 			return errExisting
 		}
 		for _, req := range adapter.SystemRequests() {
-			if existing[req.Name] {
+			shipped := mapSystemRequest(plugin, req)
+			stored, ok := existing[req.Name]
+			if !ok {
+				if _, _, err := s.Create(System, shipped); err != nil {
+					return err
+				}
 				continue
 			}
-			_, _, err := s.Create(System, mapSystemRequest(plugin, req))
-			if err != nil {
+			refreshed, changed := stored.withShipped(shipped)
+			if !changed {
+				continue
+			}
+			if _, _, err := s.repository.Update(stored.Id, refreshed); err != nil {
 				return err
 			}
 		}

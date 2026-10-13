@@ -33,23 +33,22 @@ func (r *Repository) ListByFilter(queryType *Type, plugin *DbPlugin) ([]Response
 	}, r.sortAscByCreatedAt)
 }
 
-// SystemQueryNamesForPlugin returns the names of the system queries already
-// stored for a plugin. A name is the stable identity of a system query - it is
-// the one field Update refuses to change - so it is what seeding compares
-// against to add the queries a new version ships without duplicating, or
-// overwriting an edit made to, the ones already there.
-func (r *Repository) SystemQueryNamesForPlugin(plugin DbPlugin) (map[string]bool, error) {
+// SystemQueriesForPlugin returns the system queries stored for a plugin, keyed
+// by name. A name is the stable identity of a system query - it is the one
+// field Update refuses to change - so it is what seeding matches a shipped
+// query against.
+func (r *Repository) SystemQueriesForPlugin(plugin DbPlugin) (map[string]Response, error) {
 	list, err := r.bucket.GetList(func(query Response) bool {
 		return query.Creation == System && r.matchesPlugin(query.Plugin, plugin)
 	}, nil)
 	if err != nil {
 		return nil, err
 	}
-	names := make(map[string]bool, len(list))
+	queries := make(map[string]Response, len(list))
 	for _, query := range list {
-		names[query.Name] = true
+		queries[query.Name] = query
 	}
-	return names, nil
+	return queries, nil
 }
 
 // matchesPlugin treats records stored before the plugin field existed
