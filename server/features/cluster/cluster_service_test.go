@@ -43,11 +43,19 @@ func (f fakePlatformMetadata) SupportedFeatures() map[config.Feature]bool { retu
 type fakeDbAdapter struct {
 	database.Adapter
 	features map[config.Feature]bool
+	// applications records the application name each Ping was made with
+	applications *[]string
 }
 
 func (f fakeDbAdapter) SupportedFeatures() map[config.Feature]bool        { return f.features }
 func (f fakeDbAdapter) SystemRequests() []database.SystemRequest          { return nil }
 func (f fakeDbAdapter) SystemCharts() map[database.SystemChartType]string { return nil }
+func (f fakeDbAdapter) Ping(ctx database.Context) error {
+	if f.applications != nil {
+		*f.applications = append(*f.applications, ctx.Application)
+	}
+	return nil
+}
 
 // fakeToolAdapter is a minimal tools.Adapter test double.
 type fakeToolAdapter struct {

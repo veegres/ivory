@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ivory/clients/console"
 	"ivory/core/service/job"
+	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 	"strings"
@@ -61,6 +62,27 @@ func (s *Service) PlatformSystemInfo(r PlatformInfoRequest) (PlatformInfoRespons
 		return nil, err
 	}
 	return mapPlatformInfo(info), nil
+}
+
+// PlatformCheck reports how far Ivory gets reaching the node's platform, one
+// step at a time. The error is only for a platform Ivory does not know.
+func (s *Service) PlatformCheck(c PlatformVaultConnection) ([]utils.CheckStep, error) {
+	plugin, err := s.platformRegistry.Get(c.PlatformOrDefault())
+	if err != nil {
+		return nil, err
+	}
+	check := utils.NewCheck()
+	var conn platform.Connection
+	check.Run(utils.CheckStageVault, func() error {
+		var errVault error
+		conn, errVault = s.getPlatformVaultConnection(c)
+		return errVault
+	})
+	check.RunAfter(utils.CheckStageConnect, func() error {
+		_, errInfo := plugin.Info(conn)
+		return errInfo
+	})
+	return check.Steps(), nil
 }
 
 func (s *Service) PlatformSystemLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {

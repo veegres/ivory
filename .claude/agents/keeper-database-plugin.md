@@ -327,10 +327,11 @@ All twelve `keeper.Adapter` methods: `List`, `Config`, `ConfigUpdate`, `Switchov
   command states its own node name and both ports in `Defaults`, and that a single-host template's three nodes
   must not share a port.
 
-**Database plugins** carry the same spirit across `QueryExecutor` / `SchemaInquirer` / `SessionManager` /
-`MetadataProvider`: implement the interface fully, return `ErrNotSupported` where the engine has nothing
-correct to map an operation to, and never force an operation to half-work. ClickHouse's `SessionManager` is
-unsupported *despite* being SQL, because it identifies queries by a string `query_id` and the interface needs
+**Database plugins** carry the same spirit across `QueryExecutor` / `SchemaInquirer` /
+`ConnectionManager` / `MetadataProvider`: implement the interface fully, with `ConnectionManager.Ping` making a real round
+trip (it is the database step of `query.Service.Check`, and is never `ErrNotSupported`), return `ErrNotSupported` where the engine has nothing
+correct to map an operation to, and never force an operation to half-work. ClickHouse's `Cancel`/`Terminate`/
+`ActiveQueries` are unsupported *despite* it being SQL, because it identifies queries by a string `query_id` and the interface needs
 an int pid — that is the right call, not a gap.
 
 ---
@@ -550,11 +551,11 @@ Also state the shipped templates: how many, which platforms, which accounts thei
 |---|---|
 | `QueryExecutor` | |
 | `SchemaInquirer` | |
-| `SessionManager` | |
+| `ConnectionManager` | |
 | `MetadataProvider` | |
 
 `ErrNotSupported` is a complete answer here too — say *why* the engine has nothing to map the operation onto,
-the way clickhouse's `SessionManager` does (a `query_id` string where the interface needs an int pid).
+the way clickhouse's `Cancel`/`Terminate` do (a `query_id` string where the interface needs an int pid).
 
 Then every query template the plugin ships, and for an ADD/FIX run mark which ones are **new**:
 

@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"ivory/core/config"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -44,12 +45,20 @@ func (r *McpRouter) ClusterOverview(ctx context.Context, req *mcp.CallToolReques
 	return nil, overview, nil
 }
 
-func (r *McpRouter) ClusterNodeConnections(ctx context.Context, req *mcp.CallToolRequest, in RouterNodeRequest) (*mcp.CallToolResult, *NodeConnections, error) {
-	connections, err := r.clusterService.NodeConnections(in.Name, in.Node)
+func (r *McpRouter) ClusterConnections(ctx context.Context, req *mcp.CallToolRequest, in RouterNameRequest) (*mcp.CallToolResult, map[string]NodeConnections, error) {
+	connections, err := r.clusterService.Connections(in.Name)
 	if err != nil {
 		return nil, nil, err
 	}
 	return nil, connections, nil
+}
+
+func (r *McpRouter) ClusterCheck(ctx context.Context, req *mcp.CallToolRequest, in RouterNameRequest) (*mcp.CallToolResult, map[string]NodeCheck, error) {
+	checks, err := r.clusterService.Check(in.Name, config.McpCallerFrom(ctx).Session)
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, checks, nil
 }
 
 func (r *McpRouter) ClusterCreate(ctx context.Context, req *mcp.CallToolRequest, in Request) (*mcp.CallToolResult, *Response, error) {

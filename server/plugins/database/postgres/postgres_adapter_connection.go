@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"ivory/clients/postgres"
 	"ivory/plugins/database"
 	"strconv"
 )
@@ -15,4 +16,13 @@ func (a *Adapter) Terminate(ctx database.Context, pid int) error {
 
 func (a *Adapter) ActiveQueries(ctx database.Context, options *database.QueryOptions) (*database.QueryFields, error) {
 	return a.GetFields(ctx, GetAllActiveQueriesByApplicationName, options)
+}
+
+func (a *Adapter) Ping(ctx database.Context) error {
+	conn, _, err := a.getConnection(ctx)
+	if err != nil {
+		return err
+	}
+	postgres.Close(conn)
+	return nil
 }

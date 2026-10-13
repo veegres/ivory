@@ -81,6 +81,17 @@ export interface Connection {
     vaultId?: string,
 }
 
+export type QueryCheckResult = "done" | "failed" | "skipped"
+
+export type QueryCheckStage = "vault" | "cert" | "connect"
+
+export interface QueryCheckStep {
+    stage: QueryCheckStage,
+    result: QueryCheckResult,
+    durationMs: number,
+    message?: string,
+}
+
 export interface TemplateRequest {
     connection: Connection,
     queryUuid?: string,

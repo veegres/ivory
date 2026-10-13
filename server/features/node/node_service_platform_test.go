@@ -6,10 +6,13 @@ import (
 	"ivory/clients/console"
 	"ivory/core/config"
 	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // TestResolveCommand covers what replaced the escaper: the command is split
@@ -93,7 +96,13 @@ func (c recordingCommand) Execute() ([]string, error) {
 
 type recordingPlatform struct {
 	platform.Plugin
-	calls []string
+	calls   []string
+	infoErr error
+}
+
+func (r *recordingPlatform) Info(platform.Connection) ([]platform.InfoItem, error) {
+	r.calls = append(r.calls, "info")
+	return nil, r.infoErr
 }
 
 func (r *recordingPlatform) SupportedFeatures() map[config.Feature]bool { return nil }
@@ -216,5 +225,63 @@ func TestPlatformContainerInspectReportsEveryField(t *testing.T) {
 	}
 	if *inspect != expected {
 		t.Fatalf("expected %+v, got %+v", expected, *inspect)
+	}
+}
+
+func TestPlatformCheck(t *testing.T) {
+	s, vaultService := createTestNodeService(t)
+	key, _, errCreate := vaultService.Create(vault.Vault{Type: vault.SSH_KEY, Username: "root"})
+	if errCreate != nil {
+		t.Fatalf("failed to seed ssh key vault: %v", errCreate)
+	}
+	unknown := *key
+	unknown[0]++
+
+	tests := []struct {
+		name     string
+		vaultId  uuid.UUID
+		infoErr  error
+		expected []utils.CheckStep
+	}{
+		{
+			name:    "a readable vault reaches the platform",
+			vaultId: *key,
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultDone},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultDone},
+			},
+		},
+		{
+			name:    "a vault that cannot be read stops before the platform",
+			vaultId: unknown,
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultFailed},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultSkipped, Message: "vault failed"},
+			},
+		},
+		{
+			name:    "the platform's own refusal is its step's message",
+			vaultId: *key,
+			infoErr: errors.New("ssh: handshake failed"),
+			expected: []utils.CheckStep{
+				{Stage: utils.CheckStageVault, Result: utils.CheckResultDone},
+				{Stage: utils.CheckStageConnect, Result: utils.CheckResultFailed, Message: "ssh: handshake failed"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			recorder := &recordingPlatform{infoErr: tt.infoErr}
+			s.platformRegistry = stubPlatformRegistry{plugin: recorder}
+			steps, err := s.PlatformCheck(PlatformVaultConnection{Host: "host1", Port: 22, VaultId: tt.vaultId})
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+			assertCheckSteps(t, steps, tt.expected)
+			reached := tt.expected[1].Result != utils.CheckResultSkipped
+			if reached != (len(recorder.calls) == 1) {
+				t.Fatalf("expected the platform to be reached: %v, got calls %v", reached, recorder.calls)
+			}
+		})
 	}
 }

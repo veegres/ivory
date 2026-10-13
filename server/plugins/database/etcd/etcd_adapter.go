@@ -14,8 +14,9 @@ var _ database.Adapter = (*Adapter)(nil)
 
 // Adapter executes etcdctl-style console commands against an etcd cluster.
 // It has no databases/schemas/tables hierarchy and no per-query sessions,
-// so SchemaInquirer and SessionManager are not supported and the matching
-// features are excluded from SupportedFeatures.
+// so SchemaInquirer and ConnectionManager's Cancel/Terminate/ActiveQueries
+// are not supported and the matching features are excluded from
+// SupportedFeatures.
 type Adapter struct{}
 
 func NewAdapter() *Adapter {

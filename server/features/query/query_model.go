@@ -173,9 +173,7 @@ type Context struct {
 func mapSystemRequest(plugin DbPlugin, req database.SystemRequest) Request {
 	t := req.Type
 	v := make([]VarietyType, len(req.Varieties))
-	for i, val := range req.Varieties {
-		v[i] = val
-	}
+	copy(v, req.Varieties)
 	return Request{
 		Name:        req.Name,
 		Type:        &t,

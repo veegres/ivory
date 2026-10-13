@@ -2,6 +2,8 @@ package engine
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"ivory/core"
 	coreConfig "ivory/core/config"
@@ -48,11 +50,14 @@ Start with ivory_cluster_list to see the registered clusters, then
 ivory_cluster_overview for one cluster's health: every node's role, state,
 replication lag, pending restarts and the warnings Ivory derived from
 comparing the keeper's own answer against the stored configuration. Those
-warnings are the fastest route to a diagnosis.
+warnings are the fastest route to a diagnosis. When a node cannot be reached,
+ivory_cluster_check says, for every node at once and for each of its keeper,
+platform and database connections, whether it breaks at the vault, the
+certificate or the connection itself.
 
 Tools name a cluster and a node by the names in its configuration, never by
 host and port. The keeper, system, container and query tools take a node's
-connection instead: ivory_cluster_node_connections resolves one node into the
+connection instead: ivory_cluster_connections resolves every node into the
 keeper, platform and database inputs those tools take, ready to pass as they
 are. Keeper member keys are different: switchover and failover
 identify the leader and the candidate by the keeper's own member key, which
@@ -151,13 +156,24 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 	}, mr.Cluster.ClusterOverview)
 
 	addTool(r, coreConfig.ViewClusterItem, &mcpsdk.Tool{
-		Name: "ivory_cluster_node_connections",
-		Description: "Resolve one node of a cluster into the inputs the node-level tools take: keeper (for ivory_keeper_*), " +
-			"platform (the connection for ivory_system_* and ivory_container_*) and database (the connection for ivory_query_*), " +
-			"each filled in from the cluster's plugins, vaults and TLS certificates. A half is null when the node has no port " +
-			"or vault for it. Pass them on unchanged instead of copying hosts, ports and vault ids by hand.",
+		Name: "ivory_cluster_connections",
+		Description: "Resolve every node of a cluster, keyed by node name, into the inputs the node-level tools take: keeper " +
+			"(for ivory_keeper_*), platform (the connection for ivory_system_* and ivory_container_*) and database (the " +
+			"connection for ivory_query_*), each filled in from the cluster's plugins, vaults and TLS certificates. A half is " +
+			"null when the node has no port or vault for it. Pass them on unchanged instead of copying hosts, ports and vault ids by hand.",
 		Annotations: readOnly,
-	}, mr.Cluster.ClusterNodeConnections)
+	}, mr.Cluster.ClusterConnections)
+
+	addTool(r, coreConfig.ViewClusterCheck, &mcpsdk.Tool{
+		Name: "ivory_cluster_check",
+		Description: "Where reaching each node breaks, for every node of a cluster at once, keyed by node name. Each node " +
+			"reports up to three ordered step lists - keeper and database (vault, cert, connect) and platform (vault, connect) " +
+			"- each step done, failed or skipped, with its duration and message. A step is skipped " +
+			"when one before it failed or there was nothing to check (no vault, tls off); a list is missing when the node " +
+			"has no connection for it. Every node failing at the same step points at something shared, such as a vault or " +
+			"a certificate; one node failing points at that node.",
+		Annotations: readOnly,
+	}, mr.Cluster.ClusterCheck)
 
 	addTool(r, coreConfig.ManageClusterCreate, &mcpsdk.Tool{
 		Name:        "ivory_cluster_create",
@@ -204,6 +220,13 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 // the keeper managing it, the host it runs on, and the containers on that host.
 func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 	// keeper
+	addTool(r, coreConfig.ViewNodeKeeperCheck, &mcpsdk.Tool{
+		Name: "ivory_node_keeper_check",
+		Description: "Where reaching one node's keeper breaks: vault, cert, connect, in order, each done, failed or skipped " +
+			"with its duration and message. Takes the same keeper input as ivory_keeper_*.",
+		Annotations: readOnly,
+	}, mr.Node.KeeperCheck)
+
 	addTool(r, coreConfig.ViewNodeKeeperOverview, &mcpsdk.Tool{
 		Name: "ivory_keeper_node_list",
 		Description: "Ask one node's keeper what it knows about the cluster's members. ivory_cluster_overview is usually the better read: it unions every node's answer and adds Ivory's own warnings. " +
@@ -280,6 +303,13 @@ func nodeTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Description: "Suspend automatic failover. The cluster stays up but stops protecting itself, and nothing reminds you later - always pair this with ivory_keeper_activate.",
 		Annotations: destructive,
 	}, mr.Node.KeeperPause)
+
+	addTool(r, coreConfig.ViewNodePlatformCheck, &mcpsdk.Tool{
+		Name: "ivory_node_platform_check",
+		Description: "Where reaching one node's platform breaks: vault, connect, in order, each done, failed or skipped " +
+			"with its duration and message. Takes the same platform connection as ivory_system_* and ivory_container_*.",
+		Annotations: readOnly,
+	}, mr.Node.PlatformCheck)
 
 	// system - the node itself
 	addTool(r, coreConfig.ViewNodeSystem, &mcpsdk.Tool{
@@ -405,6 +435,13 @@ func queryTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Description: "Past result sets recorded for one saved query.",
 		Annotations: readOnly,
 	}, mr.Query.QueryLogGet)
+
+	addTool(r, coreConfig.ViewQueryDbCheck, &mcpsdk.Tool{
+		Name: "ivory_query_check",
+		Description: "Where reaching one node's database breaks: vault, cert, connect, in order, each done, failed or " +
+			"skipped with its duration and message. Takes the same connection as the other ivory_query_* tools.",
+		Annotations: readOnly,
+	}, mr.Query.QueryCheck)
 
 	addTool(r, coreConfig.ViewQueryDbInfo, &mcpsdk.Tool{
 		Name:        "ivory_query_activity",
@@ -538,13 +575,27 @@ func certTools(r *mcpRegistrar, cr *core.McpRouter) {
 // Everything below serves the table above: how a caller reaches it, how a tool
 // is gated, and how a handler's argument and result types become schemas.
 
+// mcpSession is the caller's session for the MCP engine. It only ever becomes a
+// database connection's application_name, which keeps seven characters of it,
+// so it is a hash of the caller's name: a prefix of the name itself would merge
+// everyone whose names start alike into one activity view.
+func mcpSession(username string) string {
+	if username == "" {
+		return "mcp"
+	}
+	sum := sha256.Sum256([]byte(username))
+	return hex.EncodeToString(sum[:])
+}
+
 // mcpRequestContext carries what the middlewares already worked out down to
 // the SDK, which hands the server builder an *http.Request and nothing else.
 func mcpRequestContext(context *gin.Context) context.Context {
+	username := context.GetString(coreConfig.AuthContextKey.Username)
 	ctx := coreConfig.WithMcpCaller(context.Request.Context(), coreConfig.McpCaller{
-		Username:    context.GetString(coreConfig.AuthContextKey.Username),
+		Username:    username,
 		Authorised:  context.GetBool(coreConfig.AuthContextKey.Authorised),
 		AuthEnabled: context.GetBool(coreConfig.AuthContextKey.Enabled),
+		Session:     mcpSession(username),
 	})
 	if value, ok := context.Get(coreConfig.PermissionContextKey); ok {
 		if permissions, ok := value.(permission.PermissionMap); ok {

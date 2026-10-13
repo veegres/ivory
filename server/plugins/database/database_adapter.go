@@ -19,7 +19,7 @@ var ErrPasswordNotSet = errors.New("password is not set")
 type Adapter interface {
 	QueryExecutor
 	SchemaInquirer
-	SessionManager
+	ConnectionManager
 	MetadataProvider
 }
 
@@ -44,8 +44,12 @@ type SchemaInquirer interface {
 	ListTables(ctx Context, schema string, name string) ([]string, error)
 }
 
-// SessionManager inspects and controls in-flight backend sessions.
-type SessionManager interface {
+// ConnectionManager reaches the database and inspects and controls the backend
+// connections running queries on it.
+type ConnectionManager interface {
+	// Ping opens a connection with the context's credentials and TLS, makes
+	// one round trip and closes it again.
+	Ping(ctx Context) error
 	// Cancel asks the backend running pid to cancel its current query.
 	Cancel(ctx Context, pid int) error
 	// Terminate forcibly ends the backend running pid.

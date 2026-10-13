@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"ivory/clients/redis"
 	"ivory/plugins/database"
 	"strconv"
 	"strings"
@@ -89,4 +90,13 @@ func parseClientAttrs(line string) map[string]string {
 		}
 	}
 	return attrs
+}
+
+func (a *Adapter) Ping(ctx database.Context) error {
+	client, _, err := a.connect(ctx)
+	if err != nil {
+		return err
+	}
+	redis.Close(client)
+	return nil
 }

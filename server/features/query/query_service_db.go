@@ -2,11 +2,45 @@ package query
 
 import (
 	"fmt"
+	"ivory/core/utils"
 	"ivory/plugins/database"
 	"log/slog"
 
 	"github.com/google/uuid"
 )
+
+// Check reports how far Ivory gets reaching the database, one step at a time.
+// The error is only for a plugin Ivory does not know.
+func (s *Service) Check(queryCtx Context) ([]utils.CheckStep, error) {
+	client, err := s.databaseRegistry.Get(queryCtx.Connection.Db.Plugin)
+	if err != nil {
+		return nil, err
+	}
+	con := database.Connection{Config: queryCtx.Connection.Db.toDatabaseConfig()}
+	check := utils.NewCheck()
+	if queryCtx.Connection.VaultId != nil {
+		check.Run(utils.CheckStageVault, func() error {
+			cred, errVault := s.vaultService.GetDecrypted(*queryCtx.Connection.VaultId)
+			if errVault == nil {
+				con.Credentials = &database.Credentials{Username: cred.Username, Password: cred.Secret}
+			}
+			return errVault
+		})
+	} else {
+		check.Skip(utils.CheckStageVault, "no vault is configured")
+	}
+	if queryCtx.Connection.Certs != nil {
+		check.Run(utils.CheckStageCert, func() error {
+			return s.certService.EnrichTLSConfig(&con.TlsConfig, queryCtx.Connection.Certs)
+		})
+	} else {
+		check.Skip(utils.CheckStageCert, "tls is off")
+	}
+	check.RunAfter(utils.CheckStageConnect, func() error {
+		return client.Ping(database.Context{Connection: &con, Application: s.GetApplicationName(queryCtx.Session)})
+	})
+	return check.Steps(), nil
+}
 
 func (s *Service) ConsoleQuery(queryCtx Context, query string, options *DbOptions) (*DbResponse, error) {
 	client, ctx, err := s.getDatabaseAdapter(queryCtx)

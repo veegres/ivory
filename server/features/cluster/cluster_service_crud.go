@@ -39,18 +39,17 @@ func (s *Service) Get(cluster string) (Response, error) {
 	return s.clusterRepository.Get(cluster)
 }
 
-func (s *Service) NodeConnections(name string, nodeName string) (*NodeConnections, error) {
+// Connections resolves every node of the cluster, keyed by its name.
+func (s *Service) Connections(name string) (map[string]NodeConnections, error) {
 	cluster, err := s.Get(name)
 	if err != nil {
 		return nil, err
 	}
+	connections := make(map[string]NodeConnections, len(cluster.Nodes))
 	for _, n := range cluster.Nodes {
-		if n.Name == nodeName {
-			connections := cluster.Options.nodeConnections(cluster.Name, n)
-			return &connections, nil
-		}
+		connections[n.Name] = cluster.Options.nodeConnections(cluster.Name, n)
 	}
-	return nil, fmt.Errorf("%w: %q", ErrClusterNodeNotFound, nodeName)
+	return connections, nil
 }
 
 func (s *Service) Create(cluster Request) (*Response, error) {

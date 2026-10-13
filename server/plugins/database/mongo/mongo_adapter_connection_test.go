@@ -76,3 +76,22 @@ func TestTerminateConnectFailure(t *testing.T) {
 		t.Errorf("expected ErrDatabaseHostOrPortNotSpecified, got %v", err)
 	}
 }
+
+func TestAdapterPingRequiresAnEndpoint(t *testing.T) {
+	adapter := NewAdapter()
+	tests := []struct {
+		name string
+		ctx  database.Context
+	}{
+		{name: "missing host", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Port: 27017}}}},
+		{name: "missing port", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Host: "localhost"}}}},
+		{name: "placeholder host", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Host: "-", Port: 27017}}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := adapter.Ping(tt.ctx); !errors.Is(err, database.ErrDatabaseHostOrPortNotSpecified) {
+				t.Fatalf("expected ErrDatabaseHostOrPortNotSpecified, got %v", err)
+			}
+		})
+	}
+}

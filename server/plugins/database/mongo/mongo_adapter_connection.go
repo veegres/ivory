@@ -103,3 +103,12 @@ func int64Field(v any) int64 {
 		return 0
 	}
 }
+
+func (a *Adapter) Ping(ctx database.Context) error {
+	client, _, err := a.connect(ctx)
+	if err != nil {
+		return err
+	}
+	mongo.Close(client)
+	return nil
+}

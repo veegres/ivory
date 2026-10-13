@@ -157,6 +157,17 @@ export interface Metrics {
 
 export type PlatformMetricsResponse = Metrics
 
+export type NodeCheckResult = "done" | "failed" | "skipped"
+
+export type NodeCheckStage = "vault" | "cert" | "connect"
+
+export interface NodeCheckStep {
+    stage: NodeCheckStage,
+    result: NodeCheckResult,
+    durationMs: number,
+    message?: string,
+}
+
 export interface PlatformInspectResponse {
     status: string,
     exitCode: number,

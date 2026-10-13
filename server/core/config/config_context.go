@@ -34,6 +34,9 @@ type McpCaller struct {
 	Username    string
 	Authorised  bool
 	AuthEnabled bool
+	// Session stands in for AuthContextKey.Session, which an MCP client
+	// carries no cookie for.
+	Session string
 }
 
 type mcpCallerContextKey struct{}

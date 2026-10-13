@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"ivory/core/config"
 	"net/http"
 	"strconv"
 
@@ -70,13 +71,22 @@ func (r *HttpRouter) GetClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func (r *HttpRouter) GetClusterNodeConnections(context *gin.Context) {
-	connections, err := r.clusterService.NodeConnections(context.Param("name"), context.Param("node"))
+func (r *HttpRouter) GetClusterConnections(context *gin.Context) {
+	connections, err := r.clusterService.Connections(context.Param("name"))
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": connections})
+}
+
+func (r *HttpRouter) GetClusterCheck(context *gin.Context) {
+	checks, err := r.clusterService.Check(context.Param("name"), context.GetString(config.AuthContextKey.Session))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": checks})
 }
 
 func (r *HttpRouter) PostCluster(context *gin.Context) {

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"ivory/core/service/cert"
 	"ivory/features/node"
+	"ivory/features/query"
+	"sync"
 )
 
 func (s *Service) Overview(name string, host string, port int) (*Overview, error) {
@@ -487,4 +489,55 @@ func (s *Service) getResponseKey(n node.KeeperOneResponse) (string, bool) {
 		return *n.DiscoveredName, true
 	}
 	return "", false
+}
+
+// Check reports, for every node of the cluster at once, how far Ivory gets
+// reaching it. Nodes and their connections are checked in parallel, so the
+// slowest one decides how long it takes. The error is for what Ivory refused
+// before checking anything: an unknown cluster or plugin.
+func (s *Service) Check(name string, session string) (map[string]NodeCheck, error) {
+	connections, err := s.Connections(name)
+	if err != nil {
+		return nil, err
+	}
+	checks := make(map[string]NodeCheck, len(connections))
+	var errs []error
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for nodeName, c := range connections {
+		wg.Go(func() {
+			check, errCheck := s.checkNode(c, session)
+			mu.Lock()
+			defer mu.Unlock()
+			if errCheck != nil {
+				errs = append(errs, errCheck)
+				return
+			}
+			checks[nodeName] = check
+		})
+	}
+	wg.Wait()
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	return checks, nil
+}
+
+func (s *Service) checkNode(c NodeConnections, session string) (NodeCheck, error) {
+	var check NodeCheck
+	var errKeeper, errPlatform, errDatabase error
+	var wg sync.WaitGroup
+	if c.Keeper != nil {
+		wg.Go(func() { check.Keeper, errKeeper = s.nodeService.KeeperCheck(*c.Keeper) })
+	}
+	if c.Platform != nil {
+		wg.Go(func() { check.Platform, errPlatform = s.nodeService.PlatformCheck(*c.Platform) })
+	}
+	if c.Database != nil {
+		wg.Go(func() {
+			check.Database, errDatabase = s.queryService.Check(query.Context{Connection: *c.Database, Session: session})
+		})
+	}
+	wg.Wait()
+	return check, errors.Join(errKeeper, errPlatform, errDatabase)
 }

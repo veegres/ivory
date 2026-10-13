@@ -16,7 +16,6 @@ import (
 var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
 var ErrClusterKeepersEmpty = errors.New("cluster keepers cannot be empty")
 var ErrClusterNodeNameNotProvided = errors.New("cluster node name not provided")
-var ErrClusterNodeNotFound = errors.New("cluster has no node with this name")
 var ErrClusterNodeNameNotUnique = errors.New("cluster node name is not unique")
 var ErrClusterNodePortsNotProvided = errors.New("cluster node keeper, database and ssh ports are all required")
 var ErrSshCredentialsRequired = errors.New("ssh credentials are required")

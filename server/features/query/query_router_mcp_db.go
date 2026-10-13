@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"ivory/core/utils"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -74,4 +75,12 @@ func (r *McpRouter) QueryTerminate(ctx context.Context, req *mcp.CallToolRequest
 		return nil, "", err
 	}
 	return nil, "terminated", nil
+}
+
+func (r *McpRouter) QueryCheck(ctx context.Context, req *mcp.CallToolRequest, in Connection) (*mcp.CallToolResult, []utils.CheckStep, error) {
+	steps, err := r.service.Check(r.queryContext(ctx, in))
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, steps, nil
 }

@@ -209,12 +209,13 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *cluster.Htt
 	group := g.Group("/cluster")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewClusterList), r.GetClusterList)
 	group.GET("/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterItem), r.GetClusterByName)
+	group.GET("/:name/overview", rp.ValidateMethodMiddleware(coreConfig.ViewClusterOverview), r.GetClusterOverview)
+	group.GET("/:name/connections", rp.ValidateMethodMiddleware(coreConfig.ViewClusterItem), r.GetClusterConnections)
+	group.GET("/:name/check", rp.ValidateMethodMiddleware(coreConfig.ViewClusterCheck), r.GetClusterCheck)
 	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostCluster)
 	group.PUT("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PutClusterByName)
 	group.DELETE("/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterDelete), r.DeleteClusterByName)
-	group.GET("/overview/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterOverview), r.GetClusterOverview)
-	group.GET("/:name/node/:node/connections", rp.ValidateMethodMiddleware(coreConfig.ViewClusterItem), r.GetClusterNodeConnections)
-	group.POST("/fix/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PostClusterFix)
+	group.POST("/:name/fix", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PostClusterFix)
 	group.POST("/detect", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDetect)
 	group.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDeploy)
 }
@@ -271,6 +272,7 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *node.HttpRoute
 
 	keeperGroup := group.Group("/keeper")
 	keeperGroup.GET("/overview", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperOverview), r.GetNodeOverview)
+	keeperGroup.GET("/check", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperCheck), r.GetKeeperCheck)
 	keeperGroup.GET("/config", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperConfig), r.GetNodeConfig)
 	keeperGroup.PATCH("/config", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperConfigUpdate), r.PatchNodeConfig)
 	keeperGroup.POST("/switchover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperSwitchover), r.PostNodeSwitchover)
@@ -284,6 +286,7 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *node.HttpRoute
 	keeperGroup.POST("/pause", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodePause)
 
 	platformGroup := group.Group("/platform")
+	platformGroup.GET("/check", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformCheck), r.GetPlatformCheck)
 
 	systemGroup := platformGroup.Group("/system")
 	systemGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodeSystem), r.GetPlatformSystemMetrics)
@@ -343,6 +346,7 @@ func queryRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *query.HttpRou
 	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostSchemasQuery)
 	executeGroup.POST("/tables", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostTablesQuery)
 	executeGroup.POST("/chart", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbChart), r.PostChartQuery)
+	executeGroup.POST("/check", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbCheck), r.PostCheckQuery)
 	executeGroup.POST("/cancel", rp.ValidateMethodMiddleware(coreConfig.ManageQueryDbCancel), r.PostCancelQuery)
 	executeGroup.POST("/terminate", rp.ValidateMethodMiddleware(coreConfig.ManageQueryDbTerminate), r.PostTerminateQuery)
 

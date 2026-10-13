@@ -178,3 +178,21 @@ func (r *HttpRouter) PostTerminateQuery(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"response": "query is terminated"})
 	})
 }
+
+func (r *HttpRouter) PostCheckQuery(context *gin.Context) {
+	var req Connection
+	errBind := context.ShouldBindJSON(&req)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+
+	r.withQueryContext(context, req, func(queryContext Context) {
+		res, err := r.service.Check(queryContext)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{"response": res})
+	})
+}

@@ -30,9 +30,17 @@ type fakeDatabaseAdapter struct {
 	cancelFn         func(ctx database.Context, pid int) error
 	terminateFn      func(ctx database.Context, pid int) error
 	activeQueriesFn  func(ctx database.Context, options *database.QueryOptions) (*database.QueryFields, error)
+	pingFn           func(ctx database.Context) error
 	supportedFeature map[config.Feature]bool
 	systemRequests   []database.SystemRequest
 	systemCharts     map[database.SystemChartType]string
+}
+
+func (f *fakeDatabaseAdapter) Ping(ctx database.Context) error {
+	if f.pingFn != nil {
+		return f.pingFn(ctx)
+	}
+	return nil
 }
 
 func (f *fakeDatabaseAdapter) GetMany(ctx database.Context, query string, params []any) ([]string, error) {

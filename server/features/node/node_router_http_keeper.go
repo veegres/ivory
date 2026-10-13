@@ -6,6 +6,10 @@ func (r *HttpRouter) GetNodeOverview(context *gin.Context) {
 	handleKeeperParamRequest(context, r.service.KeeperNodeList)
 }
 
+func (r *HttpRouter) GetKeeperCheck(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.KeeperCheck)
+}
+
 func (r *HttpRouter) GetNodeConfig(context *gin.Context) {
 	handleKeeperParamRequest(context, r.service.KeeperConfigGet)
 }
