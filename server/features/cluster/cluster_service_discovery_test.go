@@ -849,6 +849,61 @@ func TestService_addKeeperResponsesToMap_OwnAnswerBeatsHearsay(t *testing.T) {
 	}
 }
 
+// TestService_addKeeperResponsesToMap_MergesWarnings covers a fault only one
+// observer sees: each node reports every member, so h2's failed heartbeat to h3
+// lived only in h2's answer and was dropped whenever another answer about h3
+// was kept instead.
+func TestService_addKeeperResponsesToMap_MergesWarnings(t *testing.T) {
+	host := "h3"
+	port := 27017
+	member := func(state keeper.State, warnings ...string) node.KeeperOneResponse {
+		return node.KeeperOneResponse{State: state, Role: keeper.Replica, DiscoveredHost: &host, DiscoveredKeeperPort: &port, Warnings: warnings}
+	}
+
+	tests := []struct {
+		name          string
+		order         [][]node.KeeperOneResponse
+		expectedState keeper.State
+		expected      []string
+	}{
+		{
+			name:          "a later observer's warning is kept",
+			order:         [][]node.KeeperOneResponse{{member(keeper.StateRunning)}, {member(keeper.StateRunning, "heartbeat from h2 failed: timeout")}},
+			expectedState: keeper.StateRunning,
+			expected:      []string{"heartbeat from h2 failed: timeout"},
+		},
+		{
+			name:          "the same warning from two observers is listed once",
+			order:         [][]node.KeeperOneResponse{{member(keeper.StateRunning, "member is down")}, {member(keeper.StateRunning, "member is down")}},
+			expectedState: keeper.StateRunning,
+			expected:      []string{"member is down"},
+		},
+		{
+			name:          "hearsay's warning survives the node's own answer replacing it",
+			order:         [][]node.KeeperOneResponse{{member(keeper.StateUnknown, "heartbeat from h1 failed: timeout")}, {member(keeper.StateRunning, "own")}},
+			expectedState: keeper.StateRunning,
+			expected:      []string{"own", "heartbeat from h1 failed: timeout"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{}
+			nodeMap := make(map[string]node.KeeperOneResponse)
+			for _, responses := range tt.order {
+				s.addKeeperResponsesToMap(nodeMap, responses)
+			}
+			got := nodeMap["h3:27017"]
+			if got.State != tt.expectedState {
+				t.Errorf("expected state %q, got %q", tt.expectedState, got.State)
+			}
+			if !reflect.DeepEqual(got.Warnings, tt.expected) {
+				t.Errorf("expected warnings %v, got %v", tt.expected, got.Warnings)
+			}
+		})
+	}
+}
+
 // TestService_markUnansweredNodes covers the case a live clickhouse cluster
 // showed: a node that is down still appears in every peer's system.clusters, so
 // its row arrived describing a running replica and read as healthy. The role is
