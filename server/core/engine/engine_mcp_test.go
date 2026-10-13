@@ -559,7 +559,7 @@ func TestMcpSession(t *testing.T) {
 	if got := mcpSession(""); got != "mcp" {
 		t.Errorf("a caller with no name: got %q, want mcp", got)
 	}
-	if mcpSession("alice") != mcpSession("alice") {
+	if first, second := mcpSession("alice"), mcpSession("alice"); first != second {
 		t.Errorf("expected one caller to keep one session")
 	}
 	if mcpSession("alice.smith")[:7] == mcpSession("alice.jones")[:7] {

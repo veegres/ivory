@@ -95,7 +95,7 @@ func (a *Adapter) addLimitToQuery(query string, queryAnalysis database.QueryAnal
 		replace := " LIMIT " + limit + ";"
 		if queryAnalysis.Semicolon {
 			// NOTE: removing all spaces and semicolon at the end
-			regex := regexp.MustCompile("\\s*;\\s*$")
+			regex := regexp.MustCompile(`\s*;\s*$`)
 			return regex.ReplaceAllString(query, replace), &limit
 		}
 		return query + replace, &limit

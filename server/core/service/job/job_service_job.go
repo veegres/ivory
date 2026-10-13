@@ -19,7 +19,7 @@ import (
 // clear-line, ...) that tools like "docker pull" write to a terminal for a
 // progress bar; a job's subscribers and its persisted log file are plain
 // text, not a terminal, so these would otherwise land verbatim.
-var ansiEscape = regexp.MustCompile("\x1b\\[[0-9;]*[a-zA-Z]")
+var ansiEscape = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
 
 type Job struct {
 	cmd         console.Command

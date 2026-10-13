@@ -115,7 +115,7 @@ func updateBaseUrlTag(path string, href string) {
 		panic(errRead)
 	}
 	file := string(index)
-	regex := regexp.MustCompile("<base href=\".*\" />")
+	regex := regexp.MustCompile(`<base href=".*" />`)
 	newFile := regex.ReplaceAllString(file, "<base href=\""+href+"/\" />")
 	errWrite := os.WriteFile(indexPath, []byte(newFile), 0666)
 	if errWrite != nil {
