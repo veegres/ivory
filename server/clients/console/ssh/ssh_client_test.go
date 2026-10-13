@@ -208,16 +208,15 @@ func TestClient_DialCachedRedialsDeadConnection(t *testing.T) {
 
 // TestCommand_UsesSshTimeout covers the timeout a Command carries: it becomes
 // ssh.ClientConfig.Timeout, which x/crypto/ssh applies to the key exchange as
-// well as the dial, so the local-network 300ms could not complete a handshake
-// with a host a datacenter away.
+// well as the dial, so it must never be shorter than a database request.
 func TestCommand_UsesSshTimeout(t *testing.T) {
 	command := NewClient().Command(Connection{Host: "10.0.0.1", Port: 22}, "docker ps")
 
 	if command.Timeout != clients.SshTimeout {
 		t.Errorf("expected the ssh timeout %v, got %v", clients.SshTimeout, command.Timeout)
 	}
-	if clients.SshTimeout <= clients.IntegrationTimeout {
-		t.Errorf("an ssh handshake needs more room than a local-network round trip, got %v", clients.SshTimeout)
+	if clients.SshTimeout < clients.IntegrationTimeout {
+		t.Errorf("an ssh handshake needs at least the room of a database request, got %v", clients.SshTimeout)
 	}
 }
 

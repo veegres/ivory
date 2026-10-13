@@ -51,7 +51,7 @@ func FourLetterCommand(ctx context.Context, c Config, command string) (string, e
 		timeout = clients.IntegrationTimeout
 	}
 
-	dialer := net.Dialer{Timeout: timeout}
+	dialer := net.Dialer{Timeout: clients.IntegrationDialTimeout}
 	conn, err := dialer.DialContext(ctx, "tcp", c.Host+":"+strconv.Itoa(c.Port))
 	if err != nil {
 		return "", err
