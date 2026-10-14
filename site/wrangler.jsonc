@@ -1,6 +1,9 @@
 {
-  "name": "ivory",
+  "name": "ivory-site",
   "compatibility_date": "2026-10-01",
+  "routes": [
+    { "pattern": "ivory.veegres.com", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./build",
     "not_found_handling": "404-page"
