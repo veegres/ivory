@@ -1,0 +1,31 @@
+name: "Site: Build"
+
+on:
+  push:
+    branches: [ master ]
+    paths: [ '.doc/**', 'site/**', 'app/shared/assets/ivory*.png', '.github/workflows/site-build.yml' ]
+  pull_request:
+    branches: [ master ]
+    paths: [ '.doc/**', 'site/**', 'app/shared/assets/ivory*.png', '.github/workflows/site-build.yml' ]
+
+jobs:
+
+  build:
+    name: Site (typecheck & build)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up JavaScript
+      uses: actions/setup-node@v7
+      with:
+        node-version: '26'
+
+    - name: Build
+      working-directory: site
+      run: |
+        node -v
+        npm -v
+        npm install
+        npm run typecheck
+        npm run build
