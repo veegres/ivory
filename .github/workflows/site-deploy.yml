@@ -1,0 +1,61 @@
+name: "Site: Build & Deploy (Cloudflare)"
+
+on:
+  push:
+    branches: [ master ]
+    paths: [ '.doc/**', 'site/**', 'app/shared/assets/ivory*.png', '.github/workflows/site-deploy.yml' ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up JavaScript
+      uses: actions/setup-node@v7
+      with:
+        node-version: '26'
+
+    - name: Build
+      working-directory: site
+      run: |
+        npm install
+        npm run typecheck
+        npm run build
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v7
+      with:
+        name: site
+        path: site/build
+
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    environment:
+      name: site
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: site
+        path: site/build
+
+    - name: Deploy to Cloudflare Workers
+      id: deploy
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        workingDirectory: site
+        command: deploy

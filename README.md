@@ -3,11 +3,11 @@
 
 # Ivory
 
-### Deploy it. Watch it. Fix it. Anywhere.
+### DEPLOY. WATCH. FIX. ANYWHERE
 
 **Open-source web UI and AI-ready MCP server for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.**
 
-   <img src="https://img.shields.io/github/deployments/veegres/ivory/production?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fproduction" alt="deployment" />
+   <img src="https://img.shields.io/github/deployments/veegres/ivory/app?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fapp" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
    <img src="https://img.shields.io/docker/v/veegres/ivory?label=latest&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="latest version" />
    <a href="https://github.com/veegres/ivory/stargazers"><img src="https://img.shields.io/github/stars/veegres/ivory?style=flat-square" alt="GitHub stars" /></a>
@@ -67,7 +67,7 @@ New to Ivory? Start with [About Ivory](.doc/about.md).
 
 - [Query builder](.doc/node.md#database) — saved SQL queries for monitoring and diagnostics
 - [Database tools](.doc/node.md#tools) — engine-specific maintenance tools, run as background jobs with live output:
-    - **Postgres** — [pgcompacttable](.doc/pg_compacttable.md), reduces table and index bloat without heavy locks
+    - **Postgres** — [pgcompacttable](.doc/tools/postgres/pg_compacttable.md), reduces table and index bloat without heavy locks
 
 **Access control and operations**
 
@@ -95,6 +95,7 @@ Ivory ships as one Docker image with no external dependencies.
 | Page                                     | What's in it                                                        |
 |------------------------------------------|---------------------------------------------------------------------|
 | [About](.doc/about.md)                   | What Ivory is, the Keeper concept, vision, why these databases      |
+| [Getting started](.doc/getting-started.md) | Run the container, the setup wizard, adding your first cluster    |
 | [Clusters](.doc/clusters.md)             | Adding clusters manually, auto-detection, tags and filtering        |
 | [Overview](.doc/overview.md)             | What a Keeper is, cluster health, HA operations                     |
 | [Node](.doc/node.md)                     | System, Container, Keeper, Database and Tools tabs                  |

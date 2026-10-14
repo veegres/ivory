@@ -1,4 +1,4 @@
-name: Build
+name: "App: Build & Test"
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
 
   go:
-    name: Build (go)
+    name: Server (build & test)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
@@ -31,7 +31,7 @@ jobs:
 
 
   javascript:
-    name: Build (javascript)
+    name: Frontend (build, lint & test)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7

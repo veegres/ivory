@@ -1,0 +1,61 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--rp-c-divider-light);
+    border-radius: var(--rp-radius-large, 12px);
+    background: var(--rp-c-bg-soft);
+    color: inherit;
+    text-decoration: none !important;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.card:hover {
+    border-color: var(--rp-c-brand);
+    transform: translateY(-2px);
+}
+
+.image {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 !important;
+}
+
+.body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+}
+
+.title {
+    margin: 0 !important;
+    font-size: 1.05rem;
+    color: var(--rp-c-text-1);
+}
+
+.description {
+    flex: 1;
+    margin: 0 !important;
+    font-size: 0.9rem;
+    color: var(--rp-c-text-2);
+}
+
+.button {
+    align-self: flex-start;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--rp-c-brand);
+    color: var(--ivory-on-brand, #fff);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
