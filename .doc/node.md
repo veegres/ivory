@@ -164,7 +164,7 @@ specific to one database engine and only works on nodes running that engine.
 [pgcompacttable](https://github.com/dataegret/pgcompacttable) is a Postgres tool: it reduces table
 and index bloat without taking heavy locks, which makes it safe to run on production systems. It
 applies to Postgres nodes only, whichever keeper manages them, and has no equivalent for the other
-engines Ivory supports. See [pgcompacttable](pg_compacttable.md) for full details.
+engines Ivory supports. See [pgcompacttable](tools/postgres/pg_compacttable.md) for full details.
 
 Jobs can only be submitted against the **leader** node (Ivory enforces this automatically). Once
 submitted, a job runs in the background — you can monitor its status and stream its output from the

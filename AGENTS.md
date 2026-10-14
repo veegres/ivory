@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Ivory is split into a Go backend in `server/` and a Rsbuild/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers, and `tools/` for standalone utilities (e.g. `pg_compacttable`). Tests live in `server/**/_test.go`, and on the frontend are colocated with the source they test (`[filename].test.[ext]`). Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
+Ivory is split into a Go backend in `server/` and a Rsbuild/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers, and `tools/` for standalone utilities (e.g. `pg_compacttable`). Tests live in `server/**/_test.go`, and on the frontend are colocated with the source they test (`[filename].test.[ext]`). Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`. The public website (landing page + docs) is an Rspress package in `site/`: it copies `.doc/` in at build time (`site/scripts/sync-docs.mjs`), so `.doc/` stays the single source and keeps rendering on GitHub — edit docs there, never under `site/content/docs/`. A new `.doc/` page needs a search title/description in the `meta` map of `sync-docs.mjs` (the build fails without one) and a sidebar entry in `site/rspress.config.ts`. Rspress's home layout draws only the hero and features, so `site/theme/index.tsx` renders the body of `site/content/index.mdx` below them. `.github/workflows/site-deploy.yml` deploys it to Cloudflare Workers as static assets (`site/wrangler.jsonc`).
 
 **Mandatory Check**: When modifying frontend code, always run `cd app && npm run lint` and `cd app && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
 
@@ -17,6 +17,11 @@ Frontend:
 - `cd app && npm run build` runs TypeScript compile plus production build.
 - `cd app && npm run lint` runs Rslint over `core/`, `features/`, `shared/` and `tools/`.
 - `cd app && npm test` runs the Rstest suite once.
+
+Site:
+- `cd site && npm run typecheck` type-checks the site's components, theme and config.
+- `cd site && npm run build` syncs `.doc/` and builds the static site into `site/build`.
+- `cd site && npm start` runs the Rspress dev server.
 
 Use `.docker/ivory-dev/` for the stack.
 

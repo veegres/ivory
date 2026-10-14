@@ -1,4 +1,4 @@
-# [☰](../README.md) pgcompacttable
+# [☰](../../../README.md) pgcompacttable
 
 **This tool is Postgres only.** It runs against Postgres nodes, whichever keeper manages them, and
 has no equivalent for the other database engines Ivory supports.
@@ -47,5 +47,5 @@ The **Queries** tab provides SQL-based bloat estimation queries you can run with
 tool. Switch the target database above the form — the selector applies to both the compaction form
 and the bloat queries.
 
-The bloat tool is also available per-node under the [Node → Tools](node.md#tools) tab when you
+The bloat tool is also available per-node under the [Node → Tools](../../node.md#tools) tab when you
 need to target a specific cluster member directly.
