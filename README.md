@@ -29,11 +29,16 @@ New to Ivory? Start with [About Ivory](.doc/about.md).
 
 ### ⭐ [Star Ivory on GitHub](https://github.com/veegres/ivory) — it takes one click ⭐
 
-<a href="https://github.com/veegres/ivory/stargazers"><img src="https://img.shields.io/github/stars/veegres/ivory?style=for-the-badge&logo=github&label=Star%20Ivory&color=yellow" alt="Star Ivory on GitHub" /></a>
+</div>
 
+---
+
+<div align="center">
+   
 <sub>Stars keep the author motivated to keep building Ivory. Want to help more? [Support it on Boosty](https://boosty.to/anselvo) ❤️</sub>
 
 </div>
+
 
 ## Features
 
