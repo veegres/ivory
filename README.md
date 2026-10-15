@@ -5,9 +5,7 @@
 
 ### DEPLOY. WATCH. FIX. ANYWHERE
 
-**Ivory is home for your database clusters — deploy, watch and fix them from one place, be it your browser, your phone or your AI agent.**
-
-Open-source web UI and AI-ready MCP server for PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.
+**Ivory is home for your database clusters — deploy, watch and fix them from anywhere.**
 
    <img src="https://img.shields.io/github/deployments/veegres/ivory/app?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fapp" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
@@ -18,8 +16,7 @@ Open-source web UI and AI-ready MCP server for PostgreSQL & Patroni, etcd, Redis
 
 <br>
 
-**Ivory is a self-hosted, open-source database cluster management tool that puts control in your pocket.**
-One web UI to **deploy a cluster**, watch its **health and replication lag**, run a **switchover or failover**,
+**One place for the whole life of a cluster.** One web UI to **deploy a cluster**, watch its **health and replication lag**, run a **switchover or failover**,
 open a **SQL query console**, control **containers over SSH**, and read **VM metrics and logs** — from your
 browser or your phone. One Docker container, **no agent on your hosts, no orchestrator, no cloud account.**
 New to Ivory? Start with [About Ivory](.doc/about.md).
