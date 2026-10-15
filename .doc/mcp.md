@@ -1,4 +1,4 @@
-# MCP server
+# [☰](../README.md) MCP Server
 
 Ivory exposes its features to [Model Context Protocol](https://modelcontextprotocol.io) clients, so an
 AI agent can read a cluster's health and operate it with the same permissions the signed-in user has.

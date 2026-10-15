@@ -1,87 +1,73 @@
-# [☰](../README.md) Overview
+# [☰](../README.md) Cluster Overview
 
-## What is a Keeper?
+Clicking a cluster on the [Clusters](clusters.md) page opens its overview: one row per node with its live state,
+the HA operations, and the cluster's settings. The terms used here — keeper, leader, replica — are defined in
+[Core concepts](concepts.md).
 
-A **Keeper** is the HA management layer responsible for leader election, automatic failover, and
-cluster coordination. Ivory uses "Keeper" as its generic term for this role — the same interface
-works regardless of which HA system the cluster uses. A Keeper can be a standalone agent running
-beside the database engine or a management system embedded directly in it.
-[Patroni](https://patroni.readthedocs.io/) is the first supported implementation, with more planned.
-
-The Keeper's job is to answer one question at all times: *who is the leader?* It does this by:
-
-- Continuously monitoring the local database instance and reporting its health
-- Competing with peer Keeper agents for the leadership lock in a shared coordination backend (such
-  as a DCS — Distributed Configuration Store like etcd, Consul, or ZooKeeper)
-- Triggering automatic **failover** when the current leader loses the lock or becomes unreachable
-- Exposing a management API (on the **keeper port**, default `8008`) that Ivory uses to read
-  cluster state and issue management commands
-
-Because every node exposes a Keeper and every Keeper knows the full cluster topology, Ivory only
-needs to reach any one node's keeper port to get a complete picture of the cluster.
-
-### Node Roles
-
-| Role | Description |
-|------|-------------|
-| **Leader** | The primary node. Holds the leadership lock. Accepts reads and writes. Exactly one node holds this role at a time. |
-| **Replica** | A standby node. Continuously replicates from the leader. Read-only. |
-| **Unknown** | Role could not be determined — the Keeper is unreachable or the node is initialising. |
+Ivory asks the keeper on every configured node and merges the answers, so the overview shows the cluster as the
+database sees it, not only as you configured it.
 
 ---
 
 ## Cluster Health Grid
 
-The Overview block is the cluster-level dashboard. It shows the real-time state of every node as
-reported by the Keeper.
+Each node row shows:
 
-| Field | Description |
-|-------|-------------|
-| **Role** | Leader or Replica |
-| **State** | Keeper-reported state: `running`, `streaming`, `paused`, `stopped`, `failed`, … |
-| **Lag** | Replication lag in bytes behind the leader (`N/A` for the leader itself) |
-| **Pending Restart** | Whether the database needs a restart to apply a pending configuration change |
-| **Scheduled** | Any scheduled switchover or restart waiting to fire |
-| **Tags** | Key-value pairs set on this node by the Keeper |
-| **Warnings** | Issues Ivory detected: connection errors, replication problems, etc. |
+| Field               | Description                                                                                               |
+|---------------------|-----------------------------------------------------------------------------------------------------------|
+| **Host and ports**  | The node's host, keeper port, database port and SSH port                                                   |
+| **Role**            | Leader or replica, as the keeper reports it                                                               |
+| **State**           | Whether the database process is `running`, `starting`, `stopped`, `failed` or `unreachable`              |
+| **Lag**             | How far a replica is behind, in the engine's own unit: bytes for PostgreSQL, seconds for MongoDB, Redis and ClickHouse, raft entries for etcd. It turns into a warning past Ivory's threshold for that engine. |
+| **Sync**            | Shown on a replica that replicates synchronously                                                          |
+| **Pending restart** | The database needs a restart to apply a configuration change                                              |
+| **Scheduled**       | A switchover or restart that is scheduled and has not fired yet                                           |
+| **Tags**            | What the engine reports about the node beyond these fields: a version, a size, the operator's own labels  |
+| **Warnings**        | Problems with the node, labelled by who found them (see below)                                            |
 
-Clicking any node card opens its [Node](node.md) view for fine-grained per-node operations.
+**Warnings come from two places.** The engine's own warnings are what the database reports about itself — a lost
+coordination session, a failed save, a replication slot about to be lost. Ivory's warnings are what it found by
+comparing answers: a node the database lists but you never configured, a configured node the database has never
+heard of, a node that did not answer, a cluster with no leader, or lag past the threshold. Each engine's page under
+[Supported databases](databases.md) lists the warnings it can raise.
+
+Clicking a node opens its [Node](node.md) view for per-node work.
 
 ---
 
 ## HA Operations
 
-Every node card in the grid has its own action buttons. The cluster header additionally provides
-**Pause** and **Resume** which affect the entire cluster at once.
+Each node row has its own action buttons. Which ones appear depends on the engine: an operation the engine cannot
+perform is not offered. [Supported databases → Operations](databases.md#operations) shows which engine supports what.
 
-**Per-node actions** (available on each node card):
+**Per-node actions:**
 
-| Operation | When to use |
-|-----------|------------|
-| **Switchover** | Planned leadership change. The current leader steps down cleanly, then a replica is promoted. Choose which replica becomes the new leader, or let the Keeper decide. Can be scheduled. |
-| **Failover** | Forced promotion of a replica without waiting for the current leader. Use only when the leader is unreachable. |
-| **Reinitialise** | Wipes and re-syncs a node's data directory from the current leader. Use when a replica is too far behind or its data directory is corrupted. |
-| **Restart** | Restarts the database process on this node. Can be scheduled. |
-| **Reload** | Reloads configuration without a restart — applies changes that take effect immediately. |
+| Operation        | When to use                                                                                                                         |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **Switchover**   | Planned leadership change. The leader steps down cleanly and a replica is promoted. Pick the replica, or let the keeper decide. Patroni can schedule it. |
+| **Failover**     | Promote a replica without waiting for the leader. Use it only when the leader is gone.                                              |
+| **Reinitialise** | Wipe a replica's data and copy it again from the leader. Use it when a replica is too far behind or its data is corrupted.          |
+| **Restart**      | Restart the database on this node. Patroni can schedule it.                                                                         |
+| **Reload**       | Re-read configuration without a restart.                                                                                            |
 
-**Cluster-level actions** (cluster header):
+**Cluster-level actions**, in the cluster header:
 
-| Operation | When to use |
-|-----------|------------|
-| **Pause** | Puts the Keeper into maintenance mode across the entire cluster. Automatic failovers are disabled. Use for planned maintenance. |
-| **Resume** | Restores normal HA behaviour after a pause. |
+| Operation  | When to use                                                                                    |
+|------------|------------------------------------------------------------------------------------------------|
+| **Pause**  | Put the keeper into maintenance mode. Automatic failover is off until you resume.              |
+| **Resume** | Return to normal HA behaviour after a pause.                                                   |
 
-The [Node → Keeper](node.md#keeper) tab shows all actions for a single node in a dedicated
-full-page view alongside the configuration editor.
+The [Node → Keeper](node.md#keeper) tab shows the same actions for one node on a full page, next to the
+configuration editor.
 
 ---
 
 ## Cluster Options
 
-Click the settings icon in the top-right corner to open the cluster options panel:
+The settings button in the top-right corner of the cluster header opens the cluster options:
 
-- Update **database credentials** and **Keeper API credentials**
-- Configure **TLS** for keeper and database connections
-- Assign or update a **vault** reference for credential management
-- Add, remove, or rename **tags**
-- Override the **main instance** — pin operations to a specific node instead of the auto-selected leader
+- **Credentials** — the vault entries for keeper and database access
+- **TLS certificates** — for keeper and database connections
+- **Tags** — used to filter the [cluster list](clusters.md#cluster-list)
+- **Main instance** — the node Ivory sends keeper operations to. Ivory picks the leader on its own; override it
+  only when you need to pin operations to one node.

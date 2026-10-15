@@ -4,7 +4,7 @@ Every database Ivory supports is a plugin with two halves:
 
 - **The cluster side** — how Ivory finds the members of a cluster, tells the leader from the replicas, measures
   replication lag and runs operations like a switchover or failover. In Ivory's terms this is the cluster's
-  [Keeper](overview.md#what-is-a-keeper): an HA tool such as Patroni, or the engine's own built-in replication.
+  [Keeper](concepts.md#keeper): an HA tool such as Patroni, or the engine's own built-in replication.
   It is reached on the node's **Keeper port**.
 - **The database side** — the query console, saved queries and dashboards, reached on the node's
   **Database port**. For engines that manage their own replication, both ports are usually the same.

@@ -48,6 +48,8 @@ There are three ways in, depending on what already exists:
 
 ## 4. Start operating
 
-- [Overview](overview.md) — node roles, replication lag, warnings, switchover and failover
+New to the terms? [Core concepts](concepts.md) explains cluster, node, keeper and the rest in one page.
+
+- [Cluster overview](overview.md) — node roles, replication lag, warnings, switchover and failover
 - [Node](node.md) — VM metrics, containers, logs, configuration and the query console
 - [MCP server](mcp.md) — connect Claude, Cursor, Codex or any MCP client to the same cluster

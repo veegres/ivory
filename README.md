@@ -96,10 +96,11 @@ Ivory ships as one Docker image with no external dependencies.
 
 | Page                                     | What's in it                                                        |
 |------------------------------------------|---------------------------------------------------------------------|
-| [About](.doc/about.md)                   | What Ivory is, the Keeper concept, vision, why these databases      |
+| [About](.doc/about.md)                   | What Ivory is, vision, why these databases                          |
 | [Getting started](.doc/getting-started.md) | Run the container, the setup wizard, adding your first cluster    |
+| [Core concepts](.doc/concepts.md)        | Cluster, node, keeper, plugins, platform, templates, vault          |
 | [Clusters](.doc/clusters.md)             | Adding clusters manually, auto-detection, tags and filtering        |
-| [Overview](.doc/overview.md)             | What a Keeper is, cluster health, HA operations                     |
+| [Cluster overview](.doc/overview.md)     | Cluster health, warnings, HA operations, cluster options            |
 | [Node](.doc/node.md)                     | System, Container, Keeper, Database and Tools tabs                  |
 | [Deployment](.doc/deployment.md)         | Deploy a cluster or one node, deployment templates, variables       |
 | [Supported databases](.doc/databases.md) | Every engine compared, and one page per database on how Ivory runs it |
