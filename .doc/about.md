@@ -2,9 +2,10 @@
 
 ## What Ivory Is
 
-Ivory is home for your database clusters — a self-hosted web UI for operating high-availability databases: deploy a cluster, watch its
-health and replication lag, run a switchover or failover, open a query console, control containers over SSH
-and read VM metrics and logs — from a browser or a phone, without dropping into the CLI for every task.
+Ivory is home for your database clusters: a self-hosted web UI and MCP server to deploy, watch and fix them
+from one place — your browser, your phone or your AI agent. Deploy a cluster, watch its health and replication
+lag, run a switchover or failover, open a query console, control containers over SSH and read VM metrics and
+logs, without dropping into the CLI for every task.
 
 It is designed for **DBAs, SREs and backend developers** who run such clusters and want one place to operate,
 troubleshoot and deploy them. It runs as a local tool on your machine or as a shared service on a VM for team

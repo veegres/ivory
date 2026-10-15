@@ -4,7 +4,7 @@ import {defineConfig} from "@rspress/core"
 import {pluginSitemap} from "@rspress/plugin-sitemap"
 
 const siteUrl = "https://ivory.veegres.com"
-const description = "Open-source web UI and AI-ready MCP server for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper."
+const description = "Home for your database clusters: an open-source web UI and MCP server to deploy, watch and fix PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper — one Docker container, nothing to install on your hosts."
 
 const structuredData = {
     "@context": "https://schema.org",
