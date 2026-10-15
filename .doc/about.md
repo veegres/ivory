@@ -16,11 +16,10 @@ no cloud account.
 
 ## The Keeper
 
-Ivory is built around the concept of a **Keeper** — a generic management layer responsible for cluster
-manipulations. A Keeper can be a standalone agent running beside the database, or a management system
-embedded directly in the database engine. [Patroni](https://patroni.readthedocs.io/) is the Keeper
-implementation for PostgreSQL, and the one Ivory was originally built around. See
-[Overview → What is a Keeper?](overview.md#what-is-a-keeper) for how it shapes the cluster view.
+Ivory is built around the concept of a **Keeper** — whatever decides who leads a cluster and answers what its
+members are. It can be a standalone agent running beside the database, or the replication built into the engine
+itself. [Patroni](https://patroni.readthedocs.io/) is the Keeper for PostgreSQL, and the one Ivory was originally
+built around. See [Core concepts → Keeper](concepts.md#keeper) for how it shapes the cluster view.
 
 ## Vision: Beyond Postgres
 

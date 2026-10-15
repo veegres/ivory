@@ -8,11 +8,11 @@ exists or needs to be deployed from scratch.
 
 Each row in the list shows:
 
-- **Cluster name** — click to open the [Overview](overview.md) for that cluster
+- **Cluster name** — click to open its [overview](overview.md)
 - **Nodes** — colour-coded by role: green = leader, blue = replica, grey = unknown
 - **Health indicators** — warning icons when nodes have problems, error icons when Ivory cannot
   reach a node
-- **Tag chips** — cluster tags for filtering (manage tags in the Overview settings)
+- **Tag chips** — cluster tags for filtering (manage tags in [Cluster Options](overview.md#cluster-options))
 
 The filter bar above the list lets you narrow clusters by tag. A warning counter on the right shows
 how many clusters have at least one unhealthy node — useful when the list spans multiple pages.
@@ -29,7 +29,7 @@ Click the **+** button to open the manual form. Provide:
 
 - Cluster **name**
 - One or more **nodes** — for each node a **name** (unique within the cluster), its host, keeper port
-  (default `8008` for Patroni), database port (default `5432` for Postgres), and optionally an SSH
+  (for example `8008` for Patroni), database port (for example `5432` for Postgres), and optionally an SSH
   port
 - **Keeper plugin** — Patroni, Postgres, Etcd, Redis, ClickHouse, ZooKeeper or MongoDB
 - **Database plugin** — the engine behind that keeper; selecting a keeper preselects its usual pair
@@ -50,35 +50,14 @@ configure in the wizard.
 
 ### Deploy (new cluster, nothing running yet)
 
-Click the **deploy** button to deploy a new cluster onto remote hosts over SSH. The deployment is
-described by a **[deployment template](deployment.md)**: the command that will run on each node,
-either one of the templates a keeper plugin ships or one you wrote yourself.
-
-The dialog has three screens:
-
-1. **Pick a template** for the selected keeper and platform, or copy an existing one and adjust it.
-2. **Fill it in** — cluster name, SSH credentials, database credentials, and one node card per
-   command in the template (name, host, ports). Each card shows the command it will run, already
-   interpolated with that node's values.
-3. **Deploy**, and read the per-node logs. Ivory registers the cluster once a node is up, then runs
-   any post scripts.
-
-See [Deployment](deployment.md) for the details: what a template contains, the variables a command
-may use, the default templates, and how a deploy is executed.
-
-After deployment you can manage each node's container lifecycle from the [Node → Container](node.md#container)
-tab at any time.
+Click the **deploy** button to create a new cluster on your own hosts over SSH. You pick a
+[deployment template](deployment.md) — the command that runs on each node — fill in the hosts and
+credentials, and Ivory registers the cluster and starts every node. [Deployment](deployment.md)
+covers the whole flow.
 
 ---
 
 ## Cluster Options
 
-In the [Overview](overview.md), the settings button (top-right corner of the cluster header) opens
-the cluster options panel. Here you can:
-
-- Set or rotate **database credentials** and **Keeper API credentials**
-- Attach or change **TLS certificates** for keeper and database connections
-- Link a **vault** entry to avoid storing credentials in plain text
-- Add or remove **tags** for filtering
-- Change the **main instance** — the specific node that Ivory sends keeper operations to. By default
-  Ivory always picks the current leader automatically; override this here if needed
+Credentials, TLS certificates, tags and the main instance are changed later from the cluster's
+[Overview → Cluster Options](overview.md#cluster-options).

@@ -27,6 +27,10 @@ const meta = {
         title: "Getting started — install Ivory with Docker",
         description: "Run Ivory with one docker run command, complete the setup wizard and add your first PostgreSQL, Patroni, etcd, Redis, ClickHouse, MongoDB or ZooKeeper cluster.",
     },
+    "concepts.md": {
+        title: "Core concepts — clusters, nodes, keepers, platforms and templates",
+        description: "The terms Ivory's docs use: what a cluster, node, keeper, plugin, platform, deployment template and vault are, and how node roles and ports fit together.",
+    },
     "faq.md": {
         title: "FAQ",
         description: "Answers about upgrading Ivory, where it stores data, agents, credentials encryption, reverse proxies, HTTPS, AI agents and using it from a phone.",
@@ -37,7 +41,7 @@ const meta = {
     },
     "overview.md": {
         title: "Cluster overview — health, replication lag, switchover and failover",
-        description: "Ivory's cluster dashboard: node roles, replication lag, pending restarts and warnings, plus HA operations — switchover, failover, reinitialise, restart, reload and pause.",
+        description: "Ivory's cluster dashboard: node roles, replication lag, pending restarts and warnings, HA operations — switchover, failover, reinitialise, restart, reload and pause — and cluster options.",
     },
     "node.md": {
         title: "Node — VM metrics, containers, keeper, query console and tools",

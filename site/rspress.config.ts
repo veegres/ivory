@@ -64,25 +64,41 @@ export default defineConfig({
         sidebar: {
             "/docs/": [
                 {
-                    text: "Introduction",
+                    text: "Get started",
                     items: [
-                        {text: "About", link: "/docs/about"},
-                        {text: "Getting started", link: "/docs/getting-started"},
+                        {text: "What is Ivory", link: "/docs/about"},
+                        {text: "Quick start", link: "/docs/getting-started"},
+                        {text: "Core concepts", link: "/docs/concepts"},
                         {text: "FAQ", link: "/docs/faq"},
                     ],
                 },
                 {
-                    text: "Clusters",
+                    text: "Using Ivory",
                     items: [
-                        {text: "Cluster list", link: "/docs/clusters"},
-                        {text: "Overview & HA operations", link: "/docs/overview"},
-                        {text: "Deployment", link: "/docs/deployment"},
+                        {text: "Add a cluster", link: "/docs/clusters"},
+                        {text: "Deploy a cluster", link: "/docs/deployment"},
+                        {text: "Cluster overview", link: "/docs/overview"},
+                        {text: "Node view", link: "/docs/node"},
+                        {
+                            text: "Tools",
+                            collapsible: true,
+                            collapsed: true,
+                            items: [
+                                {text: "pgcompacttable (PostgreSQL)", link: "/docs/tools/postgres/pg_compacttable"},
+                            ],
+                        },
                     ],
                 },
                 {
-                    text: "Databases",
+                    text: "AI agents",
                     items: [
-                        {text: "Supported databases", link: "/docs/databases"},
+                        {text: "MCP server", link: "/docs/mcp"},
+                    ],
+                },
+                {
+                    text: "Supported databases",
+                    items: [
+                        {text: "Comparison", link: "/docs/databases"},
                         {text: "PostgreSQL + Patroni", link: "/docs/databases/patroni"},
                         {text: "PostgreSQL", link: "/docs/databases/postgres"},
                         {text: "etcd", link: "/docs/databases/etcd"},
@@ -93,29 +109,10 @@ export default defineConfig({
                     ],
                 },
                 {
-                    text: "Nodes",
+                    text: "Self-hosting",
                     items: [
-                        {text: "Node", link: "/docs/node"},
-                    ],
-                },
-                {
-                    text: "Tools",
-                    items: [
-                        {
-                            text: "Postgres",
-                            collapsible: false,
-                            items: [
-                                {text: "pgcompacttable", link: "/docs/tools/postgres/pg_compacttable"},
-                            ],
-                        },
-                    ],
-                },
-                {
-                    text: "Operating Ivory",
-                    items: [
+                        {text: "Installation & configuration", link: "/docs/configuration"},
                         {text: "Authentication & users", link: "/docs/authentication"},
-                        {text: "Configuration", link: "/docs/configuration"},
-                        {text: "MCP server", link: "/docs/mcp"},
                     ],
                 },
                 {

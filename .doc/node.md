@@ -1,15 +1,13 @@
 # [☰](../README.md) Node
 
-A **node** in Ivory represents a single server (physical or virtual) that is a member of a database
-cluster. Each node runs two core services side by side: a **Keeper** agent that manages high
-availability, and a **Database** engine that stores data. Ivory lets you interact with both from
-the same place.
+A **node** is one member of a cluster: a machine and the database running on it (see
+[Core concepts](concepts.md#node)). The Node view is where you work on one of them — its machine, its
+container, its keeper and its database.
 
 Clicking a node in the [Overview](overview.md) opens the Node view, which is split into five tabs:
 **System**, **Container**, **Keeper**, **Database**, and **Tools**.
 
-A **platform** is the deployment target Ivory integrates with — on-prem Docker over SSH today, with
-Kubernetes/OpenShift planned. The tabs follow its two parts: the **System** tab covers the machine a
+The first two tabs follow the two halves of the [platform](concepts.md#platform): the **System** tab covers the machine a
 deployment runs on, the **Container** tab covers what is deployed onto it. On a platform that cannot
 address the machine itself, the System tab is hidden.
 
@@ -49,8 +47,9 @@ Docker.
 
 ### Prerequisites
 
-All container operations run over SSH with the key held in Ivory's vault. Copy that key's public half into the host's
-`authorized_keys` before using this tab; the vault shows it next to the entry.
+All container operations run over SSH with the key in the cluster's SSH vault entry. A cluster
+[deployed](deployment.md) from Ivory with a generated key already has it installed on every host. For any other
+cluster, copy the public key into the host's `authorized_keys` yourself; the vault shows it next to the entry.
 
 | Operation | Description |
 |-----------|-------------|
@@ -65,18 +64,9 @@ All container operations run over SSH with the key held in Ivory's vault. Copy t
 
 ### Deploy
 
-**Deploy** opens the same [deployment template](deployment.md) flow used for a whole cluster, applied to this one node.
-Use it to add a member to a running cluster, or to rebuild one that was removed.
-
-Everything on the screen is filled in and disabled: the node is the one the dialog was opened on, its ports are the
-keeper plugin's defaults, and the credentials are the cluster's. The one choice is **which of the template's nodes runs
-on this host**, a toggle above the node card, since a template describes a whole cluster.
-
-The command is read-only and shown already interpolated with this node's values, so it matches what will run. The
-database password is the exception: it is displayed as `*****` and substituted on the server from the vault, so it
-never reaches the browser.
-
-See [Deployment](deployment.md) for what a template is, the full variable reference, and the default templates.
+**Deploy** runs one node of a [deployment template](deployment.md) on this host, to add a member to a running
+cluster or rebuild one that was removed. See
+[Deployment → Deploying a single cluster node](deployment.md#deploying-a-single-cluster-node).
 
 ---
 
@@ -106,8 +96,11 @@ bar or from this tab.
 
 ## Database
 
-The Database tab connects directly to the database instance on this node and provides a
-full-featured query and monitoring interface.
+The Database tab connects straight to the database on this node, on its database port. Every engine gets saved
+queries and a console in its own language — SQL, etcdctl-style commands, Redis commands, MongoDB shell-style calls
+or znode commands — and PostgreSQL and ClickHouse also get charts.
+[Supported databases → Query console](databases.md#query-console) compares them; the sections below use
+PostgreSQL as the example.
 
 ### Charts
 
@@ -149,23 +142,13 @@ run time. Useful for parameterised diagnostic queries you run repeatedly with di
 
 ### Console
 
-Free-form SQL editor for ad-hoc queries. No templates — type any SQL and run it directly against
-the selected database.
+A free-form editor for ad-hoc queries: type a statement and run it against the selected database.
 
 ---
 
 ## Tools
 
-The Tools tab groups maintenance operations that run against the node's database. Each tool is
-specific to one database engine and only works on nodes running that engine.
+The Tools tab runs maintenance tools against this node's database. Each tool works with one engine and has its own
+page:
 
-### pgcompacttable (Postgres only)
-
-[pgcompacttable](https://github.com/dataegret/pgcompacttable) is a Postgres tool: it reduces table
-and index bloat without taking heavy locks, which makes it safe to run on production systems. It
-applies to Postgres nodes only, whichever keeper manages them, and has no equivalent for the other
-engines Ivory supports. See [pgcompacttable](tools/postgres/pg_compacttable.md) for full details.
-
-Jobs can only be submitted against the **leader** node (Ivory enforces this automatically). Once
-submitted, a job runs in the background — you can monitor its status and stream its output from the
-job list below the form.
+- [pgcompacttable](tools/postgres/pg_compacttable.md) — PostgreSQL
