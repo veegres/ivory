@@ -130,6 +130,23 @@
     color: var(--rp-c-text-2);
 }
 
+.cover {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 6px;
+    border: 1px solid var(--home-line);
+    border-radius: var(--rp-radius, 10px);
+    object-fit: cover;
+    background: var(--rp-c-bg-mute);
+}
+
+.meta {
+    font-family: var(--rp-font-family-mono);
+    font-size: 0.75rem;
+    color: var(--rp-c-text-3);
+}
+
 .more {
     margin-top: auto;
     padding-top: 8px;

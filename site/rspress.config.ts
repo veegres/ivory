@@ -54,6 +54,7 @@ export default defineConfig({
             {text: "Docs", link: "/docs/getting-started", activeMatch: "^/docs/"},
             {text: "MCP", link: "/docs/mcp"},
             {text: "Playground", link: "/playground"},
+            {text: "Articles", link: "/articles"},
             {text: "Support ❤️", link: "/support"},
             {text: "Releases", link: "https://github.com/veegres/ivory/releases"},
         ],
