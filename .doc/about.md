@@ -12,6 +12,8 @@ troubleshoot and deploy them. It runs as a local tool on your machine or as a sh
 use, ships as a single Docker container and stores everything itself: no agent on your hosts, no orchestrator,
 no cloud account.
 
+![Ivory web UI showing a PostgreSQL Patroni cluster overview with node roles, replication lag and host metrics](images/demo.png)
+
 ## The Keeper
 
 Ivory is built around the concept of a **Keeper** — a generic management layer responsible for cluster

@@ -128,7 +128,7 @@ export default defineConfig({
             ],
         },
         footer: {
-            message: "Released under the GPL-3.0 License. · <a href=\"/docs/community/contributing\">Contributing</a> · <a href=\"/docs/community/security\">Security</a> · <a href=\"/docs/community/code-of-conduct\">Code of conduct</a> · <a href=\"/support\">Support Ivory</a>",
+            message: `<div><a href="/docs/community/contributing">Contributing</a> · <a href="/docs/community/security">Security</a> · <a href="/docs/community/code-of-conduct">Code of conduct</a> · <a href="/support">Support Ivory</a></div><div>GPL-3.0 License © ${new Date().getFullYear()} Veegres Labs</div>`,
         },
     },
 })

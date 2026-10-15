@@ -169,18 +169,6 @@
     color: var(--rp-c-text-2);
 }
 
-.preview {
-    padding: var(--home-pad);
-}
-
-.shot {
-    display: block;
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--home-line);
-    border-radius: var(--rp-radius, 10px);
-}
-
 .agent {
     display: flex;
     flex-direction: column;
@@ -313,16 +301,17 @@
 .release {
     display: inline-block;
     margin-top: 20px;
-    font-size: 1.1rem;
-    color: var(--rp-c-text-2);
+    font-size: 1.3rem;
+    color: var(--rp-c-link);
     text-decoration: none;
 }
 
 .release b {
     font-family: var(--rp-font-family-mono);
-    color: var(--rp-c-brand);
+    font-weight: normal;
 }
 
 .release:hover {
-    color: var(--rp-c-text-1);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
