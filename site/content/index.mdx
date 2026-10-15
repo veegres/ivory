@@ -6,7 +6,7 @@ description: Ivory is a self-hosted, open-source GUI and AI-ready MCP server to 
 hero:
   name: Ivory
   text: DEPLOY. WATCH. FIX. ANYWHERE
-  tagline: Open-source web UI and AI-ready MCP server for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper. One Docker container, no agent on your hosts, no cloud account.
+  tagline: Ivory is home for your database clusters — deploy, watch and fix them from one place, be it your browser, your phone or your AI agent. Open source, self-hosted, one Docker container and nothing to install on your hosts.
   image:
     src: /ivory.png
     alt: Ivory butterfly logo
@@ -15,39 +15,22 @@ hero:
       text: Get started
       link: /docs/getting-started
     - theme: alt
-      text: Playground
-      link: /playground
-    - theme: alt
       text: GitHub
       link: https://github.com/veegres/ivory
-
-features:
-  - title: Deploy over plain SSH
-    details: Spin up a high-availability cluster on your own machines from ready-made templates — no Kubernetes, Ansible or agent.
-    icon: 🚀
-    link: /docs/deployment
-  - title: Cluster health at a glance
-    details: Node roles, replication lag, pending restarts and warnings for every node, from whichever keeper the cluster runs.
-    icon: 📊
-    link: /docs/overview
-  - title: HA operations from the browser
-    details: Switchover, failover, reinitialise, restart, reload and pause — scheduled where the keeper supports it.
-    icon: 🔁
-    link: /docs/overview#ha-operations
-  - title: Containers, metrics and logs
-    details: Control containers over SSH, read CPU, memory and network of the host, and stream any log file.
-    icon: 🖥️
-    link: /docs/node
-  - title: Query console and tools
-    details: Saved queries for monitoring and diagnostics, plus maintenance tools like pgcompacttable with live output.
-    icon: 🔍
-    link: /docs/node#database
-  - title: AI-ready MCP server
-    details: Plug Claude, Cursor, Codex or any MCP client into Ivory and ask why a replica is lagging — gated by the same per-user permissions.
-    icon: 🤖
-    link: /docs/mcp
 ---
 
-import {SupportCallout} from "../components/SupportCallout"
+import {HomeAgent} from "../components/home/HomeAgent"
+import {HomeDatabases} from "../components/home/HomeDatabases"
+import {HomeFeatures} from "../components/home/HomeFeatures"
+import {HomeInvolved} from "../components/home/HomeInvolved"
+import {HomePreview} from "../components/home/HomePreview"
+import {HomeStart} from "../components/home/HomeStart"
+import {HomeWhy} from "../components/home/HomeWhy"
 
-<SupportCallout />
+<HomeWhy />
+<HomePreview />
+<HomeDatabases />
+<HomeFeatures />
+<HomeAgent />
+<HomeStart />
+<HomeInvolved />

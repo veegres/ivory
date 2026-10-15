@@ -1,5 +1,18 @@
+/* Opens and closes the sections with the same gapped line as between them, and carries the column's vertical lines through every gap. */
 .body {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 24px 24px 64px;
+    position: relative;
+    padding-block: 32px;
+    border-top: 1px solid var(--rp-c-divider-light);
+}
+
+.body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: var(--ivory-frame);
+    border-inline: 1px solid var(--rp-c-divider-light);
+    transform: translateX(-50%);
+    pointer-events: none;
 }

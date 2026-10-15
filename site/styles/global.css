@@ -13,9 +13,9 @@ html:not(.rp-dark) {
     --rp-c-brand-tint: rgba(176, 138, 74, 0.16);
     --ivory-on-brand: #ffffff;
     --ivory-hero-clusters: url("./clusters-light.svg");
+    --ivory-dots: url("./dots-light.svg");
 
     --rp-home-hero-title-bg: var(--rp-c-brand-dark);
-    --rp-home-background-bg: url("./dots-light.svg") center top / 24px 24px repeat, #fffdf6;
     --rp-home-feature-bg: var(--rp-c-bg-soft);
 }
 
@@ -34,29 +34,54 @@ html.rp-dark {
     --rp-c-brand-tint: rgba(239, 230, 207, 0.12);
     --ivory-on-brand: #1a1712;
     --ivory-hero-clusters: url("./clusters-dark.svg");
+    --ivory-dots: url("./dots-dark.svg");
 
     --rp-home-hero-title-bg: var(--rp-c-brand);
-    --rp-home-background-bg: url("./dots-dark.svg") center top / 24px 24px repeat, #15130f;
     --rp-home-feature-bg: var(--rp-c-bg-soft);
+}
+
+/* The home page's content column: the hero, every section and the grid lines between them share it. */
+:root {
+    --ivory-gutter: clamp(16px, 4vw, 64px);
+    --ivory-frame: min(96rem, calc(100% - 2 * var(--ivory-gutter)));
 }
 
 html .rp-button--brand {
     color: var(--ivory-on-brand);
 }
 
+/* One dot pattern for the whole site; anything that should not show it paints its own background over it. */
+html body {
+    background: var(--ivory-dots) center top / 24px 24px repeat, var(--rp-c-bg);
+}
+
+.rp-doc-layout__container,
+.rp-home-footer {
+    background: var(--rp-c-bg);
+}
+
+/* The footer's line closes the home page's grid, so it sits right under the last gap. */
+html .rp-home-footer {
+    margin-top: 0;
+}
+
+/* Dims the page's dots behind the hero text instead of drawing a second pattern there. */
 html .rp-home-background {
-    --ivory-bands: linear-gradient(#000 50px, transparent 140px, transparent 700px, #000 800px, #000 880px, transparent 1000px);
-    --ivory-edges: linear-gradient(to right, #000 calc(50% - 720px), rgba(0, 0, 0, 0.3) calc(50% - 560px), rgba(0, 0, 0, 0.3) calc(50% + 560px), #000 calc(50% + 720px));
+    --ivory-dim: color-mix(in srgb, var(--rp-c-bg) 70%, transparent);
     filter: none;
-    mask-image: var(--ivory-bands), var(--ivory-edges), linear-gradient(#000 55%, transparent);
-    mask-composite: add, intersect;
+    background: linear-gradient(to right, transparent calc(50% - var(--ivory-frame) / 2), var(--ivory-dim) calc(50% - var(--ivory-frame) / 2 + 120px), var(--ivory-dim) calc(50% + var(--ivory-frame) / 2 - 120px), transparent calc(50% + var(--ivory-frame) / 2));
+    mask-image: linear-gradient(#000 60%, transparent);
 }
 
 @media (width <= 1000px) {
     html .rp-home-background {
-        --ivory-bands: linear-gradient(#000 20px, transparent 90px);
-        --ivory-edges: linear-gradient(to right, #000, rgba(0, 0, 0, 0.3) 14%, rgba(0, 0, 0, 0.3) 86%, #000);
+        background: linear-gradient(to right, transparent, var(--ivory-dim) 14%, var(--ivory-dim) 86%, transparent);
     }
+}
+
+html .rp-home-hero {
+    width: var(--ivory-frame);
+    max-width: none;
 }
 
 html .rp-home-hero .rp-home-hero__title {

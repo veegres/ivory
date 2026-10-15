@@ -79,6 +79,19 @@ export default defineConfig({
                     ],
                 },
                 {
+                    text: "Databases",
+                    items: [
+                        {text: "Supported databases", link: "/docs/databases"},
+                        {text: "PostgreSQL + Patroni", link: "/docs/databases/patroni"},
+                        {text: "PostgreSQL", link: "/docs/databases/postgres"},
+                        {text: "etcd", link: "/docs/databases/etcd"},
+                        {text: "Redis", link: "/docs/databases/redis"},
+                        {text: "ClickHouse", link: "/docs/databases/clickhouse"},
+                        {text: "MongoDB", link: "/docs/databases/mongodb"},
+                        {text: "ZooKeeper", link: "/docs/databases/zookeeper"},
+                    ],
+                },
+                {
                     text: "Nodes",
                     items: [
                         {text: "Node", link: "/docs/node"},
@@ -104,10 +117,18 @@ export default defineConfig({
                         {text: "MCP server", link: "/docs/mcp"},
                     ],
                 },
+                {
+                    text: "Community",
+                    items: [
+                        {text: "Contributing", link: "/docs/community/contributing"},
+                        {text: "Security policy", link: "/docs/community/security"},
+                        {text: "Code of conduct", link: "/docs/community/code-of-conduct"},
+                    ],
+                },
             ],
         },
         footer: {
-            message: "Released under the GPL-3.0 License. · <a href=\"/support\">Support Ivory</a>",
+            message: "Released under the GPL-3.0 License. · <a href=\"/docs/community/contributing\">Contributing</a> · <a href=\"/docs/community/security\">Security</a> · <a href=\"/docs/community/code-of-conduct\">Code of conduct</a> · <a href=\"/support\">Support Ivory</a>",
         },
     },
 })

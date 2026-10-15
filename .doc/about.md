@@ -2,7 +2,7 @@
 
 ## What Ivory Is
 
-Ivory is a self-hosted web UI for operating high-availability database clusters: deploy a cluster, watch its
+Ivory is home for your database clusters — a self-hosted web UI for operating high-availability databases: deploy a cluster, watch its
 health and replication lag, run a switchover or failover, open a query console, control containers over SSH
 and read VM metrics and logs — from a browser or a phone, without dropping into the CLI for every task.
 
@@ -31,11 +31,11 @@ other databases and HA tools is added as a plugin instead of being baked into th
 
 ## Why These Databases
 
-| Keeper     | Why |
+| Database   | Why |
 |------------|-----|
-| Patroni    | The Keeper Ivory was originally built around |
-| Postgres   | Not everyone needs HA — sometimes you just want to manage a plain Postgres |
-| ETCD       | Patroni relies on etcd as a DCS, so managing it directly made sense too |
+| PostgreSQL + Patroni | The high-availability setup Ivory was originally built around |
+| PostgreSQL | Not everyone needs HA — sometimes you just want to manage a plain Postgres |
+| etcd       | Patroni relies on etcd as a DCS, so managing it directly made sense too |
 | Redis      | A widely used cache/store that often sits right next to the databases Ivory already manages |
 | ClickHouse | A popular analytics database and a natural next step for Ivory's plugin set |
 | ZooKeeper  | ClickHouse needs the real ZooKeeper protocol, not etcd, to coordinate replication — deployable as its own ensemble and usable as the external DCS other keepers point at |
