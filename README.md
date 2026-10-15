@@ -7,10 +7,8 @@
 
 **Ivory is home for your database clusters — deploy, watch and fix them from anywhere.**
 
-   <img src="https://img.shields.io/github/deployments/veegres/ivory/app?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fapp" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
    <img src="https://img.shields.io/docker/v/veegres/ivory?label=latest&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="latest version" />
-   <a href="https://github.com/veegres/ivory/stargazers"><img src="https://img.shields.io/github/stars/veegres/ivory?style=flat-square" alt="GitHub stars" /></a>
    <img src="https://img.shields.io/docker/pulls/veegres/ivory?style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="docker pulls" />
 </div>
 
