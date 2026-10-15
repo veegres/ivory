@@ -5,7 +5,9 @@
 
 ### DEPLOY. WATCH. FIX. ANYWHERE
 
-**Open-source web UI and AI-ready MCP server for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.**
+**Ivory is home for your database clusters — deploy, watch and fix them from one place, be it your browser, your phone or your AI agent.**
+
+Open-source web UI and AI-ready MCP server for PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.
 
    <img src="https://img.shields.io/github/deployments/veegres/ivory/app?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fapp" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
@@ -100,25 +102,28 @@ Ivory ships as one Docker image with no external dependencies.
 | [Overview](.doc/overview.md)             | What a Keeper is, cluster health, HA operations                     |
 | [Node](.doc/node.md)                     | System, Container, Keeper, Database and Tools tabs                  |
 | [Deployment](.doc/deployment.md)         | Deploy a cluster or one node, deployment templates, variables       |
+| [Supported databases](.doc/databases.md) | Every engine compared, and one page per database on how Ivory runs it |
 | [Authentication](.doc/authentication.md) | Basic / LDAP / OIDC, users, superusers, permissions                 |
 | [Configuration](.doc/configuration.md)   | Data persistence, upgrades, environment variables, TLS, sub-path    |
 | [MCP server](.doc/mcp.md)                | Connecting an AI agent, the tool list, permissions and blast radius |
 | [FAQ](.doc/faq.md)                       | Upgrades, data location, agents, credentials, proxies, phones       |
 
 
-## Supported databases and keepers
+## Supported databases and clusters
 
-| Keeper                                     | Database   | Stage  |
-|--------------------------------------------|------------|--------|
-| [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE |
-| Postgres                                   | Postgres   | STABLE |
-| ETCD                                       | ETCD       | BETA   |
-| Redis                                      | Redis      | BETA   |
-| ClickHouse                                 | ClickHouse | BETA   |
-| ZooKeeper                                  | ZooKeeper  | BETA   |
-| MongoDB                                    | MongoDB    | BETA   |
+| Database                                   | Cluster                                                                   | Stage  |
+|--------------------------------------------|---------------------------------------------------------------------------|--------|
+| [PostgreSQL](.doc/databases/patroni.md)    | High-availability cluster with [Patroni](https://patroni.readthedocs.io/) | STABLE |
+| [PostgreSQL](.doc/databases/postgres.md)   | Primary and standby replication                                           | STABLE |
+| [etcd](.doc/databases/etcd.md)             | Raft cluster                                                              | BETA   |
+| [Redis](.doc/databases/redis.md)           | Master and replica replication                                            | BETA   |
+| [ClickHouse](.doc/databases/clickhouse.md) | Replicated cluster                                                        | BETA   |
+| [ZooKeeper](.doc/databases/zookeeper.md)   | Ensemble                                                                  | BETA   |
+| [MongoDB](.doc/databases/mongodb.md)       | Replica set                                                               | BETA   |
 
-Why these ones — and where Ivory is heading — is in [About Ivory](.doc/about.md#why-these-databases).
+What Ivory does with each — operations, lag, warnings, console and deploy templates — is in
+[Supported databases](.doc/databases.md). Why these ones, and where Ivory is heading, is in
+[About Ivory](.doc/about.md#why-these-databases).
 
 **Missing your database? You can add it.** Every engine is a self-contained plugin, so supporting a new one
 needs no change to Ivory's core. The repository ships an AI agent for exactly this,
