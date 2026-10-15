@@ -2,7 +2,7 @@ import styles from "./Home.module.css"
 import {HomeSection} from "./HomeSection"
 
 const databases = [
-    {name: "PostgreSQL", cluster: "High-availability cluster with Patroni", link: "/docs/databases/patroni", stage: "Stable"},
+    {name: "PostgreSQL + Patroni", cluster: "High-availability cluster with Patroni", link: "/docs/databases/patroni", stage: "Stable"},
     {name: "PostgreSQL", cluster: "Primary and standby replication", link: "/docs/databases/postgres", stage: "Stable"},
     {name: "etcd", cluster: "Raft cluster", link: "/docs/databases/etcd", stage: "Beta"},
     {name: "Redis", cluster: "Master and replica replication", link: "/docs/databases/redis", stage: "Beta"},
