@@ -6,8 +6,9 @@ import {StrictMode} from "react"
 import {createRoot} from "react-dom/client"
 import {ErrorBoundary} from "react-error-boundary"
 
+import {ManagementApi} from "../features/management/api/ManagementRouter"
 import {PageErrorBox} from "../shared/component/box/PageErrorBox"
-import {AppProvider} from "../shared/provider/AppProvider"
+import {AppProvider, MainQueryClient} from "../shared/provider/AppProvider"
 import {AuthProvider} from "../shared/provider/AuthProvider"
 import {SnackbarProvide} from "../shared/provider/SnackbarProvider"
 import background from "../shared/style/background.module.css"
@@ -31,7 +32,7 @@ root.render(
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <AuthProvider>
                     <SnackbarProvide>
-                        <ErrorBoundary fallbackRender={(e) => (<App><PageErrorBox error={e.error}/></App>)}>
+                        <ErrorBoundary fallbackRender={(e) => <PageErrorBox error={e.error} description={getCrashDescription()}/>}>
                             <App/>
                         </ErrorBoundary>
                     </SnackbarProvide>
@@ -40,3 +41,14 @@ root.render(
         </AppProvider>
     </StrictMode>
 )
+
+// NOTE: App reads the info answer on every render, so one that is not Ivory's is the cause worth naming
+function getCrashDescription() {
+    const info = MainQueryClient.getQueryData<Record<string, unknown>>(ManagementApi.info.key())
+    if (info && (!info.auth || !info.config || !info.secret || !info.version)) {
+        return "The server behind /api answered, but not with Ivory's application info. " +
+            "Another service is probably listening on the port the Ivory server should use, " +
+            "or the server is a different Ivory version than this page."
+    }
+    return "Ivory failed to render this page. Reloading usually helps."
+}

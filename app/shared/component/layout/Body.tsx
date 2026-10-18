@@ -23,7 +23,7 @@ export function Body(props: Props) {
 
     // 1. Check all errors
     if (isLoading) return <LogoProgress/>
-    if (isError) return <PageErrorBox error={error}/>
+    if (isError) return <PageErrorBox error={error} description={"Ivory couldn't get its application info from the server."}/>
     if (!data) return <PageErrorBox error={"Something bad happened, we cannot get application initial information"}/>
 
     // 2. Check if we need to configure Ivory
