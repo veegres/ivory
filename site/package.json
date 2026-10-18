@@ -17,8 +17,8 @@
   "devDependencies": {
     "@rspress/core": "2.0.23",
     "@rspress/plugin-sitemap": "2.0.23",
-    "@types/node": "26.4.1",
-    "@types/react": "19.2.18",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
     "typescript": "7.0.2"
   }
 }
