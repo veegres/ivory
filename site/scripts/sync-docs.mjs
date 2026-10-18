@@ -149,7 +149,6 @@ for (const file of Object.keys(meta)) {
 mkdirSync(publicDir, {recursive: true})
 cpSync(join(repo, "app", "shared", "assets", "ivory.png"), join(publicDir, "ivory.png"))
 cpSync(join(repo, "app", "shared", "assets", "ivory-fav.png"), join(publicDir, "ivory-fav.png"))
-cpSync(join(source, "images", "demo.png"), join(publicDir, "og-image.png"))
 
 // A link to a file the site publishes stays on the site; anything else in the repository goes to GitHub.
 function rewriteLink(from, to, link) {

@@ -11,7 +11,7 @@ const structuredData = {
     "@type": "SoftwareApplication",
     name: "Ivory",
     url: siteUrl,
-    image: `${siteUrl}/og-image.png`,
+    image: `${siteUrl}/ivory-og.png`,
     description,
     applicationCategory: "DeveloperApplication",
     applicationSubCategory: "Database management",
@@ -23,13 +23,22 @@ const structuredData = {
     keywords: "PostgreSQL GUI, Patroni UI, etcd GUI, Redis GUI, ClickHouse GUI, MongoDB GUI, ZooKeeper GUI, database cluster management, MCP server",
 }
 
+// Google takes the site name in search results from this, not from <title>; without it a subdomain shows its root domain.
+const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Ivory",
+    alternateName: ["Ivory by Veegres", "ivory.veegres.com"],
+    url: `${siteUrl}/`,
+}
+
 export default defineConfig({
     root: "content",
     outDir: "build",
     lang: "en",
     title: "Ivory",
     description,
-    icon: "/ivory-fav.png",
+    icon: "/ivory-192.png",
     logo: "/ivory-fav.png",
     logoText: "Ivory",
     globalStyles: path.join(__dirname, "styles", "global.css"),
@@ -38,12 +47,17 @@ export default defineConfig({
         cleanUrls: true,
     },
     head: [
+        ["link", {rel: "apple-touch-icon", href: "/ivory-192.png"}],
         ["meta", {property: "og:site_name", content: "Ivory"}],
-        ["meta", {property: "og:image", content: `${siteUrl}/og-image.png`}],
+        ["meta", {property: "og:image", content: `${siteUrl}/ivory-og.png`}],
+        ["meta", {property: "og:image:width", content: "1200"}],
+        ["meta", {property: "og:image:height", content: "630"}],
+        ["meta", {property: "og:image:alt", content: "Ivory — Deploy. Watch. Fix. Anywhere"}],
         ["meta", {name: "twitter:card", content: "summary_large_image"}],
-        ["meta", {name: "twitter:image", content: `${siteUrl}/og-image.png`}],
+        ["meta", {name: "twitter:image", content: `${siteUrl}/ivory-og.png`}],
         route => ["link", {rel: "canonical", href: `${siteUrl}${route.routePath}`}],
         route => ["meta", {property: "og:url", content: `${siteUrl}${route.routePath}`}],
+        route => route.routePath === "/" ? `<script type="application/ld+json">${JSON.stringify(websiteData)}</script>` : undefined,
         route => route.routePath === "/" ? `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : undefined,
     ],
     plugins: [
