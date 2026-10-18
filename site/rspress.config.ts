@@ -38,16 +38,24 @@ export default defineConfig({
     lang: "en",
     title: "Ivory",
     description,
-    icon: "/ivory-192.png",
-    logo: "/ivory-fav.png",
+    logo: {light: "/ivory-fav-black.png", dark: "/ivory-fav-white.png"},
     logoText: "Ivory",
     globalStyles: path.join(__dirname, "styles", "global.css"),
     llms: true,
+    // NOTE: `head` is only rendered at build time, so the icons go through rsbuild to show up in dev too
+    builderConfig: {
+        html: {
+            tags: [
+                {tag: "link", attrs: {rel: "icon", href: "/ivory-fav-black.png", media: "(prefers-color-scheme: light)"}},
+                {tag: "link", attrs: {rel: "icon", href: "/ivory-fav-white.png", media: "(prefers-color-scheme: dark)"}},
+                {tag: "link", attrs: {rel: "apple-touch-icon", href: "/ivory-fav-white.png"}},
+            ],
+        },
+    },
     route: {
         cleanUrls: true,
     },
     head: [
-        ["link", {rel: "apple-touch-icon", href: "/ivory-192.png"}],
         ["meta", {property: "og:site_name", content: "Ivory"}],
         ["meta", {property: "og:image", content: `${siteUrl}/ivory-og.png`}],
         ["meta", {property: "og:image:width", content: "1200"}],
@@ -140,7 +148,7 @@ export default defineConfig({
             ],
         },
         footer: {
-            message: `<div><a href="/docs/community/contributing">Contributing</a> · <a href="/docs/community/security">Security</a> · <a href="/docs/community/code-of-conduct">Code of conduct</a> · <a href="/support">Support Ivory</a></div><div>GPL-3.0 License © ${new Date().getFullYear()} Veegres Labs</div>`,
+            message: `<div><a href="/docs/community/contributing">Contributing</a> · <a href="/docs/community/security">Security</a> · <a href="/docs/community/code-of-conduct">Code of conduct</a> · <a href="/support">Support Ivory</a></div><div><a href="https://www.gnu.org/licenses/gpl-3.0.html">GPL-3.0 License</a> © ${new Date().getFullYear()} <a href="https://veegres.com">Veegres Labs</a></div>`,
         },
     },
 })
