@@ -25,7 +25,7 @@ func (s *Service) List() ([]string, error) {
 }
 
 func (s *Service) UpdateCluster(cluster string, tags []string) ([]string, error) {
-	var tagsLower []string
+	tagsLower := make([]string, 0, len(tags))
 	for _, tag := range tags {
 		tagsLower = append(tagsLower, strings.ToLower(tag))
 	}

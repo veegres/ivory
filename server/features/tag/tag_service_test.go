@@ -35,6 +35,16 @@ func createTestTagService(t *testing.T) *Service {
 func TestServiceUpdateCluster(t *testing.T) {
 	s := createTestTagService(t)
 
+	t.Run("returns an empty list when there are no tags", func(t *testing.T) {
+		tags, err := s.UpdateCluster("cluster0", nil)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if tags == nil || len(tags) != 0 {
+			t.Fatalf("expected an empty non-nil list, got %#v", tags)
+		}
+	})
+
 	t.Run("assigns lowercased tags to a cluster", func(t *testing.T) {
 		tags, err := s.UpdateCluster("cluster1", []string{"PROD", "Web"})
 		if err != nil {
