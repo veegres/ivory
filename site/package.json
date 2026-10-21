@@ -8,7 +8,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "sync": "node scripts/sync-docs.mjs",
+    "sync": "node scripts/sync-docs.mjs && node scripts/sync-articles.mjs",
     "start": "npm run sync && rspress dev",
     "build": "npm run sync && rspress build",
     "preview": "rspress preview",
