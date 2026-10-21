@@ -2,6 +2,7 @@ package query
 
 import (
 	"ivory/core/utils"
+	"ivory/plugins/database"
 	"slices"
 	"strings"
 	"testing"
@@ -123,5 +124,12 @@ func TestResponseWithShipped(t *testing.T) {
 				t.Errorf("expected identity kept, got %+v", got)
 			}
 		})
+	}
+}
+
+func TestMapDbResponseRows(t *testing.T) {
+	got := mapDbResponse(&database.QueryFields{})
+	if got.Fields == nil || got.Rows == nil {
+		t.Errorf("got fields %#v and rows %#v, want both non-nil", got.Fields, got.Rows)
 	}
 }

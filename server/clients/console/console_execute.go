@@ -32,7 +32,7 @@ func Execute(reader io.Reader, wait func() error, abort func() error, exitCode f
 	}
 	done := make(chan result, 1)
 	go func() {
-		var output []string
+		output := make([]string, 0)
 		scanner := bufio.NewScanner(reader)
 		for scanner.Scan() {
 			output = append(output, scanner.Text())

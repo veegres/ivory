@@ -239,13 +239,17 @@ func mapDbResponse(r *database.QueryFields) *DbResponse {
 	for i, f := range r.Fields {
 		fields[i] = DbRow{Name: f.Name, DataType: f.DataType, DataTypeOID: f.DataTypeOID}
 	}
+	rows := r.Rows
+	if rows == nil {
+		rows = make([][]any, 0)
+	}
 	var opts *DbOptions
 	if r.Options != nil {
 		opts = &DbOptions{Params: r.Options.Params, Limit: r.Options.Limit, Trim: r.Options.Trim}
 	}
 	return &DbResponse{
 		Fields:    fields,
-		Rows:      r.Rows,
+		Rows:      rows,
 		StartTime: r.StartTime,
 		EndTime:   r.EndTime,
 		Url:       r.Url,
