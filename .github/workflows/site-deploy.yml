@@ -4,6 +4,8 @@ on:
   push:
     branches: [ master ]
     paths: [ '.doc/**', 'site/**', 'app/shared/assets/ivory*.png', '.github/workflows/site-deploy.yml' ]
+  schedule:
+    - cron: '17 6 * * *'
   workflow_dispatch:
 
 jobs:
