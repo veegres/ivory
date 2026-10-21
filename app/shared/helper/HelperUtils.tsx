@@ -171,7 +171,7 @@ export const getInitialNode = (config: NodeConfig): Node => {
     return ({
         config: config,
         warnings: ["no response from keeper"],
-        keeper: {state: "unknown", role: "unknown", sync: false, lag: -1, pendingRestart: false},
+        keeper: {state: "unknown", role: "unknown", sync: false, lag: -1, pendingRestart: false, warnings: []},
     })
 }
 

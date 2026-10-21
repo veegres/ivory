@@ -311,6 +311,10 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 	if r.ScheduledRestart != nil {
 		restart = &KeeperScheduledRestart{At: r.ScheduledRestart.At, PendingRestart: r.ScheduledRestart.PendingRestart}
 	}
+	warnings := r.Warnings
+	if warnings == nil {
+		warnings = []string{}
+	}
 	return KeeperResponse{
 		Key:                  r.Key,
 		Status:               r.Status,
@@ -322,7 +326,7 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 		ScheduledSwitchover:  switchover,
 		ScheduledRestart:     restart,
 		Tags:                 r.Tags,
-		Warnings:             r.Warnings,
+		Warnings:             warnings,
 		DiscoveredHost:       r.DiscoveredHost,
 		DiscoveredName:       r.DiscoveredName,
 		DiscoveredKeeperPort: r.DiscoveredKeeperPort,

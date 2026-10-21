@@ -269,7 +269,7 @@ func (s *Service) getConfiguredNodeMap(configs []NodeConfig, connectionErrors ma
 			v.Warnings = append(v.Warnings, "node is declared more than once in the cluster configuration")
 			nodeMap[nodeKey] = v
 		} else {
-			nn := Node{Config: n, Warnings: make([]string, 0)}
+			nn := Node{Config: n, Keeper: node.KeeperOneResponse{Warnings: []string{}}, Warnings: make([]string, 0)}
 			if errCon, ok := connectionErrors[nodeKey]; ok {
 				nn.Warnings = append(nn.Warnings, fmt.Sprintf("failed to get Keeper response: %s", errCon.Error()))
 			} else if requestError != nil && !hasSpecificErrors {
@@ -389,7 +389,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.
 				cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
 			}
 		} else {
-			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable, Lag: -1}
+			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable, Lag: -1, Warnings: []string{}}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 		}
 		if cn.Keeper.Role == node.KeeperRoleLeader {

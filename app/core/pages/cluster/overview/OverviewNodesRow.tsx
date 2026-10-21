@@ -63,7 +63,7 @@ type Props = {
 export function OverviewNodesRow(props: Props) {
     const {node, cluster, candidates, error = false, nodeKey, checked, lag: lagMeta} = props
     const {config, warnings, keeper} = node
-    const {role, state, sync, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, warnings: engineWarnings = []} = keeper
+    const {role, state, sync, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, warnings: engineWarnings} = keeper
 
     const {setNode} = useStoreAction
     const keeperRequest = getKeeperOneRequest(cluster, config.host, config.keeperPort)

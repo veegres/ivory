@@ -80,7 +80,7 @@ export interface KeeperResponse {
     scheduledRestart?: ScheduledRestart,
     tags?: {[key: string]: any},
     // NOTE: what the engine itself reported, apart from Ivory's own warnings on the node
-    warnings?: string[],
+    warnings: string[],
     discoveredHost?: string,
     discoveredName?: string,
     discoveredKeeperPort?: number,

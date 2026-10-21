@@ -2,6 +2,7 @@ package node
 
 import (
 	"ivory/core/utils"
+	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 	"strings"
 	"testing"
@@ -86,6 +87,25 @@ func TestRequestBinding(t *testing.T) {
 			}
 			if err == nil || !strings.Contains(err.Error(), test.want) {
 				t.Fatalf("expected an error containing %q, got %v", test.want, err)
+			}
+		})
+	}
+}
+
+func TestMapKeeperResponseWarnings(t *testing.T) {
+	tests := []struct {
+		name     string
+		warnings []string
+		want     int
+	}{
+		{"nil becomes empty", nil, 0},
+		{"kept", []string{"a"}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := mapKeeperResponse(keeper.Response{Warnings: tt.warnings})
+			if got.Warnings == nil || len(got.Warnings) != tt.want {
+				t.Errorf("got %#v, want a non-nil slice of %d", got.Warnings, tt.want)
 			}
 		})
 	}
