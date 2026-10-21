@@ -409,7 +409,7 @@ describe("getErrorMessage", () => {
 describe("getKeeperCandidates", () => {
     const node = (host: string, role: Node["keeper"]["role"], key?: string, keeperPort?: number): Node => ({
         config: {name: host, host, keeperPort},
-        keeper: {key, state: "running", role, sync: false, lag: 0, pendingRestart: false},
+        keeper: {key, state: "running", role, sync: false, lag: 0, pendingRestart: false, warnings: []},
         warnings: [],
     })
 

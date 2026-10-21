@@ -118,6 +118,7 @@ export function createMockNode(overrides: Partial<Node> = {}): Node {
             sync: false,
             lag: 0,
             pendingRestart: false,
+            warnings: [],
             discoveredHost: "localhost",
             discoveredKeeperPort: 8008,
             discoveredDbPort: 5432,
