@@ -609,3 +609,14 @@ func TestService_sshTargets(t *testing.T) {
 		})
 	}
 }
+
+func TestDeployLogsListIsNeverNil(t *testing.T) {
+	logs := &deployLogs{}
+	if got := logs.list(); got == nil || len(got) != 0 {
+		t.Errorf("got %#v, want an empty non-nil slice", got)
+	}
+	logs.send("system", "started")
+	if got := logs.list(); len(got) != 1 {
+		t.Errorf("got %d lines, want 1", len(got))
+	}
+}

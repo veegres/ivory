@@ -30,7 +30,7 @@ func (l *deployLogs) send(ctx string, msg string) {
 func (l *deployLogs) list() []string {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	return l.logs
+	return append(make([]string, 0, len(l.logs)), l.logs...)
 }
 
 // Deploy reports the stage every node reached as well as its logs. An error is
