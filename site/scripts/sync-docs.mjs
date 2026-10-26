@@ -146,10 +146,12 @@ for (const file of Object.keys(meta)) {
     }
 }
 
+// The app's assets are the single source of every image: logo, icons and the og card; site/.gitignore ignores the copies.
+const appAssets = join(repo, "app", "shared", "assets")
 mkdirSync(publicDir, {recursive: true})
-cpSync(join(repo, "app", "shared", "assets", "ivory.png"), join(publicDir, "ivory.png"))
-cpSync(join(repo, "app", "shared", "assets", "ivory-fav-black.png"), join(publicDir, "ivory-fav-black.png"))
-cpSync(join(repo, "app", "shared", "assets", "ivory-fav-white.png"), join(publicDir, "ivory-fav-white.png"))
+for (const file of readdirSync(appAssets).filter(file => /^ivory.*\.png$/.test(file))) {
+    cpSync(join(appAssets, file), join(publicDir, file))
+}
 
 // A link to a file the site publishes stays on the site; anything else in the repository goes to GitHub.
 function rewriteLink(from, to, link) {

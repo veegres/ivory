@@ -1,6 +1,4 @@
 /node_modules
 /build
 /content/docs
-/content/public/ivory.png
-/content/public/ivory-fav-black.png
-/content/public/ivory-fav-white.png
+/content/public/ivory*.png
