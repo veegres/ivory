@@ -4,12 +4,20 @@
   "name": "Ivory",
   "description": "Open-source GUI & MCP server for PostgreSQL, Patroni, etcd, Redis, ClickHouse, MongoDB, ZooKeeper",
   "icons": [
-    {"src": "ivory-192.png", "type": "image/png", "sizes": "192x192"},
-    {"src": "ivory-512.png", "type": "image/png", "sizes": "512x512"}
+    {
+      "src": "ivory-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "ivory-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
   ],
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#000000"
+  "theme_color": "#121212",
+  "background_color": "#121212"
 }

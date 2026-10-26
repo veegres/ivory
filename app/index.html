@@ -10,8 +10,9 @@
           manifest.json provides metadata used when your web app is installed on a
           user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
         -->
-        <link rel="manifest" href="./manifest.json"/>
-        <meta name="theme-color" content="#000000"/>
+        <link rel="manifest" href="./manifest-light.json"/>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
+        <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)"/>
         <title>Ivory</title>
         <meta name="description" content="Open-source GUI & MCP server for PostgreSQL, Patroni, etcd, Redis, ClickHouse, MongoDB, ZooKeeper"/>
         <!-- A link preview needs an absolute image url, which a self-hosted app cannot know, so it uses the public site's card -->
