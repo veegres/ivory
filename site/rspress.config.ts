@@ -46,9 +46,7 @@ export default defineConfig({
     builderConfig: {
         html: {
             tags: [
-                {tag: "link", attrs: {rel: "icon", href: "/ivory-fav-black.png", media: "(prefers-color-scheme: light)"}},
-                {tag: "link", attrs: {rel: "icon", href: "/ivory-fav-white.png", media: "(prefers-color-scheme: dark)"}},
-                {tag: "link", attrs: {rel: "apple-touch-icon", href: "/ivory-fav-white.png"}},
+                {tag: "link", attrs: {rel: "icon", type: "image/png", sizes: "192x192", href: "/ivory-192.png"}},
                 {tag: "link", attrs: {rel: "manifest", href: "/manifest-light.json"}},
                 {tag: "meta", attrs: {name: "theme-color", content: "#fffdf6", media: "(prefers-color-scheme: light)"}},
                 {tag: "meta", attrs: {name: "theme-color", content: "#15130f", media: "(prefers-color-scheme: dark)"}},
