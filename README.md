@@ -165,4 +165,4 @@ monitoring and troubleshooting. One tool, the same workflow for every engine:
   from your laptop.
   
 ---
-<sup>Keywords: Database Management Systems (DBMS) Controllers | Multi-Database UI Consoles | Database Orchestration Platforms | AI-Ready Database Copilot / Agent Layer</sup>
+<sup>Keywords: Database Management Systems (DBMS) Controllers | Multi-Database UI Consoles | Database Orchestration Platforms | Orchestrator | AI-Ready Database Copilot / Agent Layer</sup>
