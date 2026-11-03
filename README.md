@@ -127,8 +127,8 @@ What Ivory does with each — operations, lag, warnings, console and deploy temp
 [About Ivory](.doc/about.md#why-these-databases).
 
 **Missing your database? You can add it.** Every engine is a self-contained plugin, so supporting a new one
-needs no change to Ivory's core. The repository ships an AI agent for exactly this,
-[`keeper-database-plugin`](.claude/agents/keeper-database-plugin.md): ask Claude Code to use it for your engine
+needs no change to Ivory's core. The repository ships a portable agent skill for exactly this,
+[`ivory-keeper-database-plugin`](.agents/skills/ivory-keeper-database-plugin/SKILL.md): ask your coding agent to use it for your engine
 and it writes the keeper and database plugins, their tests and the UI wiring by the project's checklist —
 then open a PR (see [Contribution](#contribution)).
 

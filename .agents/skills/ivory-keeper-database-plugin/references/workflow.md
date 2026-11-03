@@ -1,18 +1,11 @@
----
-name: keeper-database-plugin
-description: Adds a new keeper or database plugin to Ivory, or audits an existing one against the four goals a plugin exists to serve — integrity, healthiness, informativeness, actions. Use when asked to write a plugin for a new engine, to review or grade an existing plugin, to answer "can we trust what the overview shows for <engine>", or after touching any `plugins/keeper/*` or `plugins/database/*` adapter. Knows the whole contract: the twelve `keeper.Adapter` methods, `Metadata`, the four `database.Adapter` interfaces, the discovery/merge machinery in `cluster_service_discovery.go` that plugin output feeds, and the repo conventions a plugin must satisfy to be mergeable.
-tools: Bash, Read, Write, Edit, Grep, Glob
-model: opus
----
-
 You own the plugin boundary. Every engine Ivory supports reaches the product through a
 `plugins/keeper/<engine>` adapter, a `plugins/database/<engine>` adapter, or both, and the quality of what a
 user sees is capped by what those adapters report. You either **build** one or **audit** one, and in both
 cases you are judged against the same four goals below.
 
-Read `CLAUDE.md` before you do anything else. It is the contract, it is long, and it is authoritative — this
-file tells you what a plugin is *for*; `CLAUDE.md` tells you how this repo insists it be written. Where they
-disagree, `CLAUDE.md` wins and you say so in your report.
+Read `AGENTS.md` before you do anything else. It is the contract, it is long, and it is authoritative — this
+file tells you what a plugin is *for*; `AGENTS.md` tells you how this repo insists it be written. Where they
+disagree, `AGENTS.md` wins and you say so in your report.
 
 ---
 
@@ -371,7 +364,7 @@ All twelve `keeper.Adapter` methods: `List`, `Config`, `ConfigUpdate`, `Switchov
   threshold past which a replica is worth checking, `Threshold: 0` only where lag is never measured. The
   overview carries it as `lag` so the UI formats and colours by unit, and Ivory's warning is raised once, in
   `cluster.addLagWarnings`. `plugins_context_test.go` requires a unit.
-- `DefaultTemplates()` ships the engine's deployments. See `CLAUDE.md` for its full contract; the parts most
+- `DefaultTemplates()` ships the engine's deployments. See `AGENTS.md` for its full contract; the parts most
   often got wrong are that each command is one whole literal `const` (duplication between near-identical
   commands is deliberate — do not factor it out), that every placeholder must be in `keeper.Vars`, that every
   command states its own node name and both ports in `Defaults`, and that a single-host template's three nodes
@@ -463,7 +456,7 @@ no `DiscoveredCluster`, and every integrity check keys off one or the other" is.
 
 ### ADD or FIX — write the code
 
-Follow the ordered checklist in `CLAUDE.md`'s "Adding a New Keeper or Database Plugin" section. It is complete
+Follow the ordered checklist in `AGENTS.md`'s "Adding a New Keeper or Database Plugin" section. It is complete
 and it is the spec; do not improvise a different order. In outline: client wrapper (only if no existing client
 speaks the protocol) → keeper plugin → database plugin → register once in `plugins/plugins_context.go` →
 tests → the four frontend steps → README row and `.doc/about.md` reason.
@@ -494,13 +487,13 @@ and is not checked by anything**, so a plugin that compiles cleanly can still be
   first dot rather than the last. For any engine with a hand-written parser (`etcd`, `zookeeper`, `mongo`),
   add a test that pushes every `SystemRequests()` entry through the real parser. Also assert names are unique
   within a plugin — the seeder is keyed by name.
-- **File naming, model placement and comment discipline are `CLAUDE.md`'s, not yours.** Package-prefixed
+- **File naming, model placement and comment discipline are `AGENTS.md`'s, not yours.** Package-prefixed
   filenames; every request/response/DTO and every mapper in `<feature>_model.go`; a mapper is a method when
   its input type is local and a free function otherwise; comments explain WHY or do not exist.
 - **Do not add a variable outside `keeper.Vars`** to make a template convenient. Literal text in the command
   is the answer.
 - **Do not add validation that protects an operator from a command they wrote and can read.** See
-  `CLAUDE.md`'s threat model. What you *do* guarantee is that what runs is what was shown.
+  `AGENTS.md`'s threat model. What you *do* guarantee is that what runs is what was shown.
 - Run before reporting done: `gofmt -l server`, `cd server && go vet ./...`, `cd server && go test ./...`. For
   frontend changes also `cd app && npm run lint && npm run build`. Report real output; never claim a green run
   you did not see.

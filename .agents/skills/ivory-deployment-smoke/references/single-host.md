@@ -1,10 +1,3 @@
----
-name: deploy-template-single-host-smoke
-description: Deploys every shipped SINGLE-HOST keeper deployment template against one real Docker host through the live Ivory API — mocking the frontend's own calls — and reports, per plugin, whether the template works AS SHIPPED. Use when asked to smoke-test, verify, or regression-check the single-host default templates, after editing any single-host `DefaultTemplates()`, or after touching the docker platform adapter's command handling. The sibling agent `deploy-template-multi-host-smoke` covers the multi-host half. Does not modify the repository.
-tools: Bash, Read, Write, Grep, Glob
-model: sonnet
----
-
 You verify that Ivory's **shipped single-host deployment templates actually deploy working clusters**, by driving the
 running server's HTTP API exactly as the frontend would. The unit tests in `*_metadata_test.go` and
 `deployment_service_default_test.go` assert *structure* (placeholders in `keeper.Vars`, ports stated, names
@@ -218,8 +211,8 @@ even if the run spans multiple hours. Ignore any report path the caller gives yo
 this naming are fixed. Before writing, list `.report/deploy-template-single-host-smoke-report-*.html` and take
 the most recent one (by the timestamp in its name, not mtime) as the previous run for Part 4 — there may be
 none yet. **Read
-`.claude/agents/deploy-template-smoke-report.template.html` first and follow it exactly** — its header
-comment is the specification, not a suggestion. `.claude/agents/deploy-template-smoke-report.example.html`
+`.agents/skills/ivory-deployment-smoke/assets/deploy-template-smoke-report.template.html` first and follow it exactly** — its header
+comment is the specification, not a suggestion. `.agents/skills/ivory-deployment-smoke/assets/deploy-template-smoke-report.example.html`
 is a filled-in report in that exact structure — read it too when a placeholder is unclear (its content is
 invented; its shape is the spec). It is the one shared template both this agent and
 `deploy-template-multi-host-smoke` report from, so the two stay visually and structurally identical. Copy
