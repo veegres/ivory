@@ -49,12 +49,20 @@ const GetCoordinationRoot = `SELECT name, value, ctime, mtime, numChildren FROM 
 
 func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
-		config.ViewQueryDbInfo:        true,
-		config.ViewQueryDbChart:       true,
-		config.ManageQueryDbTemplate:  true,
-		config.ManageQueryDbConsole:   true,
-		config.ManageQueryDbCancel:    false,
-		config.ManageQueryDbTerminate: false,
+		config.ViewQueryDbInfo:               true,
+		config.ViewQueryDbChart:              true,
+		config.ManageQueryDbTemplate:         true,
+		config.ManageQueryDbConsole:          true,
+		config.ManageQueryDbCancel:           false,
+		config.ManageQueryDbTerminate:        false,
+		config.ViewQueryDbRoleList:           false,
+		config.ManageQueryDbRoleCreate:       false,
+		config.ManageQueryDbRoleUpdate:       false,
+		config.ManageQueryDbRoleDelete:       false,
+		config.ViewQueryDbDatabaseList:       false,
+		config.ManageQueryDbDatabaseCreate:   false,
+		config.ManageQueryDbDatabaseUpdate:   false,
+		config.ManageQueryDbDatabaseDelete:   false,
 	}
 }
 

@@ -12,6 +12,10 @@ import (
 var ErrCannotLimitWithoutTrim = errors.New("cannot limit query without trimming it")
 var ErrDatabaseHostOrPortNotSpecified = errors.New("database host or port are not specified")
 var ErrPasswordNotSet = errors.New("password is not set")
+var ErrAdminNotSupported = errors.New("database admin is not supported for this engine")
+var ErrProtectedRole = errors.New("cannot modify this role")
+var ErrProtectedDatabase = errors.New("cannot modify this database")
+var ErrCannotDropSessionRole = errors.New("cannot drop the role you are connected as")
 
 // Adapter is implemented by every database plugin (postgres, etcd, ...). It
 // combines query execution, schema inspection, session management and

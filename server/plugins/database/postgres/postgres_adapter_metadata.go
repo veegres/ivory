@@ -7,12 +7,20 @@ import (
 
 func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
-		config.ViewQueryDbInfo:        true,
-		config.ViewQueryDbChart:       true,
-		config.ManageQueryDbTemplate:  true,
-		config.ManageQueryDbConsole:   true,
-		config.ManageQueryDbCancel:    true,
-		config.ManageQueryDbTerminate: true,
+		config.ViewQueryDbInfo:               true,
+		config.ViewQueryDbChart:              true,
+		config.ManageQueryDbTemplate:         true,
+		config.ManageQueryDbConsole:          true,
+		config.ManageQueryDbCancel:           true,
+		config.ManageQueryDbTerminate:        true,
+		config.ViewQueryDbRoleList:           true,
+		config.ManageQueryDbRoleCreate:       true,
+		config.ManageQueryDbRoleUpdate:       true,
+		config.ManageQueryDbRoleDelete:       true,
+		config.ViewQueryDbDatabaseList:       true,
+		config.ManageQueryDbDatabaseCreate:   true,
+		config.ManageQueryDbDatabaseUpdate:   true,
+		config.ManageQueryDbDatabaseDelete:   true,
 	}
 }
 

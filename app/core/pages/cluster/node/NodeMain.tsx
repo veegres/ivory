@@ -1,92 +1,142 @@
-import {Box} from "@mui/material"
+import { Box } from "@mui/material";
 
-import {Cluster, Node, NodeOverview} from "../../../../features/cluster/api/ClusterType"
-import {NodeApi} from "../../../../features/node/api/NodeRouter"
-import {NodeTabType} from "../../../../features/node/api/NodeType"
-import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/api/QueryHook"
-import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
-import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
-import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {Refresher} from "../../../widgets/browser/Refresher"
-import {NODE_TABS} from "./NodeMainTabs"
-import {NodeMainTabsHead} from "./NodeMainTabsHead"
+import {
+  Cluster,
+  Node,
+  NodeOverview,
+} from "../../../../features/cluster/api/ClusterType";
+import { NodeApi } from "../../../../features/node/api/NodeRouter";
+import { NodeTabType } from "../../../../features/node/api/NodeType";
+import {
+  useRouterQueryDatabase,
+  useRouterQuerySchemas,
+} from "../../../../features/query/api/QueryHook";
+import { Type as QueryType } from "../../../../features/query/api/QueryType";
+import { AutocompleteFetch } from "../../../../shared/component/autocomplete/AutocompleteFetch";
+import { SxPropsMap } from "../../../../shared/helper/HelperType";
+import {
+  getPlatformConnection,
+  getQueryConnection,
+} from "../../../../shared/helper/HelperUtils";
+import {
+  useStore,
+  useStoreAction,
+} from "../../../../shared/provider/StoreProvider";
+import { Refresher } from "../../../widgets/browser/Refresher";
+import { NODE_TABS } from "./NodeMainTabs";
+import { NodeMainTabsHead } from "./NodeMainTabsHead";
 
 const SX: SxPropsMap = {
-    main: {
-        flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column",
-        gap: 1, backgroundImage: "inherit", backgroundColor: "inherit",
-    },
-    body: {minWidth: 0, overflowX: "auto", backgroundImage: "inherit", backgroundColor: "inherit"},
-    inputs: {display: "flex", alignItems: "center", gap: 1, width: "var(--size-field)"},
-}
+  main: {
+    flexGrow: 1,
+    overflow: "auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: 1,
+    backgroundImage: "inherit",
+    backgroundColor: "inherit",
+  },
+  body: {
+    minWidth: 0,
+    overflowX: "auto",
+    backgroundImage: "inherit",
+    backgroundColor: "inherit",
+  },
+  inputs: {
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    width: "var(--size-field)",
+  },
+};
 
 type Props = {
-    cluster: Cluster,
-    node: Node,
-    nodes?: NodeOverview,
-}
+  cluster: Cluster;
+  node: Node;
+  nodes?: NodeOverview;
+};
 
 export function NodeMain(props: Props) {
-    const {cluster, node, nodes} = props
-    const nodeState = useStore(s => s.nodeState)
-    const {dbName, dbSchema} = useStore(s => s.nodeState)
-    const {setDbName, setDbSchema} = useStoreAction
+  const { cluster, node, nodes } = props;
+  const nodeState = useStore((s) => s.nodeState);
+  const { dbName, dbSchema } = useStore((s) => s.nodeState);
+  const { setDbName, setDbSchema } = useStoreAction;
 
-    const tab = nodeState.nodeTab
-    const {info, body} = NODE_TABS[tab]
+  const tab = nodeState.nodeTab;
+  const { info, body } = NODE_TABS[tab];
 
+  return (
+    <Box sx={SX.main}>
+      <NodeMainTabsHead info={info} tab={tab} renderActions={renderActions()} />
+      <Box sx={SX.body}>{body(cluster, node, nodes)}</Box>
+    </Box>
+  );
+
+  function renderActions() {
+    if (tab === NodeTabType.DATABASE) return renderDatabaseActions();
+    if (tab === NodeTabType.SYSTEM) return renderSystemActions();
+    if (tab === NodeTabType.CONTAINER) return renderContainerActions();
+    return;
+  }
+
+  function renderDatabaseActions() {
+    const { queryTab } = nodeState;
+    if (queryTab === QueryType.USERS || queryTab === QueryType.DATABASES)
+      return;
+
+    const con = getQueryConnection(
+      cluster,
+      node.config.host,
+      node.config.dbPort,
+    );
+    if (!con) return;
     return (
-        <Box sx={SX.main}>
-            <NodeMainTabsHead info={info} tab={tab} renderActions={renderActions()}/>
-            <Box sx={SX.body}>{body(cluster, node, nodes)}</Box>
-        </Box>
-    )
+      <Box sx={SX.inputs}>
+        <AutocompleteFetch
+          value={dbSchema || null}
+          connection={con}
+          useFetch={useRouterQuerySchemas}
+          placeholder={"Schema"}
+          variant={"outlined"}
+          onUpdate={(v) => setDbSchema(v || undefined)}
+          disabled={!dbName}
+        />
+        <AutocompleteFetch
+          value={dbName || null}
+          connection={con}
+          useFetch={useRouterQueryDatabase}
+          placeholder={"Database"}
+          variant={"outlined"}
+          onUpdate={(v) => setDbName(v || undefined)}
+        />
+      </Box>
+    );
+  }
 
-    function renderActions() {
-        if (tab === NodeTabType.DATABASE) return renderDatabaseActions()
-        if (tab === NodeTabType.SYSTEM) return renderSystemActions()
-        if (tab === NodeTabType.CONTAINER) return renderContainerActions()
-        return
-    }
+  function renderSystemActions() {
+    const con = getPlatformConnection(
+      cluster,
+      node.config.host,
+      node.config.sshPort,
+    );
+    if (!con) return;
+    const queryKeys = [
+      NodeApi.system.metrics.key(con.host),
+      NodeApi.system.processes.key(con.host),
+    ];
+    return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} />;
+  }
 
-    function renderDatabaseActions() {
-        const con = getQueryConnection(cluster, node.config.host, node.config.dbPort)
-        if (!con) return
-        return (
-            <Box sx={SX.inputs}>
-                <AutocompleteFetch
-                    value={dbSchema || null}
-                    connection={con}
-                    useFetch={useRouterQuerySchemas}
-                    placeholder={"Schema"}
-                    variant={"outlined"}
-                    onUpdate={(v) => setDbSchema(v || undefined)}
-                    disabled={!dbName}
-                />
-                <AutocompleteFetch
-                    value={dbName || null}
-                    connection={con}
-                    useFetch={useRouterQueryDatabase}
-                    placeholder={"Database"}
-                    variant={"outlined"}
-                    onUpdate={(v) => setDbName(v || undefined)}
-                />
-            </Box>
-        )
-    }
-
-    function renderSystemActions() {
-        const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
-        if (!con) return
-        const queryKeys = [NodeApi.system.metrics.key(con.host), NodeApi.system.processes.key(con.host)]
-        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
-    }
-
-    function renderContainerActions() {
-        const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
-        if (!con) return
-        const queryKeys = [NodeApi.container.metrics.key({connection: con, name: con.host})]
-        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
-    }
+  function renderContainerActions() {
+    const con = getPlatformConnection(
+      cluster,
+      node.config.host,
+      node.config.sshPort,
+    );
+    if (!con) return;
+    const queryKeys = [
+      NodeApi.container.metrics.key({ connection: con, name: con.host }),
+    ];
+    return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} />;
+  }
 }

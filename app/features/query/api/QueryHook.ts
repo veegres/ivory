@@ -138,3 +138,75 @@ export function useRouterQueryLogDelete(uuid: string) {
         successKeys: [QueryApi.getLog.key(uuid)],
     })
 }
+
+export function useRouterDbRoleList(connection: Connection, enabled: boolean = true) {
+    return useQuery({
+        queryKey: QueryApi.dbRoleList.key(connection),
+        queryFn: () => QueryApi.dbRoleList.fn(connection),
+        enabled,
+        retry: false,
+        refetchOnWindowFocus: false,
+    })
+}
+
+export function useRouterDbRoleCreate(connection: Connection, onSuccess?: () => void) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbRoleCreate.fn,
+        mutationKey: QueryApi.dbRoleCreate.key(),
+        successKeys: [QueryApi.dbRoleList.key(connection)],
+        onSuccess,
+    })
+}
+
+export function useRouterDbRoleUpdate(connection: Connection, onSuccess?: () => void) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbRoleUpdate.fn,
+        mutationKey: QueryApi.dbRoleUpdate.key(),
+        successKeys: [QueryApi.dbRoleList.key(connection)],
+        onSuccess,
+    })
+}
+
+export function useRouterDbRoleDelete(connection: Connection) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbRoleDelete.fn,
+        mutationKey: QueryApi.dbRoleDelete.key(),
+        successKeys: [QueryApi.dbRoleList.key(connection)],
+    })
+}
+
+export function useRouterDbDatabaseAdminList(connection: Connection, enabled: boolean = true) {
+    return useQuery({
+        queryKey: QueryApi.dbDatabaseAdminList.key(connection),
+        queryFn: () => QueryApi.dbDatabaseAdminList.fn(connection),
+        enabled,
+        retry: false,
+        refetchOnWindowFocus: false,
+    })
+}
+
+export function useRouterDbDatabaseAdminCreate(connection: Connection, onSuccess?: () => void) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbDatabaseAdminCreate.fn,
+        mutationKey: QueryApi.dbDatabaseAdminCreate.key(),
+        successKeys: [QueryApi.dbDatabaseAdminList.key(connection), QueryApi.databases.key(connection)],
+        onSuccess,
+    })
+}
+
+export function useRouterDbDatabaseAdminUpdate(connection: Connection, onSuccess?: () => void) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbDatabaseAdminUpdate.fn,
+        mutationKey: QueryApi.dbDatabaseAdminUpdate.key(),
+        successKeys: [QueryApi.dbDatabaseAdminList.key(connection), QueryApi.databases.key(connection)],
+        onSuccess,
+    })
+}
+
+export function useRouterDbDatabaseAdminDelete(connection: Connection) {
+    return useMutationAdapter({
+        mutationFn: QueryApi.dbDatabaseAdminDelete.fn,
+        mutationKey: QueryApi.dbDatabaseAdminDelete.key(),
+        successKeys: [QueryApi.dbDatabaseAdminList.key(connection), QueryApi.databases.key(connection)],
+    })
+}

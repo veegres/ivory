@@ -63,6 +63,15 @@ const (
 	ManageQueryDbCancel    Feature = "manage.query.db.cancel"
 	ManageQueryDbTerminate Feature = "manage.query.db.terminate"
 
+	ViewQueryDbRoleList         Feature = "view.query.db.role.list"
+	ManageQueryDbRoleCreate     Feature = "manage.query.db.role.create"
+	ManageQueryDbRoleUpdate     Feature = "manage.query.db.role.update"
+	ManageQueryDbRoleDelete     Feature = "manage.query.db.role.delete"
+	ViewQueryDbDatabaseList     Feature = "view.query.db.database.list"
+	ManageQueryDbDatabaseCreate Feature = "manage.query.db.database.create"
+	ManageQueryDbDatabaseUpdate Feature = "manage.query.db.database.update"
+	ManageQueryDbDatabaseDelete Feature = "manage.query.db.database.delete"
+
 	ViewQueryLogList     Feature = "view.query.log.list"
 	ManageQueryLogDelete Feature = "manage.query.log.delete"
 
@@ -175,6 +184,14 @@ var All = []Feature{
 	ManageQueryDbConsole,
 	ManageQueryDbCancel,
 	ManageQueryDbTerminate,
+	ViewQueryDbRoleList,
+	ManageQueryDbRoleCreate,
+	ManageQueryDbRoleUpdate,
+	ManageQueryDbRoleDelete,
+	ViewQueryDbDatabaseList,
+	ManageQueryDbDatabaseCreate,
+	ManageQueryDbDatabaseUpdate,
+	ManageQueryDbDatabaseDelete,
 	ViewQueryLogList,
 	ManageQueryLogDelete,
 	ViewVaultList,
