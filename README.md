@@ -146,7 +146,6 @@ for something to pick up, and [SECURITY.md](SECURITY.md) for supported versions 
 
 
 ## What Ivory is used for
-
 Ivory is a self-hosted, open-source GUI, web dashboard and MCP server for database cluster management,
 monitoring and troubleshooting. One tool, the same workflow for every engine:
 
@@ -164,3 +163,6 @@ monitoring and troubleshooting. One tool, the same workflow for every engine:
   so Claude, Cursor, Codex or any MCP client can diagnose and fix database clusters in plain language.
 - **On-call from your phone** — a mobile-friendly database dashboard for checking and fixing a cluster away
   from your laptop.
+  
+---
+<sup>Keywords: Database Management Systems (DBMS) Controllers | Multi-Database UI Consoles | Database Orchestration Platforms | AI-Ready Database Copilot / Agent Layer</sup>
