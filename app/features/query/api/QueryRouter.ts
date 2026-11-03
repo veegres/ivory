@@ -6,8 +6,16 @@ import {
     Connection,
     ConsoleRequest,
     DatabasesRequest,
+    DbDatabaseCreateRequest,
+    DbDatabaseDeleteRequest,
+    DbDatabaseItem,
+    DbDatabaseUpdateRequest,
     DbPlugin,
     DbResponse,
+    DbRoleCreateRequest,
+    DbRoleDeleteRequest,
+    DbRoleItem,
+    DbRoleUpdateRequest,
     KillRequest,
     QueryCheckStep,
     Request,
@@ -99,6 +107,46 @@ export const QueryApi = {
     deleteLog: {
         key: () => ["query", "log", "delete"],
         fn: (uuid: string) => api.delete<R<string>>(`/query/log/${uuid}`)
+            .then((response) => response.data.response),
+    },
+    dbRoleList: {
+        key: (con: Connection) => ["query", "execute", "role", "list", con],
+        fn: (con: Connection) => api.post<R<DbRoleItem[]>>("/query/execute/role/list", {connection: con})
+            .then((response) => response.data.response),
+    },
+    dbRoleCreate: {
+        key: () => ["query", "execute", "role", "create"],
+        fn: (req: DbRoleCreateRequest) => api.post<R<string>>("/query/execute/role/create", req)
+            .then((response) => response.data.response),
+    },
+    dbRoleUpdate: {
+        key: () => ["query", "execute", "role", "update"],
+        fn: (req: DbRoleUpdateRequest) => api.post<R<string>>("/query/execute/role/update", req)
+            .then((response) => response.data.response),
+    },
+    dbRoleDelete: {
+        key: () => ["query", "execute", "role", "delete"],
+        fn: (req: DbRoleDeleteRequest) => api.post<R<string>>("/query/execute/role/delete", req)
+            .then((response) => response.data.response),
+    },
+    dbDatabaseAdminList: {
+        key: (con: Connection) => ["query", "execute", "database", "admin", "list", con],
+        fn: (con: Connection) => api.post<R<DbDatabaseItem[]>>("/query/execute/database/admin/list", {connection: con})
+            .then((response) => response.data.response),
+    },
+    dbDatabaseAdminCreate: {
+        key: () => ["query", "execute", "database", "admin", "create"],
+        fn: (req: DbDatabaseCreateRequest) => api.post<R<string>>("/query/execute/database/admin/create", req)
+            .then((response) => response.data.response),
+    },
+    dbDatabaseAdminUpdate: {
+        key: () => ["query", "execute", "database", "admin", "update"],
+        fn: (req: DbDatabaseUpdateRequest) => api.post<R<string>>("/query/execute/database/admin/update", req)
+            .then((response) => response.data.response),
+    },
+    dbDatabaseAdminDelete: {
+        key: () => ["query", "execute", "database", "admin", "delete"],
+        fn: (req: DbDatabaseDeleteRequest) => api.post<R<string>>("/query/execute/database/admin/delete", req)
             .then((response) => response.data.response),
     },
 }

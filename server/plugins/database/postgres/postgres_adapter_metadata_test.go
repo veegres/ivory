@@ -12,6 +12,9 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 	all := []config.Feature{
 		config.ViewQueryDbInfo, config.ViewQueryDbChart, config.ManageQueryDbTemplate,
 		config.ManageQueryDbConsole, config.ManageQueryDbCancel, config.ManageQueryDbTerminate,
+		config.ViewQueryDbRoleList, config.ManageQueryDbRoleCreate, config.ManageQueryDbRoleUpdate,
+		config.ManageQueryDbRoleDelete, config.ViewQueryDbDatabaseList, config.ManageQueryDbDatabaseCreate,
+		config.ManageQueryDbDatabaseUpdate, config.ManageQueryDbDatabaseDelete,
 	}
 	for _, feature := range all {
 		if !features[feature] {

@@ -27,6 +27,8 @@ export enum Type {
     OTHER,
     CONSOLE,
     CHARTS,
+    USERS,
+    DATABASES,
 }
 
 export enum VarietyType {
@@ -146,6 +148,53 @@ export interface DbRow {
     name: string,
     dataType: string,
     dataTypeOID: number,
+}
+
+export interface DbRoleItem {
+    name: string,
+    superuser: boolean,
+    createDb: boolean,
+    login: boolean,
+}
+
+export interface DbDatabaseItem {
+    name: string,
+    owner: string,
+    size: string,
+    encoding: string,
+}
+
+export interface DbRoleCreateRequest {
+    connection: Connection,
+    name: string,
+    password: string,
+}
+
+export interface DbRoleUpdateRequest {
+    connection: Connection,
+    name: string,
+    password: string,
+}
+
+export interface DbRoleDeleteRequest {
+    connection: Connection,
+    name: string,
+}
+
+export interface DbDatabaseCreateRequest {
+    connection: Connection,
+    name: string,
+}
+
+export interface DbDatabaseUpdateRequest {
+    connection: Connection,
+    name: string,
+    newName: string,
+}
+
+export interface DbDatabaseDeleteRequest {
+    connection: Connection,
+    name: string,
 }
 
 export interface DbResponse {

@@ -1,135 +1,243 @@
-import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 
-import {Feature} from "../../../../features/Feature"
-import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/api/QueryType"
-import {Query} from "../../../../features/query/component/Query"
-import {QueryActivity} from "../../../../features/query/component/QueryActivity"
-import {QueryChartDatabase} from "../../../../features/query/component/QueryChartDatabase"
-import {QueryChartGeneral} from "../../../../features/query/component/QueryChartGeneral"
-import {QueryConsole} from "../../../../features/query/component/QueryConsole"
-import {DividerBox} from "../../../../shared/component/box/DividerBox"
-import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
-import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
+import { Feature } from "../../../../features/Feature";
+import { ManageAccess } from "../../../../features/management/component/ManageAccess";
+import { Role } from "../../../../features/node/api/NodeType";
+import {
+  ChartType,
+  Connection as QueryConnection,
+  Type as QueryType,
+} from "../../../../features/query/api/QueryType";
+import { Query } from "../../../../features/query/component/Query";
+import { QueryActivity } from "../../../../features/query/component/QueryActivity";
+import { QueryChartDatabase } from "../../../../features/query/component/QueryChartDatabase";
+import { QueryChartGeneral } from "../../../../features/query/component/QueryChartGeneral";
+import { QueryConsole } from "../../../../features/query/component/QueryConsole";
+import { QueryDbDatabaseList } from "../../../../features/query/component/QueryDbDatabaseList";
+import { QueryDbUsers } from "../../../../features/query/component/QueryDbUsers";
+import { DividerBox } from "../../../../shared/component/box/DividerBox";
+import { ErrorDbMissing } from "../../../../shared/component/box/ErrorManual";
+import { SxPropsMap } from "../../../../shared/helper/HelperType";
+import {
+  useStore,
+  useStoreAction,
+} from "../../../../shared/provider/StoreProvider";
 
 // NOTE: below md the query-type filters move from a vertical column on the
 // left to a horizontal wrapping row above the query area
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
-    main: {display: "flex", flexDirection: {xs: "column", md: "row"}, gap: {xs: 2, md: 3}},
-    filters: {
-        display: "flex", flexDirection: {xs: "row", md: "column"}, flexWrap: {xs: "wrap", md: "nowrap"},
-        alignItems: "center", gap: {xs: 1, md: 2},
-    },
-    query: {flexGrow: 1, overflow: "hidden"},
-    group: {margin: {xs: 0, md: "0px 5px"}, width: {xs: "auto", md: "100%"}, flexGrow: {xs: 1, md: 0}, flexWrap: {xs: "wrap", md: "nowrap"}},
-    // NOTE: the group keeps the vertical orientation prop and pure css turns it
-    // into a wrapping row below md; a wrapped connected group looks broken (no
-    // row gap, half-rounded corners on the line ends), so the buttons ungroup
-    // into standalone chips with their own border/radius/gap that grow to fill
-    // each line, matching the console/charts filters; the group itself grows
-    // proportionally to its five buttons vs the single console/charts ones, and
-    // the doubled && selector outranks the group's per-corner radius and
-    // negative margin rules
-    groupSelect: (theme) => ({
-        flexDirection: {xs: "row", md: "column"},
-        flexGrow: {xs: 5, md: 0},
-        [theme.breakpoints.down("md")]: {
-            gap: 1,
-            "&& .MuiToggleButtonGroup-firstButton, && .MuiToggleButtonGroup-middleButton, && .MuiToggleButtonGroup-lastButton": {
-                flexGrow: 1, margin: 0, border: "1px solid", borderColor: "divider", borderRadius: 1,
-            },
+  box: { display: "flex", flexDirection: "column", gap: 1 },
+  main: {
+    display: "flex",
+    flexDirection: { xs: "column", md: "row" },
+    gap: { xs: 2, md: 3 },
+  },
+  filters: {
+    display: "flex",
+    flexDirection: { xs: "row", md: "column" },
+    flexWrap: { xs: "wrap", md: "nowrap" },
+    alignItems: "center",
+    gap: { xs: 1, md: 2 },
+  },
+  query: {
+    flexGrow: 1,
+    overflow: "hidden",
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
+  },
+  group: {
+    margin: { xs: 0, md: "0px 5px" },
+    width: { xs: "auto", md: "100%" },
+    flexGrow: { xs: 1, md: 0 },
+    flexWrap: { xs: "wrap", md: "nowrap" },
+  },
+  // NOTE: the group keeps the vertical orientation prop and pure css turns it
+  // into a wrapping row below md; a wrapped connected group looks broken (no
+  // row gap, half-rounded corners on the line ends), so the buttons ungroup
+  // into standalone chips with their own border/radius/gap that grow to fill
+  // each line, matching the console/charts filters; the group itself grows
+  // proportionally to its five buttons vs the single console/charts ones, and
+  // the doubled && selector outranks the group's per-corner radius and
+  // negative margin rules
+  groupNav: (theme) => ({
+    flexDirection: { xs: "row", md: "column" },
+    flexGrow: { xs: 4, md: 0 },
+    [theme.breakpoints.down("md")]: {
+      gap: 1,
+      "&& .MuiToggleButtonGroup-firstButton, && .MuiToggleButtonGroup-middleButton, && .MuiToggleButtonGroup-lastButton":
+        {
+          flexGrow: 1,
+          margin: 0,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
         },
-    }),
-}
+    },
+  }),
+  groupSelect: (theme) => ({
+    flexDirection: { xs: "row", md: "column" },
+    flexGrow: { xs: 5, md: 0 },
+    [theme.breakpoints.down("md")]: {
+      gap: 1,
+      "&& .MuiToggleButtonGroup-firstButton, && .MuiToggleButtonGroup-middleButton, && .MuiToggleButtonGroup-lastButton":
+        {
+          flexGrow: 1,
+          margin: 0,
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 1,
+        },
+    },
+  }),
+};
 
 const CHARTS = {
-    common: [ChartType.Databases, ChartType.Connections, ChartType.DatabaseSize, ChartType.DatabaseUptime],
-    database: [ChartType.Schemas, ChartType.TablesSize, ChartType.IndexesSize, ChartType.TotalSize],
-}
+  common: [
+    ChartType.Databases,
+    ChartType.Connections,
+    ChartType.DatabaseSize,
+    ChartType.DatabaseUptime,
+  ],
+  database: [
+    ChartType.Schemas,
+    ChartType.TablesSize,
+    ChartType.IndexesSize,
+    ChartType.TotalSize,
+  ],
+};
 
 type Props = {
-    connection?: QueryConnection,
-}
+  connection?: QueryConnection;
+  role: Role;
+};
 
-export function NodeMainQueries(props: Props){
-    const {connection} = props
-    const {queryTab} = useStore(s => s.nodeState)
-    const {setQueryTab} = useStoreAction
+export function NodeMainQueries(props: Props) {
+  const { connection, role } = props;
+  const { queryTab } = useStore((s) => s.nodeState);
+  const { setQueryTab } = useStoreAction;
 
-    if (!connection) return <ErrorDbMissing/>
+  if (!connection) return <ErrorDbMissing />;
 
-    return (
-        <Box sx={SX.box}>
-            <ManageAccess feature={Feature.ViewQueryDbInfo}>
-                <QueryActivity connection={connection}/>
+  const adminTab =
+    queryTab === QueryType.USERS || queryTab === QueryType.DATABASES;
+
+  return (
+    <Box sx={SX.box}>
+      {!adminTab && (
+        <ManageAccess feature={Feature.ViewQueryDbInfo}>
+          <QueryActivity connection={connection} />
+        </ManageAccess>
+      )}
+      <Box sx={SX.main}>
+        <Box sx={SX.filters}>
+          <ToggleButtonGroup
+            sx={[SX.group, SX.groupNav]}
+            color={"secondary"}
+            value={queryTab}
+            orientation={"vertical"}
+          >
+            <ManageAccess feature={Feature.ManageQueryDbConsole}>
+              <ToggleButton
+                value={QueryType.CONSOLE}
+                onClick={() => setQueryTab(QueryType.CONSOLE)}
+              >
+                CONSOLE
+              </ToggleButton>
             </ManageAccess>
-            <Box sx={SX.main}>
-                <Box sx={SX.filters}>
-                    <ManageAccess feature={Feature.ManageQueryDbConsole}>
-                        <ToggleButton
-                            sx={SX.group}
-                            color={"secondary"}
-                            value={QueryType.CONSOLE}
-                            selected={queryTab === QueryType.CONSOLE}
-                            onClick={() => setQueryTab(QueryType.CONSOLE)}
-                        >
-                            CONSOLE
-                        </ToggleButton>
-                    </ManageAccess>
+            <ManageAccess feature={Feature.ViewQueryDbChart}>
+              <ToggleButton
+                value={QueryType.CHARTS}
+                onClick={() => setQueryTab(QueryType.CHARTS)}
+              >
+                CHARTS
+              </ToggleButton>
+            </ManageAccess>
+            <ManageAccess feature={Feature.ViewQueryDbRoleList}>
+              <ToggleButton
+                value={QueryType.USERS}
+                onClick={() => setQueryTab(QueryType.USERS)}
+              >
+                USERS
+              </ToggleButton>
+            </ManageAccess>
+            <ManageAccess feature={Feature.ViewQueryDbDatabaseList}>
+              <ToggleButton
+                value={QueryType.DATABASES}
+                onClick={() => setQueryTab(QueryType.DATABASES)}
+              >
+                DATABASES
+              </ToggleButton>
+            </ManageAccess>
+          </ToggleButtonGroup>
 
-                    <ManageAccess feature={Feature.ViewQueryDbChart}>
-                        <ToggleButton
-                            sx={SX.group}
-                            color={"secondary"}
-                            value={QueryType.CHARTS}
-                            selected={queryTab === QueryType.CHARTS}
-                            onClick={() => setQueryTab(QueryType.CHARTS)}
-                        >
-                            CHARTS
-                        </ToggleButton>
-                    </ManageAccess>
-
-                    <ToggleButtonGroup sx={[SX.group, SX.groupSelect]} color={"secondary"} value={queryTab} orientation={"vertical"}>
-                        <ToggleButton value={QueryType.ACTIVITY} onClick={() => setQueryTab(QueryType.ACTIVITY)}>
-                            ACTIVITY
-                        </ToggleButton>
-                        <ToggleButton value={QueryType.STATISTIC} onClick={() => setQueryTab(QueryType.STATISTIC)}>
-                            STATISTIC
-                        </ToggleButton>
-                        <ToggleButton value={QueryType.BLOAT} onClick={() => setQueryTab(QueryType.BLOAT)}>
-                            BLOAT
-                        </ToggleButton>
-                        <ToggleButton value={QueryType.REPLICATION} onClick={() => setQueryTab(QueryType.REPLICATION)}>
-                            REPLICATION
-                        </ToggleButton>
-                        <ToggleButton value={QueryType.OTHER} onClick={() => setQueryTab(QueryType.OTHER)}>
-                            OTHER
-                        </ToggleButton>
-                    </ToggleButtonGroup>
-                </Box>
-                <Box sx={SX.query}>
-                    {queryTab === QueryType.CONSOLE ? (
-                        <QueryConsole connection={connection}/>
-                    ) : queryTab === QueryType.CHARTS ? (
-                        <Box>
-                            <DividerBox>
-                                {CHARTS.common.map(t => (
-                                    <QueryChartGeneral key={t} type={t} connection={connection}/>
-                                ))}
-                            </DividerBox>
-                            <DividerBox label={connection.db.name && `${connection.db.name}`}>
-                                {CHARTS.database.map(t => (
-                                    <QueryChartDatabase key={t} type={t} connection={connection}/>
-                                ))}
-                            </DividerBox>
-                        </Box>
-                    ) : (
-                        <Query type={queryTab} connection={connection}/>
-                    )}
-                </Box>
-            </Box>
+          <ToggleButtonGroup
+            sx={[SX.group, SX.groupSelect]}
+            color={"secondary"}
+            value={queryTab}
+            orientation={"vertical"}
+          >
+            <ToggleButton
+              value={QueryType.ACTIVITY}
+              onClick={() => setQueryTab(QueryType.ACTIVITY)}
+            >
+              ACTIVITY
+            </ToggleButton>
+            <ToggleButton
+              value={QueryType.STATISTIC}
+              onClick={() => setQueryTab(QueryType.STATISTIC)}
+            >
+              STATISTIC
+            </ToggleButton>
+            <ToggleButton
+              value={QueryType.BLOAT}
+              onClick={() => setQueryTab(QueryType.BLOAT)}
+            >
+              BLOAT
+            </ToggleButton>
+            <ToggleButton
+              value={QueryType.REPLICATION}
+              onClick={() => setQueryTab(QueryType.REPLICATION)}
+            >
+              REPLICATION
+            </ToggleButton>
+            <ToggleButton
+              value={QueryType.OTHER}
+              onClick={() => setQueryTab(QueryType.OTHER)}
+            >
+              OTHER
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
-    )
+        <Box sx={SX.query}>
+          {queryTab === QueryType.CONSOLE ? (
+            <QueryConsole connection={connection} />
+          ) : queryTab === QueryType.CHARTS ? (
+            <Box>
+              <DividerBox>
+                {CHARTS.common.map((t) => (
+                  <QueryChartGeneral key={t} type={t} connection={connection} />
+                ))}
+              </DividerBox>
+              <DividerBox label={connection.db.name && `${connection.db.name}`}>
+                {CHARTS.database.map((t) => (
+                  <QueryChartDatabase
+                    key={t}
+                    type={t}
+                    connection={connection}
+                  />
+                ))}
+              </DividerBox>
+            </Box>
+          ) : queryTab === QueryType.USERS ? (
+            <QueryDbUsers connection={connection} role={role} />
+          ) : queryTab === QueryType.DATABASES ? (
+            <QueryDbDatabaseList connection={connection} role={role} />
+          ) : (
+            <Query type={queryTab} connection={connection} />
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
 }

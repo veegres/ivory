@@ -122,10 +122,9 @@ type testQueryEnv struct {
 	service      *Service
 	vaultService *vault.Service
 	certService  *cert.Service
-	adapter      *fakeDatabaseAdapter
 }
 
-func createTestQueryService(t *testing.T, adapter *fakeDatabaseAdapter) *testQueryEnv {
+func createTestQueryService(t *testing.T, adapter database.Adapter) *testQueryEnv {
 	t.Helper()
 
 	tmpDir, errDir := os.MkdirTemp("", "query-service-test-*")
@@ -177,7 +176,7 @@ func createTestQueryService(t *testing.T, adapter *fakeDatabaseAdapter) *testQue
 	repository := NewRepository(storage.NewDbBucket[Response](db, "Query"), storage.NewFileStorage("query-logs", ".log"))
 	service := NewService(repository, registry, vaultService, certService, "ivory")
 
-	return &testQueryEnv{service: service, vaultService: vaultService, certService: certService, adapter: adapter}
+	return &testQueryEnv{service: service, vaultService: vaultService, certService: certService}
 }
 
 func TestServiceInitializeSystemQueries(t *testing.T) {

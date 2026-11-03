@@ -15,12 +15,20 @@ const DefaultPatroniState = `get /service/ --prefix`
 
 func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
-		config.ViewQueryDbInfo:        false,
-		config.ViewQueryDbChart:       false,
-		config.ManageQueryDbTemplate:  true,
-		config.ManageQueryDbConsole:   true,
-		config.ManageQueryDbCancel:    false,
-		config.ManageQueryDbTerminate: false,
+		config.ViewQueryDbInfo:               false,
+		config.ViewQueryDbChart:              false,
+		config.ManageQueryDbTemplate:         true,
+		config.ManageQueryDbConsole:          true,
+		config.ManageQueryDbCancel:           false,
+		config.ManageQueryDbTerminate:        false,
+		config.ViewQueryDbRoleList:           false,
+		config.ManageQueryDbRoleCreate:       false,
+		config.ManageQueryDbRoleUpdate:       false,
+		config.ManageQueryDbRoleDelete:       false,
+		config.ViewQueryDbDatabaseList:       false,
+		config.ManageQueryDbDatabaseCreate:   false,
+		config.ManageQueryDbDatabaseUpdate:   false,
+		config.ManageQueryDbDatabaseDelete:   false,
 	}
 }
 

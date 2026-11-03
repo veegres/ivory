@@ -158,3 +158,35 @@ type SystemRequest struct {
 	Varieties   []SystemRequestVariety
 	Params      []string
 }
+
+// DbRole is one PostgreSQL role row for catalog admin screens.
+type DbRole struct {
+	Name      string `json:"name"`
+	Superuser bool   `json:"superuser"`
+	CreateDb  bool   `json:"createDb"`
+	Login     bool   `json:"login"`
+}
+
+// DbDatabaseCatalog is one PostgreSQL database row for catalog admin screens.
+type DbDatabaseCatalog struct {
+	Name     string `json:"name"`
+	Owner    string `json:"owner"`
+	Size     string `json:"size"`
+	Encoding string `json:"encoding"`
+}
+
+// DbRoleAdmin manages PostgreSQL roles. Only the postgres plugin implements it.
+type DbRoleAdmin interface {
+	ListDbRoles(ctx Context) ([]DbRole, error)
+	CreateDbRole(ctx Context, name string, password string) error
+	UpdateDbRolePassword(ctx Context, name string, password string) error
+	DeleteDbRole(ctx Context, name string) error
+}
+
+// DbDatabaseAdmin manages PostgreSQL databases. Only the postgres plugin implements it.
+type DbDatabaseAdmin interface {
+	ListDbDatabases(ctx Context) ([]DbDatabaseCatalog, error)
+	CreateDbDatabase(ctx Context, name string) error
+	RenameDbDatabase(ctx Context, name string, newName string) error
+	DeleteDbDatabase(ctx Context, name string) error
+}

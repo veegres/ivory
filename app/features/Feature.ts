@@ -53,6 +53,15 @@ export enum Feature {
     ManageQueryDbCancel = "manage.query.db.cancel",
     ManageQueryDbTerminate = "manage.query.db.terminate",
 
+    ViewQueryDbRoleList = "view.query.db.role.list",
+    ManageQueryDbRoleCreate = "manage.query.db.role.create",
+    ManageQueryDbRoleUpdate = "manage.query.db.role.update",
+    ManageQueryDbRoleDelete = "manage.query.db.role.delete",
+    ViewQueryDbDatabaseList = "view.query.db.database.list",
+    ManageQueryDbDatabaseCreate = "manage.query.db.database.create",
+    ManageQueryDbDatabaseUpdate = "manage.query.db.database.update",
+    ManageQueryDbDatabaseDelete = "manage.query.db.database.delete",
+
     ViewQueryLogList = "view.query.log.list",
     ManageQueryLogDelete = "manage.query.log.delete",
 

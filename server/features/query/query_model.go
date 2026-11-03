@@ -126,6 +126,61 @@ type RouterTablesRequest struct {
 	Name       string     `json:"name"`
 }
 
+type DbRoleResponse struct {
+	Name      string `json:"name"`
+	Superuser bool   `json:"superuser"`
+	CreateDb  bool   `json:"createDb"`
+	Login     bool   `json:"login"`
+}
+
+type DbDatabaseResponse struct {
+	Name     string `json:"name"`
+	Owner    string `json:"owner"`
+	Size     string `json:"size"`
+	Encoding string `json:"encoding"`
+}
+
+type RouterDbRoleListRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+}
+
+type RouterDbRoleCreateRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+	Password   string     `json:"password" binding:"required"`
+}
+
+type RouterDbRoleUpdateRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+	Password   string     `json:"password" binding:"required"`
+}
+
+type RouterDbRoleDeleteRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+}
+
+type RouterDbDatabaseListRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+}
+
+type RouterDbDatabaseCreateRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+}
+
+type RouterDbDatabaseUpdateRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+	NewName    string     `json:"newName" binding:"required,notblank"`
+}
+
+type RouterDbDatabaseDeleteRequest struct {
+	Connection Connection `json:"connection" binding:"required"`
+	Name       string     `json:"name" binding:"required,notblank"`
+}
+
 type Chart struct {
 	Name  string `json:"name"`
 	Value any    `json:"value"`
@@ -255,4 +310,37 @@ func mapDbResponse(r *database.QueryFields) *DbResponse {
 		Url:       r.Url,
 		Options:   opts,
 	}
+}
+
+func mapDbRoles(roles []database.DbRole) []DbRoleResponse {
+	out := make([]DbRoleResponse, len(roles))
+	for i, role := range roles {
+		out[i] = DbRoleResponse{
+			Name:      role.Name,
+			Superuser: role.Superuser,
+			CreateDb:  role.CreateDb,
+			Login:     role.Login,
+		}
+	}
+	return out
+}
+
+func mapDbDatabases(dbs []database.DbDatabaseCatalog) []DbDatabaseResponse {
+	out := make([]DbDatabaseResponse, len(dbs))
+	for i, db := range dbs {
+		out[i] = DbDatabaseResponse{
+			Name:     db.Name,
+			Owner:    db.Owner,
+			Size:     db.Size,
+			Encoding: db.Encoding,
+		}
+	}
+	return out
+}
+
+func catalogContext(queryCtx Context) Context {
+	con := queryCtx.Connection
+	con.Db.Name = nil
+	con.Db.Schema = nil
+	return Context{Connection: con, Session: queryCtx.Session}
 }
