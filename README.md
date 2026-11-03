@@ -1,11 +1,15 @@
 <div style="text-align: center;" align="center">
+   <b><sub>Self-hosted Database Cluster Management System</sub></b>
+</div>
+<br>
+<div style="text-align: center;" align="center">
    <img src="app/shared/assets/ivory.png" alt="Ivory — open-source web UI and AI-ready MCP server for PostgreSQL Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper clusters" height="200" width="200" />
-
-# Ivory
-
-### DEPLOY. WATCH. FIX. ANYWHERE
-
-**Ivory is home for your database clusters — deploy, watch and fix them from anywhere.**
+   
+   # Ivory
+   
+   ### DEPLOY. WATCH. FIX. ANYWHERE
+   
+   **Ivory is home for your database clusters — deploy, watch and fix them from anywhere.**
 
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
    <img src="https://img.shields.io/docker/v/veegres/ivory?label=latest&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="latest version" />
