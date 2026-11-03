@@ -1,13 +1,17 @@
 {
-  "contentSha256": "36dca15677b702098a9765b00a83ade72b3da29c8272f4012c3834b0a6bb857c",
+  "contentSha256": "b623a0648e3f5fb364f2954bab9ed7f5a99b61f2aac15d48e0011a1f3595d372",
   "files": {
+    "backend-architecture/LICENSE": "fe20cb7008abef1f9a7830078517e6c1ff500686aa42832678e28772b918e10d",
     "backend-architecture/SKILL.md": "2bded636f7366ecc13d907312c66ee0dca1652372d69df98809e962d0ed28eba",
     "backend-architecture/references/go.md": "f65ffdaeb16aac866488ac5dd2a26ba0b367b45ceffd584c1caea1b74c771858",
     "backend-architecture/references/persistence.md": "ba9a3ea7f546fa328835b3bfefefc0449e47d0beb9a3bc5f0ee52271241820c1",
     "backend-architecture/references/rust.md": "05d0fca5a4f5793621526ac8e73d1dcb879a65543599997897e945558c4ebb3a",
+    "convention-maintenance/LICENSE": "fe20cb7008abef1f9a7830078517e6c1ff500686aa42832678e28772b918e10d",
     "convention-maintenance/SKILL.md": "a4772a3d75a0c32799065ea5b269c67103b295e63f1f06ddae1893662b3f5e86",
+    "frontend-architecture/LICENSE": "fe20cb7008abef1f9a7830078517e6c1ff500686aa42832678e28772b918e10d",
     "frontend-architecture/SKILL.md": "061e072408399a6cb58091a5665aa66c62ae46200d7cf6deeb0397213fed61bb",
     "frontend-architecture/references/react-typescript-mui.md": "cabcb178d6c853c53f58e1b995a7ababef1e8bc91da7c1cfd903a3827b3e7d3c",
+    "project-instructions/LICENSE": "fe20cb7008abef1f9a7830078517e6c1ff500686aa42832678e28772b918e10d",
     "project-instructions/SKILL.md": "0fb3d880eadf903c38a679e30b145d7e723e31add0565383b4bd860c9e932d0f",
     "project-instructions/assets/AGENTS.template.md": "c7225f65916143e8e000ba747cc6683ef599e4761ada56ecb72ee909ba65b81f"
   },
